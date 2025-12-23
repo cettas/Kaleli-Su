@@ -556,7 +556,7 @@ const IntegrationsManagement: React.FC = () => {
                 <div className="space-y-2 text-xs font-mono">
                   <div className="flex items-center gap-2">
                     <span className="text-emerald-600 font-black">GET</span>
-                    <span className="text-slate-600">/api/customer/by-phone?phone={caller_id}</span>
+                    <span className="text-slate-600">/api/customer/by-phone?phone=&lt;caller_id&gt;</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-indigo-600 font-black">POST</span>
