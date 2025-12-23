@@ -118,7 +118,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ role, onLogin, onCancel }) => {
               Demo Giriş Bilgileri
             </p>
             <div className="bg-slate-900 rounded-xl p-4 space-y-2 text-xs">
-              {role === UserRole.ADMIN && (
+              {role === "Admin" && (
                 <>
                   <div className="flex justify-between text-slate-400">
                     <span>Kullanıcı:</span>
@@ -130,7 +130,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ role, onLogin, onCancel }) => {
                   </div>
                 </>
               )}
-              {role === UserRole.OFFICE && (
+              {role === "Ofis Personeli" && (
                 <>
                   <div className="flex justify-between text-slate-400">
                     <span>Kullanıcı:</span>
@@ -142,7 +142,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ role, onLogin, onCancel }) => {
                   </div>
                 </>
               )}
-              {role === UserRole.COURIER && (
+              {role === "Kurye" && (
                 <>
                   <div className="flex justify-between text-slate-400">
                     <span>Kullanıcı:</span>

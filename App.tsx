@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { UserRole, Order, OrderStatus, Customer, Courier, InventoryItem, Category, User } from './types';
+import { Order, OrderStatus, Customer, Courier, InventoryItem, Category, User } from './types';
 import { COURIERS as INITIAL_COURIERS } from './constants';
 import OfficePanel from './components/OfficePanel';
 import CourierPanel from './components/CourierPanel';
@@ -17,7 +17,7 @@ interface Toast {
 }
 
 const App: React.FC = () => {
-  const [role, setRole] = useState<UserRole | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const prevOrderCount = useRef<number | null>(null);
 
