@@ -1,10 +1,6 @@
-
 import React, { useMemo, useState } from 'react';
 import { Order, OrderStatus, Courier, Customer, InventoryItem, Category } from '../types';
-import { STATUS_COLORS } from '../constants';
-import CourierManagement from './CourierManagement';
-import CustomerManagement from './CustomerManagement';
-import StockManagement from './StockManagement';
+import { STATUS_COLORS, SOURCE_STYLES } from '../constants';
 
 interface AdminPanelProps {
   orders: Order[];
@@ -20,15 +16,21 @@ interface AdminPanelProps {
 
 type TimeFilter = 'daily' | 'weekly' | 'monthly' | 'custom' | 'all';
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ 
+const AdminPanel: React.FC<AdminPanelProps> = ({
   orders, couriers, customers, inventory, categories,
   onUpdateCouriers, onUpdateCustomers, onUpdateInventory, onUpdateCategories
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'couriers' | 'customers' | 'stock'>('overview');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'customers' | 'couriers' | 'inventory'>('dashboard');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
-  
+
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  // Modal States
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
+  const [selectedInventory, setSelectedInventory] = useState<InventoryItem | null>(null);
 
   const filteredOrdersByTime = useMemo(() => {
     const now = new Date();
@@ -38,7 +40,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
     return orders.filter(o => {
       const orderTime = new Date(o.createdAt).getTime();
-      
+
       if (timeFilter === 'daily') return orderTime >= startOfToday;
       if (timeFilter === 'weekly') return orderTime >= oneWeekAgo;
       if (timeFilter === 'monthly') return orderTime >= oneMonthAgo;
@@ -58,9 +60,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     const pending = filteredOrdersByTime.filter(o => o.status === OrderStatus.PENDING);
     const onWay = filteredOrdersByTime.filter(o => o.status === OrderStatus.ON_WAY);
     const cancelled = filteredOrdersByTime.filter(o => o.status === OrderStatus.CANCELLED);
-    
+
     const totalRevenue = delivered.reduce((sum, o) => sum + o.totalAmount, 0);
-    
+
     let totalCost = 0;
     delivered.forEach(order => {
       order.items.forEach(item => {
@@ -72,7 +74,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     const netProfit = totalRevenue - totalCost;
     const margin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-    // Kurye Performans Listesi
     const courierPerformance = couriers.map(c => {
       const cOrders = delivered.filter(o => o.courierId === c.id);
       const revenue = cOrders.reduce((sum, o) => sum + o.totalAmount, 0);
@@ -84,19 +85,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       };
     }).sort((a, b) => b.revenue - a.revenue);
 
-    // Mahalle Bazlı Dağılım
     const regionMap: Record<string, number> = {};
     filteredOrdersByTime.forEach(o => {
       const parts = o.address.split(',');
       const neighborhood = parts[1]?.trim() || 'Merkez';
       regionMap[neighborhood] = (regionMap[neighborhood] || 0) + 1;
     });
-    
+
     const topRegions = Object.entries(regionMap)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
 
-    // Kategori Dağılımı
     const catMap: Record<string, number> = {};
     delivered.forEach(o => {
       o.items.forEach(item => {
@@ -107,16 +106,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       });
     });
 
-    return { 
-      totalRevenue, 
-      netProfit, 
-      margin, 
-      deliveredCount: delivered.length, 
+    return {
+      totalRevenue,
+      netProfit,
+      margin,
+      deliveredCount: delivered.length,
       pendingCount: pending.length,
       onWayCount: onWay.length,
       cancelledCount: cancelled.length,
       totalCount: filteredOrdersByTime.length,
-      courierPerformance, 
+      courierPerformance,
       topRegions,
       catMap
     };
@@ -139,17 +138,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         <nav className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/10 w-full lg:w-auto overflow-x-auto scrollbar-hide">
           {[
-            { id: 'overview', label: 'DASHBOARD', icon: 'grip' },
-            { id: 'stock', label: 'ENVANTER', icon: 'boxes-stacked' },
+            { id: 'dashboard', label: 'DASHBOARD', icon: 'grip' },
+            { id: 'orders', label: 'SİPARİŞLER', icon: 'shopping-cart' },
+            { id: 'customers', label: 'MÜŞTERİLER', icon: 'user-group' },
             { id: 'couriers', label: 'FİLO', icon: 'truck-fast' },
-            { id: 'customers', label: 'MÜŞTERİLER', icon: 'user-group' }
+            { id: 'inventory', label: 'ENVANTER', icon: 'boxes-stacked' }
           ].map(tab => (
-            <button 
+            <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)} 
+              onClick={() => setActiveTab(tab.id as any)}
               className={`flex-1 lg:flex-none px-5 lg:px-7 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
-                activeTab === tab.id 
-                ? 'bg-indigo-600 text-white shadow-xl translate-y-[-1px]' 
+                activeTab === tab.id
+                ? 'bg-indigo-600 text-white shadow-xl translate-y-[-1px]'
                 : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -161,9 +161,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 lg:p-8">
-        <div className="max-w-[1600px] mx-auto space-y-8">
-          
-          {activeTab === 'overview' && (
+        <div className="max-w-[1600px] mx-auto">
+
+          {activeTab === 'dashboard' && (
             <div className="space-y-8 animate-in fade-in duration-700">
               {/* Filtreler ve Hızlı Durum */}
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
@@ -185,16 +185,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
                   {timeFilter === 'custom' && (
                     <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 animate-in slide-in-from-right-2">
-                      <input 
-                        type="date" 
-                        value={startDate} 
+                      <input
+                        type="date"
+                        value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                         className="bg-transparent text-[10px] font-black text-slate-600 outline-none uppercase"
                       />
                       <span className="text-slate-300 font-bold">-</span>
-                      <input 
-                        type="date" 
-                        value={endDate} 
+                      <input
+                        type="date"
+                        value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                         className="bg-transparent text-[10px] font-black text-slate-600 outline-none uppercase"
                       />
@@ -316,11 +316,348 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
-          {activeTab === 'couriers' && <CourierManagement couriers={couriers} orders={orders} onUpdateCouriers={onUpdateCouriers} />}
-          {activeTab === 'customers' && <CustomerManagement customers={customers} orders={orders} onUpdateCustomers={onUpdateCustomers} />}
-          {activeTab === 'stock' && <StockManagement inventory={inventory} onUpdateInventory={onUpdateInventory} categories={categories} onUpdateCategories={onUpdateCategories} />}
+          {activeTab === 'orders' && (
+            <div className="space-y-6 animate-in fade-in duration-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase">Tüm Siparişler</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{orders.length} Sipariş</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left px-6 py-4">Sipariş No</th>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left px-6 py-4">Müşteri</th>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left px-6 py-4">Tutar</th>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left px-6 py-4">Durum</th>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left px-6 py-4">Kurye</th>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left px-6 py-4">Kaynak</th>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left px-6 py-4">Tarih</th>
+                        <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center px-6 py-4">İşlem</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.slice(0, 50).map((order) => (
+                        <tr key={order.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <p className="text-xs font-black text-slate-900">{order.id.slice(-8)}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-xs font-bold text-slate-700">{order.customerName}</p>
+                            <p className="text-[9px] text-slate-400">{order.phone}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-black text-indigo-600">{order.totalAmount}₺</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${STATUS_COLORS[order.status]}`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-xs font-bold text-slate-700">{order.courierName || '-'}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase text-white ${SOURCE_STYLES[order.source]?.bg || 'bg-slate-600'}`}>
+                              <i className={`fas ${SOURCE_STYLES[order.source]?.icon} mr-1`}></i>
+                              {order.source}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-[10px] font-bold text-slate-500">{new Date(order.createdAt).toLocaleDateString('tr-TR')}</p>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => setSelectedOrder(order)}
+                              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase rounded-xl transition-all"
+                            >
+                              DETAY
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {orders.length === 0 && (
+                        <tr>
+                          <td colSpan={8} className="px-6 py-12 text-center">
+                            <p className="text-sm font-bold text-slate-400">Henüz sipariş yok</p>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'customers' && (
+            <div className="space-y-6 animate-in fade-in duration-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase">Müşteri Yönetimi</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{customers.length} Müşteri</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {customers.map((customer) => (
+                  <div key={customer.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-indigo-500 transition-all cursor-pointer group"
+                    onClick={() => setSelectedCustomer(customer)}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg shadow-indigo-600/20">
+                        {customer.name.charAt(0)}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-indigo-600">{customer.orderCount || 0}</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase">Sipariş</p>
+                      </div>
+                    </div>
+                    <h4 className="text-sm font-black text-slate-900 uppercase truncate">{customer.name}</h4>
+                    <p className="text-[10px] font-bold text-slate-500">{customer.phone}</p>
+                    <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                      <p className="text-[10px] font-bold text-slate-400">
+                        {customer.district} / {customer.neighborhood}
+                      </p>
+                      <i className="fas fa-chevron-right text-slate-300 group-hover:text-indigo-600 transition-colors"></i>
+                    </div>
+                  </div>
+                ))}
+                {customers.length === 0 && (
+                  <div className="col-span-3 text-center py-12">
+                    <p className="text-sm font-bold text-slate-400">Henüz müşteri yok</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'couriers' && (
+            <div className="space-y-6 animate-in fade-in duration-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase">Filo Yönetimi</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{couriers.length} Kurye</p>
+                </div>
+                <button
+                  onClick={() => setSelectedCourier({
+                    id: '',
+                    name: '',
+                    status: 'active',
+                    phone: '',
+                    fullInventory: 0,
+                    emptyInventory: 0,
+                    serviceRegion: ''
+                  } as Courier)}
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase rounded-xl transition-all flex items-center gap-2"
+                >
+                  <i className="fas fa-plus"></i>
+                  YENİ KURYE
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {couriers.map((courier) => {
+                  const courierOrders = orders.filter(o => o.courierId === courier.id);
+                  const deliveredCount = courierOrders.filter(o => o.status === 'Delivered').length;
+
+                  return (
+                    <div key={courier.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-indigo-500 transition-all cursor-pointer group"
+                      onClick={() => setSelectedCourier(courier)}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg ${
+                          courier.status === 'active' ? 'bg-emerald-600' : courier.status === 'busy' ? 'bg-amber-600' : 'bg-slate-400'
+                        }`}>
+                          <i className="fas fa-motorcycle"></i>
+                        </div>
+                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${
+                          courier.status === 'active' ? 'bg-emerald-100 text-emerald-600' : courier.status === 'busy' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {courier.status === 'active' ? 'AKTİF' : courier.status === 'busy' ? 'MEŞGUL' : 'OFFLİNE'}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-black text-slate-900 uppercase">{courier.name}</h4>
+                      <p className="text-[10px] font-bold text-slate-500">{courier.phone}</p>
+                      <div className="mt-4 pt-4 border-t border-slate-50 grid grid-cols-3 gap-4">
+                        <div className="text-center">
+                          <p className="text-lg font-black text-indigo-600">{courierOrders.length}</p>
+                          <p className="text-[8px] font-bold text-slate-400 uppercase">Toplam</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-black text-emerald-600">{deliveredCount}</p>
+                          <p className="text-[8px] font-bold text-slate-400 uppercase">Teslim</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-black text-amber-600">{courier.fullInventory}</p>
+                          <p className="text-[8px] font-bold text-slate-400 uppercase">Dolu</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {couriers.length === 0 && (
+                  <div className="col-span-3 text-center py-12">
+                    <p className="text-sm font-bold text-slate-400">Henüz kurye yok</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'inventory' && (
+            <div className="space-y-6 animate-in fade-in duration-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase">Envanter Yönetimi</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{inventory.length} Ürün</p>
+                </div>
+                <button
+                  onClick={() => setSelectedInventory({
+                    id: '',
+                    name: '',
+                    quantity: 0,
+                    unit: 'Adet',
+                    costPrice: 0,
+                    salePrice: 0,
+                    isActive: true,
+                    isCore: false,
+                    category: categories[0]?.id || ''
+                  } as InventoryItem)}
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase rounded-xl transition-all flex items-center gap-2"
+                >
+                  <i className="fas fa-plus"></i>
+                  YENİ ÜRÜN
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {inventory.filter(i => i.isActive).map((item) => {
+                  const category = categories.find(c => c.id === item.category);
+
+                  return (
+                    <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-indigo-500 transition-all cursor-pointer group"
+                      onClick={() => setSelectedInventory(item)}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 text-xl">
+                          <i className={`fas fa-${category?.icon || 'box'}`}></i>
+                        </div>
+                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${item.quantity > 50 ? 'bg-emerald-100 text-emerald-600' : item.quantity > 20 ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'}`}>
+                          {item.quantity} {item.unit}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-black text-slate-900 uppercase truncate">{item.name}</h4>
+                      <p className="text-[10px] font-bold text-slate-500 mb-4">{category?.label || item.category}</p>
+                      <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <div>
+                          <p className="text-[9px] font-bold text-slate-400">SATIŞ</p>
+                          <p className="text-base font-black text-indigo-600">{item.salePrice}₺</p>
+                        </div>
+                        <i className="fas fa-chevron-right text-slate-300 group-hover:text-indigo-600 transition-colors"></i>
+                      </div>
+                    </div>
+                  );
+                })}
+                {inventory.filter(i => i.isActive).length === 0 && (
+                  <div className="col-span-4 text-center py-12">
+                    <p className="text-sm font-bold text-slate-400">Aktif ürün yok</p>
+                  </div>
+                )}
+              </div>
+
+              {inventory.filter(i => !i.isActive).length > 0 && (
+                <>
+                  <div className="border-t border-slate-200 my-8"></div>
+                  <h4 className="text-lg font-black text-slate-900 uppercase">Pasif Ürünler</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {inventory.filter(i => !i.isActive).map((item) => (
+                      <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm opacity-60 hover:opacity-100 transition-all cursor-pointer group"
+                        onClick={() => setSelectedInventory(item)}
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 text-xl">
+                            <i className="fas fa-box"></i>
+                          </div>
+                          <span className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase bg-slate-100 text-slate-500">
+                            PASİF
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-black text-slate-900 uppercase truncate">{item.name}</h4>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedOrder(null)}>
+          <div className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-8 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase">Sipariş Detayı</h3>
+                  <p className="text-[10px] font-bold text-slate-400">{selectedOrder.id}</p>
+                </div>
+                <button onClick={() => setSelectedOrder(null)} className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all">
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <div className="p-8 space-y-6">
+              <div>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Müşteri Bilgileri</h4>
+                <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
+                  <p className="text-sm font-bold text-slate-900">{selectedOrder.customerName}</p>
+                  <p className="text-xs text-slate-500">{selectedOrder.phone}</p>
+                  <p className="text-xs text-slate-500">{selectedOrder.address}</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Sipariş Ürünleri</h4>
+                <div className="space-y-2">
+                  {selectedOrder.items.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-slate-50 rounded-xl p-4">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{item.productName}</p>
+                        <p className="text-xs text-slate-500">{item.quantity} Adet x {item.price}₺</p>
+                      </div>
+                      <p className="text-sm font-black text-indigo-600">{(item.quantity * item.price).toFixed(2)}₺</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400">TOPLAM TUTAR</p>
+                  <p className="text-2xl font-black text-slate-900">{selectedOrder.totalAmount}₺</p>
+                </div>
+                <span className={`px-4 py-2 rounded-xl text-sm font-black uppercase ${STATUS_COLORS[selectedOrder.status]}`}>
+                  {selectedOrder.status}
+                </span>
+              </div>
+
+              {selectedOrder.note && (
+                <div>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Not</h4>
+                  <p className="text-sm text-slate-700 bg-amber-50 rounded-xl p-4 border border-amber-200">{selectedOrder.note}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
