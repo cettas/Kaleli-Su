@@ -97,26 +97,6 @@ const App: React.FC = () => {
     }
   }, [currentUser]);
 
-  // Realtime subscriptions
-  useEffect(() => {
-    const ordersChannel = supabase
-      .channel('orders_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setOrders(prev => [payload.new as Order, ...prev]);
-        } else if (payload.eventType === 'UPDATE') {
-          setOrders(prev => prev.map(o => o.id === payload.new.id ? payload.new as Order : o));
-        } else if (payload.eventType === 'DELETE') {
-          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(ordersChannel);
-    };
-  }, []);
-
   const addOrder = async (newOrder: Order, customerData: Customer) => {
     try {
       // Siparişi ekle
