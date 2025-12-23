@@ -1,11 +1,11 @@
 
-import { Product, Courier, OrderStatus, OrderSource, User } from './types';
+import { Courier, User } from './types';
 
 export const DEFAULT_USERS: User[] = [
-  { id: 'admin1', username: 'admin', password: 'admin123', name: 'Sistem Yöneticisi', role: UserRole.ADMIN },
-  { id: 'office1', username: 'ofis', password: 'ofis123', name: 'Ofis Personeli', role: UserRole.OFFICE },
-  { id: 'courier1', username: 'kurye', password: 'kurye123', name: 'Ahmet Yılmaz', role: UserRole.COURIER, courierId: 'c1' },
-  { id: 'courier2', username: 'kurye2', password: 'kurye123', name: 'Mehmet Demir', role: UserRole.COURIER, courierId: 'c2' },
+  { id: 'admin1', username: 'admin', password: 'admin123', name: 'Sistem Yöneticisi', role: "Admin" },
+  { id: 'office1', username: 'ofis', password: 'ofis123', name: 'Ofis Personeli', role: "Ofis Personeli" },
+  { id: 'courier1', username: 'kurye', password: 'kurye123', name: 'Ahmet Yılmaz', role: "Kurye", courierId: 'c1' },
+  { id: 'courier2', username: 'kurye2', password: 'kurye123', name: 'Mehmet Demir', role: "Kurye", courierId: 'c2' },
 ];
 
 export const ISTANBUL_DISTRICTS = [
@@ -30,18 +30,18 @@ export const POPULAR_NEIGHBORHOODS = [
 ];
 
 export const STATUS_COLORS = {
-  [OrderStatus.PENDING]: 'bg-amber-50 text-amber-600 border-amber-100 ring-amber-500/10',
-  [OrderStatus.ON_WAY]: 'bg-indigo-50 text-indigo-600 border-indigo-100 ring-indigo-500/10',
-  [OrderStatus.DELIVERED]: 'bg-emerald-50 text-emerald-600 border-emerald-100 ring-emerald-500/10',
-  [OrderStatus.CANCELLED]: 'bg-rose-50 text-rose-600 border-rose-100 ring-rose-500/10',
+  'Bekliyor': 'bg-amber-50 text-amber-600 border-amber-100 ring-amber-500/10',
+  'Yolda': 'bg-indigo-50 text-indigo-600 border-indigo-100 ring-indigo-500/10',
+  'Teslim Edildi': 'bg-emerald-50 text-emerald-600 border-emerald-100 ring-emerald-500/10',
+  'İptal': 'bg-rose-50 text-rose-600 border-rose-100 ring-rose-500/10',
 };
 
 export const SOURCE_STYLES = {
-  [OrderSource.WEB]: { bg: 'bg-indigo-600', text: 'text-white', icon: 'fa-globe' },
-  [OrderSource.PHONE]: { bg: 'bg-slate-700', text: 'text-white', icon: 'fa-phone' },
-  [OrderSource.GETIR]: { bg: 'bg-[#5d3ebc]', text: 'text-white', icon: 'fa-bolt' },
-  [OrderSource.TRENDYOL]: { bg: 'bg-[#ff6000]', text: 'text-white', icon: 'fa-basket-shopping' },
-  [OrderSource.YEMEKSEPETI]: { bg: 'bg-[#ea004b]', text: 'text-white', icon: 'fa-utensils' },
+  'Web/Müşteri': { bg: 'bg-indigo-600', text: 'text-white', icon: 'fa-globe' },
+  'Telefon': { bg: 'bg-slate-700', text: 'text-white', icon: 'fa-phone' },
+  'Getir': { bg: 'bg-[#5d3ebc]', text: 'text-white', icon: 'fa-bolt' },
+  'Trendyol': { bg: 'bg-[#ff6000]', text: 'text-white', icon: 'fa-basket-shopping' },
+  'Yemeksepeti': { bg: 'bg-[#ea004b]', text: 'text-white', icon: 'fa-utensils' },
 };
 
 export const INITIAL_CUSTOMERS = [

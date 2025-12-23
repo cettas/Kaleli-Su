@@ -249,9 +249,9 @@ const App: React.FC = () => {
     setRole(null);
   };
 
-  const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole: UserRole }> = ({ children, requiredRole }) => {
+  const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole: string }> = ({ children, requiredRole }) => {
     if (!currentUser) {
-      return <LoginPage role={requiredRole as UserRole.OFFICE | UserRole.COURIER | UserRole.ADMIN} onLogin={handleLogin} onCancel={() => {}} />;
+      return <LoginPage role={requiredRole as "Ofis Personeli" | "Kurye" | "Admin"} onLogin={handleLogin} onCancel={() => {}} />;
     }
     if (currentUser.role !== requiredRole) {
       return <Navigate to="/" replace />;
@@ -377,7 +377,7 @@ const App: React.FC = () => {
 
         {/* Office Page - Login Required */}
         <Route path="/ofis" element={
-          <ProtectedRoute requiredRole={UserRole.OFFICE}>
+          <ProtectedRoute requiredRole="Ofis Personeli">
             <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2.5">
@@ -417,7 +417,7 @@ const App: React.FC = () => {
 
         {/* Courier Page - Login Required */}
         <Route path="/kurye" element={
-          <ProtectedRoute requiredRole={UserRole.COURIER}>
+          <ProtectedRoute requiredRole="Kurye">
             <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2.5">
@@ -456,7 +456,7 @@ const App: React.FC = () => {
 
         {/* Admin Page - Login Required */}
         <Route path="/admin" element={
-          <ProtectedRoute requiredRole={UserRole.ADMIN}>
+          <ProtectedRoute requiredRole="Admin">
             <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2.5">

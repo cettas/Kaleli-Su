@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { UserRole, User } from '../types';
+import { User } from '../types';
 import { DEFAULT_USERS } from '../constants';
 
 interface LoginPageProps {
-  role: UserRole.OFFICE | UserRole.COURIER | UserRole.ADMIN;
+  role: "Ofis Personeli" | "Kurye" | "Admin";
   onLogin: (user: User) => void;
   onCancel: () => void;
 }
@@ -14,17 +14,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ role, onLogin, onCancel }) => {
   const [error, setError] = useState('');
 
   const roleConfig = {
-    [UserRole.OFFICE]: {
+    "Ofis Personeli": {
       icon: 'fa-desktop',
       color: 'indigo',
       title: 'OFİS PERSONELİ GİRİŞİ'
     },
-    [UserRole.COURIER]: {
+    "Kurye": {
       icon: 'fa-motorcycle',
       color: 'amber',
       title: 'KURYE GİRİŞİ'
     },
-    [UserRole.ADMIN]: {
+    "Admin": {
       icon: 'fa-user-shield',
       color: 'rose',
       title: 'ADMİN GİRİŞİ'
