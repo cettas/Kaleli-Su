@@ -54,11 +54,13 @@ WHERE NOT EXISTS (SELECT 1 FROM integrations WHERE id = 1);
 -- RLS politikaları
 ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Allow authenticated read integrations" ON integrations
+DROP POLICY IF EXISTS "Allow authenticated read integrations" ON integrations;
+CREATE POLICY "Allow authenticated read integrations" ON integrations
   FOR SELECT TO authenticated
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Allow admin update integrations" ON integrations
+DROP POLICY IF EXISTS "Allow admin update integrations" ON integrations;
+CREATE POLICY "Allow admin update integrations" ON integrations
   FOR UPDATE TO authenticated
   USING (true)
   WITH CHECK (true);
@@ -88,15 +90,18 @@ CREATE INDEX IF NOT EXISTS idx_call_logs_created_at ON call_logs(created_at DESC
 -- RLS
 ALTER TABLE call_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Allow authenticated read call_logs" ON call_logs
+DROP POLICY IF EXISTS "Allow authenticated read call_logs" ON call_logs;
+CREATE POLICY "Allow authenticated read call_logs" ON call_logs
   FOR SELECT TO authenticated
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Allow admin insert call_logs" ON call_logs
+DROP POLICY IF EXISTS "Allow admin insert call_logs" ON call_logs;
+CREATE POLICY "Allow admin insert call_logs" ON call_logs
   FOR INSERT TO authenticated
   WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Allow admin update call_logs" ON call_logs
+DROP POLICY IF EXISTS "Allow admin update call_logs" ON call_logs;
+CREATE POLICY "Allow admin update call_logs" ON call_logs
   FOR UPDATE TO authenticated
   USING (true)
   WITH CHECK (true);
@@ -129,11 +134,13 @@ CREATE INDEX IF NOT EXISTS idx_call_failover_logs_created_at ON call_failover_lo
 -- RLS
 ALTER TABLE call_failover_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Allow authenticated read call_failover_logs" ON call_failover_logs
+DROP POLICY IF EXISTS "Allow authenticated read call_failover_logs" ON call_failover_logs;
+CREATE POLICY "Allow authenticated read call_failover_logs" ON call_failover_logs
   FOR SELECT TO authenticated
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Allow admin insert call_failover_logs" ON call_failover_logs
+DROP POLICY IF EXISTS "Allow admin insert call_failover_logs" ON call_failover_logs;
+CREATE POLICY "Allow admin insert call_failover_logs" ON call_failover_logs
   FOR INSERT TO authenticated
   WITH CHECK (true);
 
@@ -161,11 +168,13 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_chats_created_at ON whatsapp_chats(creat
 -- RLS
 ALTER TABLE whatsapp_chats ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Allow authenticated read whatsapp_chats" ON whatsapp_chats
+DROP POLICY IF EXISTS "Allow authenticated read whatsapp_chats" ON whatsapp_chats;
+CREATE POLICY "Allow authenticated read whatsapp_chats" ON whatsapp_chats
   FOR SELECT TO authenticated
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Allow admin insert whatsapp_chats" ON whatsapp_chats
+DROP POLICY IF EXISTS "Allow admin insert whatsapp_chats" ON whatsapp_chats;
+CREATE POLICY "Allow admin insert whatsapp_chats" ON whatsapp_chats
   FOR INSERT TO authenticated
   WITH CHECK (true);
 
@@ -194,11 +203,13 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_failover_logs_created_at ON whatsapp_fai
 -- RLS
 ALTER TABLE whatsapp_failover_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Allow authenticated read whatsapp_failover_logs" ON whatsapp_failover_logs
+DROP POLICY IF EXISTS "Allow authenticated read whatsapp_failover_logs" ON whatsapp_failover_logs;
+CREATE POLICY "Allow authenticated read whatsapp_failover_logs" ON whatsapp_failover_logs
   FOR SELECT TO authenticated
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Allow admin insert whatsapp_failover_logs" ON whatsapp_failover_logs
+DROP POLICY IF EXISTS "Allow admin insert whatsapp_failover_logs" ON whatsapp_failover_logs;
+CREATE POLICY "Allow admin insert whatsapp_failover_logs" ON whatsapp_failover_logs
   FOR INSERT TO authenticated
   WITH CHECK (true);
 
