@@ -142,47 +142,113 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   }, [filteredOrdersByTime, couriers, inventory, categories]);
 
   return (
-    <div className="h-full bg-[#f8fafc] overflow-hidden flex flex-col">
-      <header className="bg-[#0f172a] text-white px-4 lg:px-8 py-5 flex flex-col lg:flex-row items-center justify-between gap-4 shrink-0 shadow-2xl relative z-20">
-        <div className="flex items-center gap-4 w-full lg:w-auto">
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl shadow-xl shadow-indigo-600/20 shrink-0 border-b-4 border-indigo-800">
-            <i className="fas fa-chart-line"></i>
+    <div className="h-full bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 overflow-hidden flex">
+      {/* Sol Sidebar */}
+      <aside className="w-20 lg:w-72 bg-[#0f172a] flex flex-col items-center lg:items-stretch py-6 lg:py-8 px-3 lg:px-6 shrink-0 z-30 shadow-2xl">
+        {/* Logo Alanı */}
+        <div className="flex items-center justify-center lg:justify-start gap-4 mb-8 lg:px-2">
+          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl shadow-xl shadow-indigo-600/30 shrink-0 border border-indigo-400/30 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            <i className="fas fa-chart-line relative z-10"></i>
           </div>
-          <div>
-            <h2 className="text-base lg:text-lg font-black tracking-tight leading-none uppercase">YÖNETİM KONTROL PANELİ</h2>
-            <p className="text-[8px] lg:text-[9px] font-black text-indigo-400 uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse"></span> SİSTEM CANLI ANALİZ
-            </p>
+          <div className="hidden lg:block">
+            <h2 className="text-sm font-black tracking-tight leading-none uppercase text-white">KALELİ SU</h2>
+            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.25em] mt-1.5">YÖNETİM PANELİ v2.0</p>
           </div>
         </div>
 
-        <nav className="flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/10 w-full lg:w-auto overflow-x-auto scrollbar-hide">
+        {/* Navigasyon */}
+        <nav className="flex-1 flex flex-col gap-2 w-full">
+          <p className="hidden lg:block text-[9px] font-black text-slate-500 uppercase tracking-[0.35em] px-4 mb-2">Ana Menü</p>
           {[
-            { id: 'dashboard', label: 'DASHBOARD', icon: 'grip' },
-            { id: 'orders', label: 'SİPARİŞLER', icon: 'shopping-cart' },
-            { id: 'customers', label: 'MÜŞTERİLER', icon: 'user-group' },
-            { id: 'couriers', label: 'FİLO', icon: 'truck-fast' },
-            { id: 'inventory', label: 'ENVANTER', icon: 'boxes-stacked' },
-            { id: 'integrations', label: 'ENTAGRASYONLAR', icon: 'plug' }
+            { id: 'dashboard', label: 'Dashboard', icon: 'grip', short: 'DASH' },
+            { id: 'orders', label: 'Siparişler', icon: 'shopping-cart', short: 'SİP' },
+            { id: 'customers', label: 'Müşteriler', icon: 'user-group', short: 'MÜŞ' },
+            { id: 'couriers', label: 'Kurye Filosu', icon: 'truck-fast', short: 'FİLO' },
+            { id: 'inventory', label: 'Envanter', icon: 'boxes-stacked', short: 'ENV' },
+            { id: 'integrations', label: 'Entegrasyonlar', icon: 'plug', short: 'ENT' }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 lg:flex-none px-5 lg:px-7 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
+              className={`relative group flex items-center justify-center lg:justify-start gap-4 px-3 lg:px-4 py-3 rounded-2xl transition-all duration-200 ${
                 activeTab === tab.id
-                ? 'bg-indigo-600 text-white shadow-xl translate-y-[-1px]'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-xl shadow-indigo-600/30'
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <i className={`fas fa-${tab.icon}`}></i>
-              <span>{tab.label}</span>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${
+                activeTab === tab.id
+                ? 'bg-white/20'
+                : 'bg-slate-800/50 group-hover:bg-slate-700/50'
+              }`}>
+                <i className={`fas fa-${tab.icon} ${activeTab === tab.id ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}></i>
+              </div>
+              <span className="hidden lg:block text-[11px] font-black uppercase tracking-wider">{tab.label}</span>
+              {activeTab === tab.id && (
+                <div className="hidden lg:block absolute left-0 w-1 h-6 bg-white rounded-r-full"></div>
+              )}
+              {/* Mobile Icon Label */}
+              <span className="lg:hidden text-[8px] font-black uppercase">{tab.short}</span>
             </button>
           ))}
         </nav>
-      </header>
 
-      <div className="flex-1 overflow-y-auto p-4 lg:p-8">
-        <div className="max-w-[1600px] mx-auto">
+        {/* Alt Bilgi - Desktop */}
+        <div className="hidden lg:block mt-auto">
+          <div className="bg-gradient-to-r from-indigo-600/20 to-purple-600/20 border border-indigo-500/30 rounded-2xl p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center">
+                <i className="fas fa-headset text-white text-xs"></i>
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-white uppercase">Destek</p>
+                <p className="text-[8px] text-indigo-300">7/24 Hizmet</p>
+              </div>
+            </div>
+            <p className="text-[9px] text-indigo-200 font-bold leading-relaxed">Sorun mu yaşıyorsunuz? Teknik destek ekibimiz her zaman yanınızda.</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Sağ İçerik Alanı */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 px-6 lg:px-8 py-5 flex items-center justify-between gap-4 shrink-0 shadow-sm z-20">
+          <div>
+            <h1 className="text-lg lg:text-xl font-black text-slate-900 tracking-tight uppercase">
+              {
+                activeTab === 'dashboard' ? 'GÖSTERGE PANELİ' :
+                activeTab === 'orders' ? 'SİPARİŞ YÖNETİMİ' :
+                activeTab === 'customers' ? 'MÜŞTERİ İLİŞKİLERİ' :
+                activeTab === 'couriers' ? 'KURYE FİLO YÖNETİMİ' :
+                activeTab === 'inventory' ? 'STOK VE ENVANTER' :
+                'SİSTEM ENTEGRASYONLARI'
+              }
+            </h1>
+            <p className="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1.5 flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${activeTab === 'dashboard' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
+              {activeTab === 'dashboard' ? 'CANLI VERİ AKIŞI' : 'YÖNETİM MODÜLÜ'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Kullanıcı Profil */}
+            <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-2.5 border border-slate-200">
+              <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-lg shadow-indigo-500/20">
+                AD
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-[11px] font-black text-slate-900 uppercase">Admin</p>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Sistem Yöneticisi</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* İçerik Alanı */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 bg-gradient-to-br from-slate-50/50 to-slate-100/50">
+          <div className="max-w-[1600px] mx-auto">
 
           {activeTab === 'dashboard' && (
             <div className="space-y-8 animate-in fade-in duration-700">
@@ -595,6 +661,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         </div>
       )}
+        </div>
+      </div>
+      </div>
     </div>
   );
 };
