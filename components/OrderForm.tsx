@@ -47,20 +47,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
 
   const phoneInputRef = useRef<HTMLInputElement>(null);
 
-  // İlk ürün seçimini otomatik yap (sadece inventory değişince)
-  useEffect(() => {
-    if (inventory.length > 0) {
-      setSelectedItems([{ productId: inventory[0].id, quantity: 1 }]);
-    }
-  }, [inventory]);
-
-  // İlk kuryeyi otomatik seç
-  useEffect(() => {
-    if (sortedCouriers.length > 0 && !courierId) {
-      setCourierId(sortedCouriers[0].id);
-    }
-  }, [sortedCouriers]);
-
+  // Kuryeleri sırala (önce tanımlanmalı çünkü useEffect kullanıyor)
   const sortedCouriers = React.useMemo(() => {
     return [...couriers].sort((a, b) => {
       const getScore = (c: Courier) => {
@@ -76,6 +63,20 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       return getScore(a) - getScore(b);
     });
   }, [couriers, orders, neighborhood]);
+
+  // İlk ürün seçimini otomatik yap (sadece inventory değişince)
+  useEffect(() => {
+    if (inventory.length > 0) {
+      setSelectedItems([{ productId: inventory[0].id, quantity: 1 }]);
+    }
+  }, [inventory]);
+
+  // İlk kuryeyi otomatik seç
+  useEffect(() => {
+    if (sortedCouriers.length > 0 && !courierId) {
+      setCourierId(sortedCouriers[0].id);
+    }
+  }, [sortedCouriers, courierId]);
 
   useEffect(() => {
     const cleanPhone = phone.replace(/\D/g, '');
