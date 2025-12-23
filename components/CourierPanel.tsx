@@ -257,26 +257,29 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
               <div className="p-4 space-y-4">
 
                 {/* ÜST BİLGİ: Tutar + Ödeme + Not İkonu */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-slate-900">{order.totalAmount}₺</span>
-                    {order.paymentMethod && (
-                      <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${
-                        order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-100 text-emerald-700' :
-                        order.paymentMethod === PaymentMethod.POS ? 'bg-blue-100 text-blue-700' :
-                        'bg-rose-100 text-rose-700'
-                      }`}>
-                        {order.paymentMethod === PaymentMethod.CASH ? '💵 NAKİT' :
-                         order.paymentMethod === PaymentMethod.POS ? '💳 POS' :
-                         '❌ ALINMADI'}
-                      </span>
+                <div className="space-y-3">
+                  {/* Tutar ve Ödeme Yöntemi */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl font-black text-slate-900">{order.totalAmount}₺</span>
+                      {order.paymentMethod && (
+                        <span className={`px-4 py-2 rounded-xl text-sm font-black uppercase border-2 ${
+                          order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-500 border-emerald-600 text-white' :
+                          order.paymentMethod === PaymentMethod.POS ? 'bg-blue-500 border-blue-600 text-white' :
+                          'bg-rose-500 border-rose-600 text-white'
+                        }`}>
+                          {order.paymentMethod === PaymentMethod.CASH ? '💵 NAKİT' :
+                           order.paymentMethod === PaymentMethod.POS ? '💳 POS' :
+                           '❌ ALINMADI'}
+                        </span>
+                      )}
+                    </div>
+                    {order.note && (
+                      <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg">
+                        <i className="fas fa-sticky-note text-lg"></i>
+                      </div>
                     )}
                   </div>
-                  {order.note && (
-                    <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
-                      <i className="fas fa-sticky-note text-sm"></i>
-                    </div>
-                  )}
                 </div>
 
                 {/* ADRES - EN BÜYÜK VE EN ÖNEMLİ */}
@@ -517,9 +520,9 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                   </div>
                 </div>
                 <div className="text-right">
-                   <p className="text-xs font-black text-slate-900">{order.totalAmount}₺</p>
+                   <p className="text-sm font-black text-slate-900">{order.totalAmount}₺</p>
                    {order.paymentMethod && (
-                     <p className={`text-[9px] font-black uppercase mt-0.5 ${
+                     <p className={`text-xs font-black uppercase mt-1 ${
                        order.paymentMethod === PaymentMethod.CASH ? 'text-emerald-600' :
                        order.paymentMethod === PaymentMethod.POS ? 'text-blue-600' :
                        'text-rose-600'
