@@ -43,6 +43,8 @@ export const SOURCE_STYLES = {
   'Getir': { bg: 'bg-[#5d3ebc]', text: 'text-white', icon: 'fa-bolt' },
   'Trendyol': { bg: 'bg-[#ff6000]', text: 'text-white', icon: 'fa-basket-shopping' },
   'Yemeksepeti': { bg: 'bg-[#ea004b]', text: 'text-white', icon: 'fa-utensils' },
+  'telefon-robot': { bg: 'bg-violet-600', text: 'text-white', icon: 'fa-robot' },
+  'whatsapp': { bg: 'bg-emerald-500', text: 'text-white', icon: 'fa-whatsapp' },
 };
 
 export const INITIAL_CUSTOMERS = [

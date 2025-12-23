@@ -32,14 +32,128 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : null;
   });
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Online/offline dinle
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      console.log('Internet bağlantısı sağlandı, veriler yenileniyor...');
+      loadData(); // Online olunca verileri yenile
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      console.log('Internet bağlantısı koptu, offline moda geçildi...');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Verileri Supabase'den yükle
   useEffect(() => {
-    loadData();
+    // Her açılışta force refresh (yeni veri var mı kontrol et)
+    loadData(true);
+    const ordersSubscription = supabase
+      .channel('orders-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'orders'
+        },
+        async (payload) => {
+          console.log('Real-time order change:', payload);
+
+          // Yeni sipariş eklendiğinde
+          if (payload.eventType === 'INSERT') {
+            const newOrder: any = payload.new;
+            const transformedOrder = {
+              ...newOrder,
+              customerId: newOrder.customer_id,
+              customerName: newOrder.customer_name,
+              totalAmount: newOrder.total_amount,
+              courierId: newOrder.courier_id,
+              courierName: newOrder.courier_name,
+              createdAt: newOrder.created_at,
+              updatedAt: newOrder.updated_at
+            };
+
+            setOrders(prev => {
+              const updated = [transformedOrder, ...prev];
+              localStorage.setItem('suda-orders', JSON.stringify(updated));
+              return updated;
+            });
+          }
+          // Sipariş güncellendiğinde
+          else if (payload.eventType === 'UPDATE') {
+            console.log('Real-time UPDATE alındı:', payload);
+            const updatedOrder: any = payload.new;
+            const transformedOrder = {
+              ...updatedOrder,
+              customerId: updatedOrder.customer_id,
+              customerName: updatedOrder.customer_name,
+              totalAmount: updatedOrder.total_amount,
+              courierId: updatedOrder.courier_id,
+              courierName: updatedOrder.courier_name,
+              createdAt: updatedOrder.created_at,
+              updatedAt: updatedOrder.updated_at
+            };
+
+            console.log('Dönüştürülen sipariş:', transformedOrder);
+
+            setOrders(prev => {
+              const updated = prev.map(o =>
+                o.id === transformedOrder.id ? transformedOrder : o
+              );
+              localStorage.setItem('suda-orders', JSON.stringify(updated));
+              console.log('Orders state güncellendi, yeni sipariş sayısı:', updated.length);
+              return updated;
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(ordersSubscription);
+    };
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (forceRefresh = false) => {
+    // Önce localStorage'dan yükle (hızlı başlangıç için)
+    const cachedOrders = localStorage.getItem('suda-orders');
+    const cachedCustomers = localStorage.getItem('suda-customers');
+    const cachedCouriers = localStorage.getItem('suda-couriers');
+    const cachedInventory = localStorage.getItem('suda-inventory');
+
+    if (cachedOrders) setOrders(JSON.parse(cachedOrders));
+    if (cachedCustomers) setCustomers(JSON.parse(cachedCustomers));
+    if (cachedCouriers) {
+      const parsed = JSON.parse(cachedCouriers);
+      setCouriers(parsed);
+      if (parsed.length > 0) setSelectedCourierId(parsed[0].id);
+    }
+    if (cachedInventory) setInventory(JSON.parse(cachedInventory));
+
+    // Online ise hemen loading'i kapat, offline ise bekle
+    if (!navigator.onLine) {
+      setLoading(false);
+      console.log('Offline mod - localStorage verileri gösteriliyor');
+      return;
+    }
+
+    // Online'da her zaman Supabase'den güncelle (force refresh)
+    console.log('Online mod - Supabase\'den güncel veriler çekiliyor...');
+
     try {
       const [ordersRes, customersRes, couriersRes, categoriesRes, inventoryRes] = await Promise.all([
         supabase.from('orders').select('*').order('created_at', { ascending: false }),
@@ -50,7 +164,6 @@ const App: React.FC = () => {
       ]);
 
       if (ordersRes.data) {
-        // Transform snake_case to camelCase
         const transformedOrders = ordersRes.data.map((o: any) => ({
           ...o,
           customerId: o.customer_id,
@@ -62,6 +175,8 @@ const App: React.FC = () => {
           updatedAt: o.updated_at
         }));
         setOrders(transformedOrders as Order[]);
+        localStorage.setItem('suda-orders', JSON.stringify(transformedOrders));
+        console.log(`${transformedOrders.length} sipariş güncellendi`);
       }
       if (customersRes.data) {
         const transformedCustomers = customersRes.data.map((c: any) => ({
@@ -73,6 +188,7 @@ const App: React.FC = () => {
           lastOrderDate: c.last_order_date
         }));
         setCustomers(transformedCustomers as Customer[]);
+        localStorage.setItem('suda-customers', JSON.stringify(transformedCustomers));
       }
       if (couriersRes.data) {
         const transformedCouriers = couriersRes.data.map((c: any) => ({
@@ -82,11 +198,15 @@ const App: React.FC = () => {
           serviceRegion: c.service_region
         }));
         setCouriers(transformedCouriers as Courier[]);
-        if (couriersRes.data.length > 0) {
-          setSelectedCourierId(couriersRes.data[0].id);
+        localStorage.setItem('suda-couriers', JSON.stringify(transformedCouriers));
+        if (transformedCouriers.length > 0 && !selectedCourierId) {
+          setSelectedCourierId(transformedCouriers[0].id);
         }
       }
-      if (categoriesRes.data) setCategories(categoriesRes.data as Category[]);
+      if (categoriesRes.data) {
+        setCategories(categoriesRes.data as Category[]);
+        localStorage.setItem('suda-categories', JSON.stringify(categoriesRes.data));
+      }
       if (inventoryRes.data) {
         const transformedInventory = inventoryRes.data.map((i: any) => ({
           ...i,
@@ -97,6 +217,7 @@ const App: React.FC = () => {
           imageUrl: i.image_url
         }));
         setInventory(transformedInventory as InventoryItem[]);
+        localStorage.setItem('suda-inventory', JSON.stringify(transformedInventory));
       }
     } catch (error) {
       console.error('Veri yükleme hatası:', error);
@@ -121,6 +242,7 @@ const App: React.FC = () => {
           updatedAt: o.updated_at
         }));
         setOrders(transformedOrders as Order[]);
+        localStorage.setItem('suda-orders', JSON.stringify(transformedOrders));
       }
 
       // Sadece müşterileri de yenile
@@ -135,6 +257,7 @@ const App: React.FC = () => {
           lastOrderDate: c.last_order_date
         }));
         setCustomers(transformedCustomers as Customer[]);
+        localStorage.setItem('suda-customers', JSON.stringify(transformedCustomers));
       }
     } catch (error) {
       console.error('Sipariş yenileme hatası:', error);
@@ -149,14 +272,15 @@ const App: React.FC = () => {
     }, 5000);
   };
 
-  // Yeni sipariş bildirimi
+  // Yeni sipariş bildirimi (sadece kuryeye atananlar için)
   useEffect(() => {
     if (prevOrderCount.current !== null && orders.length > prevOrderCount.current) {
       const newOrder = orders[0];
-      if (newOrder) {
+      // Sadece kuryeye atanmış siparişler için bildirim ver
+      if (newOrder && newOrder.courierId) {
         showToast(
           "YENİ SİPARİŞ!",
-          `${newOrder.customer_name} - ${newOrder.total_amount}₺ değerinde sipariş alındı.`,
+          `${newOrder.customerName} - ${newOrder.totalAmount}₺ değerinde sipariş alındı. Kurye: ${newOrder.courierName}`,
           'success'
         );
       }
@@ -174,11 +298,66 @@ const App: React.FC = () => {
 
   const addOrder = async (newOrder: Order, customerData: Customer) => {
     try {
-      // Siparişi ekle - ID'yi Supabase otomatik oluştursun
+      // =====================================================
+      // ADIM 1: Önce müşteriyi oluştur veya güncelle
+      // =====================================================
+      const cleanNewPhone = customerData.phone.replace(/\D/g, '').slice(-10);
+      const existingCustomer = customers.find(c =>
+        c.phone.replace(/\D/g, '').slice(-10) === cleanNewPhone
+      );
+
+      let finalCustomerId: string;
+
+      if (existingCustomer) {
+        // Mevcut müşteriyi güncelle
+        await supabase.from('customers').update({
+          name: customerData.name,
+          phone: customerData.phone,
+          district: customerData.district,
+          neighborhood: customerData.neighborhood,
+          street: customerData.street,
+          building_no: customerData.buildingNo,
+          apartment_no: customerData.apartmentNo,
+          order_count: (existingCustomer.orderCount || 0) + 1,
+          last_order_date: new Date().toISOString(),
+          last_note: customerData.lastNote || existingCustomer.lastNote,
+          updated_at: new Date().toISOString()
+        }).eq('id', existingCustomer.id);
+        finalCustomerId = existingCustomer.id;
+      } else {
+        // Yeni müşteri oluştur - ID'yi Supabase otomatik oluştursun
+        const { data: newCustomer, error: customerError } = await supabase
+          .from('customers')
+          .insert({
+            phone: customerData.phone,
+            name: customerData.name,
+            district: customerData.district,
+            neighborhood: customerData.neighborhood,
+            street: customerData.street,
+            building_no: customerData.buildingNo,
+            apartment_no: customerData.apartmentNo,
+            last_note: customerData.lastNote,
+            order_count: 1,
+            last_order_date: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (customerError) {
+          console.error('Müşteri oluşturma hatası:', customerError);
+          throw customerError;
+        }
+
+        finalCustomerId = newCustomer.id;
+      }
+
+      // =====================================================
+      // ADIM 2: Şimdi siparişi ekle (müşteri var artık)
+      // =====================================================
       const { data: insertedOrder, error: orderError } = await supabase
         .from('orders')
         .insert({
-          customer_id: newOrder.customerId,
+          customer_id: finalCustomerId, // Müşteri ID'si kullan
           customer_name: newOrder.customerName,
           phone: newOrder.phone,
           address: newOrder.address,
@@ -210,44 +389,8 @@ const App: React.FC = () => {
         updatedAt: insertedOrder.updated_at
       };
 
-      // Orders state'ine ekle (refresh bekle)
+      // Orders state'ine ekle
       setOrders(prev => [transformedOrder, ...prev]);
-
-      // Müşteriyi kontrol et ve güncelle
-      const cleanNewPhone = customerData.phone.replace(/\D/g, '').slice(-10);
-      const existingCustomer = customers.find(c =>
-        c.phone.replace(/\D/g, '').slice(-10) === cleanNewPhone
-      );
-
-      if (existingCustomer) {
-        await supabase.from('customers').update({
-          name: customerData.name,
-          phone: customerData.phone,
-          district: customerData.district,
-          neighborhood: customerData.neighborhood,
-          street: customerData.street,
-          building_no: customerData.buildingNo,
-          apartment_no: customerData.apartmentNo,
-          order_count: (existingCustomer.orderCount || 0) + 1,
-          last_order_date: new Date().toISOString(),
-          last_note: customerData.lastNote || existingCustomer.lastNote,
-          updated_at: new Date().toISOString()
-        }).eq('id', existingCustomer.id);
-      } else {
-        await supabase.from('customers').insert({
-          id: customerData.id || 'cust_' + Date.now(),
-          phone: customerData.phone,
-          name: customerData.name,
-          district: customerData.district,
-          neighborhood: customerData.neighborhood,
-          street: customerData.street,
-          building_no: customerData.buildingNo,
-          apartment_no: customerData.apartmentNo,
-          last_note: customerData.lastNote,
-          order_count: 1,
-          last_order_date: new Date().toISOString()
-        });
-      }
 
       // Müşterileri yenile
       const { data: customersData } = await supabase.from('customers').select('*');
@@ -267,8 +410,10 @@ const App: React.FC = () => {
     } catch (error: any) {
       console.error('Sipariş ekleme hatası:', error);
 
-      // 409 hatası için özel mesaj
-      if (error?.code === '409' || error?.message?.includes('duplicate')) {
+      // Foreign key hatası için özel mesaj
+      if (error?.code === '23503') {
+        showToast('HATA', 'Müşteri kaydı bulunamadı. Lütfen önce müşteri oluşturun.', 'warning');
+      } else if (error?.code === '409' || error?.message?.includes('duplicate')) {
         showToast('HATA', 'Sipariş ID çakışması. Lütfen tekrar deneyin.', 'warning');
       } else {
         showToast('HATA', 'Sipariş kaydedilemedi: ' + (error?.message || 'Bilinmeyen hata'), 'warning');
@@ -278,13 +423,26 @@ const App: React.FC = () => {
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     try {
+      console.log('updateOrderStatus çağrıldı:', { orderId, status });
+
+      // Önce locale güncelle (hızlı UI için)
+      const updatedOrders = orders.map(o => o.id === orderId ? { ...o, status, updatedAt: new Date().toISOString() } : o);
+      console.log('Local state güncelleniyor...');
+      setOrders(updatedOrders);
+      localStorage.setItem('suda-orders', JSON.stringify(updatedOrders));
+
+      // Sonra Supabase'e gönder
+      console.log('Supabase\'e gönderiliyor...');
       const { error } = await supabase.from('orders').update({
         status,
         updated_at: new Date().toISOString()
       }).eq('id', orderId);
 
-      if (error) throw error;
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status, updatedAt: new Date().toISOString() } : o));
+      if (error) {
+        console.error('Supabase güncelleme hatası:', error);
+        throw error;
+      }
+      console.log('Supabase güncelleme başarılı!');
     } catch (error) {
       console.error('Durum güncelleme hatası:', error);
     }
@@ -295,6 +453,19 @@ const App: React.FC = () => {
       const courier = couriers.find(c => c.id === courierId);
       if (!courier) return;
 
+      // Önce locale güncelle (hızlı UI için)
+      const updatedOrders = orders.map(o =>
+        o.id === orderId ? {
+          ...o,
+          courierId,
+          courierName: courier.name,
+          updatedAt: new Date().toISOString()
+        } : o
+      );
+      setOrders(updatedOrders);
+      localStorage.setItem('suda-orders', JSON.stringify(updatedOrders));
+
+      // Sonra Supabase'e gönder
       const { error } = await supabase.from('orders').update({
         courier_id: courierId,
         courier_name: courier.name,
@@ -303,14 +474,6 @@ const App: React.FC = () => {
 
       if (error) throw error;
 
-      setOrders(prev => prev.map(o =>
-        o.id === orderId ? {
-          ...o,
-          courierId,
-          courierName: courier.name,
-          updatedAt: new Date().toISOString()
-        } : o
-      ));
       showToast("GÜNCELENDİ", `Sipariş kuryesi ${courier.name} olarak değiştirildi.`, 'info');
     } catch (error) {
       console.error('Kurye güncelleme hatası:', error);
@@ -546,6 +709,7 @@ const App: React.FC = () => {
               onCourierChange={setSelectedCourierId}
               couriers={couriers}
               onUpdateCourier={onUpdateCourier}
+              onRefresh={() => loadData(true)}
             />
           </ProtectedRoute>
         } />

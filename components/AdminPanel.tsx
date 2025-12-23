@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Order, OrderStatus, Courier, Customer, InventoryItem, Category } from '../types';
+import { Order, OrderStatus, Courier, Customer, InventoryItem, Category, OrderSource } from '../types';
 import { STATUS_COLORS, SOURCE_STYLES } from '../constants';
 import CourierManagement from './CourierManagement';
 import CustomerManagement from './CustomerManagement';
 import StockManagement from './StockManagement';
+import IntegrationsManagement from './IntegrationsManagement';
+import IntegrationStatsWidget from './IntegrationStatsWidget';
 import { supabase } from '../services/supabaseClient';
 
 interface AdminPanelProps {
@@ -27,7 +29,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onUpdateCouriers, onUpdateCustomers, onUpdateInventory, onUpdateCategories,
   updateOrderStatus, updateOrderCourier
 }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'customers' | 'couriers' | 'inventory'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'customers' | 'couriers' | 'inventory' | 'integrations'>('dashboard');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
 
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -110,6 +112,19 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       });
     });
 
+    // Kaynak bazlı istatistikler
+    const sourceStats = Object.values(OrderSource).map(source => {
+      const sourceOrders = filteredOrdersByTime.filter(o => o.source === source);
+      const sourceDelivered = sourceOrders.filter(o => o.status === OrderStatus.DELIVERED);
+      const sourceRevenue = sourceDelivered.reduce((sum, o) => sum + o.totalAmount, 0);
+      return {
+        source,
+        count: sourceOrders.length,
+        deliveredCount: sourceDelivered.length,
+        revenue: sourceRevenue
+      };
+    }).sort((a, b) => b.count - a.count);
+
     return {
       totalRevenue,
       netProfit,
@@ -121,7 +136,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       totalCount: filteredOrdersByTime.length,
       courierPerformance,
       topRegions,
-      catMap
+      catMap,
+      sourceStats
     };
   }, [filteredOrdersByTime, couriers, inventory, categories]);
 
@@ -146,7 +162,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             { id: 'orders', label: 'SİPARİŞLER', icon: 'shopping-cart' },
             { id: 'customers', label: 'MÜŞTERİLER', icon: 'user-group' },
             { id: 'couriers', label: 'FİLO', icon: 'truck-fast' },
-            { id: 'inventory', label: 'ENVANTER', icon: 'boxes-stacked' }
+            { id: 'inventory', label: 'ENVANTER', icon: 'boxes-stacked' },
+            { id: 'integrations', label: 'ENTAGRASYONLAR', icon: 'plug' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -253,7 +270,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
 
               {/* Alt Analiz Panelleri */}
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 xl:grid-cols-2 3xl:grid-cols-4 gap-8">
                 {/* Kurye Performansı */}
                 <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 space-y-6">
                   <div className="flex justify-between items-center border-b border-slate-50 pb-4">
@@ -281,6 +298,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     {stats.courierPerformance.length === 0 && <p className="text-center text-[10px] font-bold text-slate-400 py-10 uppercase tracking-widest">Veri bulunamadı</p>}
                   </div>
                 </div>
+
+                {/* Entegrasyon İstatistikleri Widget'ı */}
+                <IntegrationStatsWidget />
 
                 {/* Bölgesel Yoğunluk */}
                 <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 space-y-6">
@@ -324,6 +344,45 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     ))}
                     {Object.keys(stats.catMap).length === 0 && <p className="text-center text-[10px] font-bold text-slate-400 py-10 uppercase tracking-widest">Satış verisi yok</p>}
+                  </div>
+                </div>
+
+                {/* Kaynak Bazlı Raporlama */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-8 space-y-6">
+                  <div className="flex justify-between items-center border-b border-slate-50 pb-4">
+                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Pazaryeri Analizi</h4>
+                    <i className="fas fa-store text-purple-500"></i>
+                  </div>
+                  <div className="space-y-4">
+                    {stats.sourceStats.map((stat) => {
+                      const style = SOURCE_STYLES[stat.source] || SOURCE_STYLES[OrderSource.PHONE];
+                      const percentage = stats.totalCount > 0 ? (stat.count / stats.totalCount) * 100 : 0;
+                      return (
+                        <div key={stat.source} className="p-4 rounded-2xl border border-slate-100 bg-slate-50 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-lg ${style.bg} flex items-center justify-center`}>
+                                <i className={`fas ${style.icon} text-white text-xs`}></i>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-black text-slate-900 uppercase">{stat.source}</p>
+                                <p className="text-[8px] font-bold text-slate-400">{stat.count} Sipariş</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-black text-slate-900">{stat.revenue}₺</p>
+                              <p className="text-[8px] font-bold text-indigo-600">%{percentage.toFixed(1)} Pay</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stat.count > 0 ? (stat.deliveredCount / stat.count) * 100 : 0}%` }}></div>
+                            </div>
+                            <span className="text-[8px] font-black text-slate-400">{stat.deliveredCount}/{stat.count} Teslim</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -418,6 +477,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
           {activeTab === 'inventory' && (
             <StockManagement inventory={inventory} onUpdateInventory={onUpdateInventory} categories={categories} onUpdateCategories={onUpdateCategories} />
+          )}
+
+          {activeTab === 'integrations' && (
+            <IntegrationsManagement />
           )}
         </div>
       </div>

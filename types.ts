@@ -12,7 +12,9 @@ export const OrderSource = {
   PHONE: 'Telefon',
   GETIR: 'Getir',
   TRENDYOL: 'Trendyol',
-  YEMEKSEPETI: 'Yemeksepeti'
+  YEMEKSEPETI: 'Yemeksepeti',
+  AI_PHONE: 'telefon-robot',
+  WHATSAPP: 'whatsapp'
 } as const;
 
 export type OrderSource = (typeof OrderSource)[keyof typeof OrderSource];
@@ -107,4 +109,64 @@ export interface User {
   name: string;
   role: UserRole;
   courierId?: string;
+}
+
+// =====================================================
+// AI TELEFON ROBOTU ENTEGRASYONU
+// =====================================================
+
+export interface AIPhoneIntegration {
+  id: string;
+  name: string;
+  isActive: boolean;
+  apiKey: string;
+  provider: 'twilio' | 'vonage' | 'custom';
+  phoneNumber: string;
+  webhookUrl?: string;
+  systemPrompt: string;
+  voiceSettings: {
+    language: 'tr-TR';
+    voice: string;
+    speed: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CallLog {
+  id: string;
+  callerId: string;
+  customerName?: string;
+  customerFound: boolean;
+  transcript: string;
+  orderData?: {
+    product: string;
+    quantity: number;
+    address: string;
+    note?: string;
+  };
+  status: 'success' | 'failed' | 'incomplete';
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AIOrderRequest {
+  telefon: string;
+  musteri_adi?: string;
+  urun: string;
+  adet: number;
+  adres: string;
+  siparis_kaynagi: 'telefon-robot';
+  not?: string;
+}
+
+export interface AICustomerResponse {
+  found: boolean;
+  customer?: {
+    id: string;
+    name: string;
+    phone: string;
+    address: string;
+  };
 }

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Customer, Order, OrderStatus, InventoryItem, Courier, OrderSource } from '../types';
-import { KARTAL_NEIGHBORHOODS } from '../constants';
+import { KARTAL_NEIGHBORHOODS, SOURCE_STYLES } from '../constants';
 
 // Favori Mahalleler (En çok sipariş gelen 8 mahalle)
 const FAVORITE_NEIGHBORHOODS = [
@@ -171,23 +171,31 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
     <form onSubmit={handleSubmit} className="space-y-4 max-w-full">
       <div className="bg-slate-50 p-4 rounded-[1.8rem] border border-slate-200 space-y-4 shadow-sm">
         <div className="flex flex-col gap-1.5">
-          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">SİPARİŞ KAYNAĞI</label>
+          <label className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">SİPARİŞ KAYNAĞI</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[OrderSource.PHONE, OrderSource.GETIR, OrderSource.TRENDYOL, OrderSource.YEMEKSEPETI].map(src => (
-              <button 
-                key={src}
-                type="button"
-                onClick={() => setOrderSource(src)}
-                className={`py-2 px-1 rounded-xl text-[8px] font-black uppercase tracking-tight border transition-all ${orderSource === src ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white border-slate-200 text-slate-500'}`}
-              >
-                {src}
-              </button>
-            ))}
+            {[OrderSource.PHONE, OrderSource.GETIR, OrderSource.TRENDYOL, OrderSource.YEMEKSEPETI].map(src => {
+              const style = SOURCE_STYLES[src] || SOURCE_STYLES[OrderSource.PHONE];
+              return (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setOrderSource(src)}
+                  className={`py-3 px-2 rounded-xl text-[11px] font-black uppercase tracking-tight border transition-all flex items-center justify-center gap-2 ${
+                    orderSource === src
+                      ? `${style.bg} ${style.text} shadow-md scale-105`
+                      : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'
+                  }`}
+                >
+                  <i className={`fas ${style.icon}`}></i>
+                  {src}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">İLETİŞİM HATTI</label>
+          <label className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">İLETİŞİM HATTI</label>
           <input 
             ref={phoneInputRef} type="tel" value={phone} 
             onChange={(e) => setPhone(e.target.value)} 
@@ -196,7 +204,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">MÜŞTERİ AD SOYAD</label>
+          <label className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">MÜŞTERİ AD SOYAD</label>
           <input 
             type="text" value={name} onChange={(e) => setName(e.target.value)} 
             placeholder="Ad Soyad" 
@@ -207,20 +215,20 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
 
       <div className="bg-slate-50 p-4 rounded-[1.8rem] border border-slate-200 space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">TESLİMAT ADRESİ</label>
-          <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase">KARTAL</div>
+          <label className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">TESLİMAT ADRESİ</label>
+          <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[11px] font-black uppercase">KARTAL</div>
         </div>
 
         {/* Favori Mahalleler */}
         <div className="space-y-2">
-          <label className="text-[8px] font-black text-indigo-500 uppercase tracking-widest ml-2 block">FAVORİ MAHALLELER</label>
+          <label className="text-[11px] font-black text-indigo-500 uppercase tracking-widest ml-2 block">FAVORİ MAHALLELER</label>
           <div className="grid grid-cols-4 gap-1.5">
             {FAVORITE_NEIGHBORHOODS.map(fav => (
               <button
                 key={fav}
                 type="button"
                 onClick={() => setNeighborhood(fav)}
-                className={`py-2 px-1 rounded-xl text-[7px] font-black uppercase tracking-tight border transition-all ${
+                className={`py-2 px-1 rounded-xl text-[13px] font-black uppercase tracking-tight border transition-all ${
                   neighborhood === fav
                     ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
                     : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'
@@ -234,35 +242,35 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
 
         {/* Tüm Mahalleler Dropdown */}
         <div>
-          <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-2 block">TÜM MAHALLELER</label>
+          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-2 block">TÜM MAHALLELER</label>
           <select
             value={neighborhood}
             onChange={(e) => setNeighborhood(e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black outline-none appearance-none"
+            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-black outline-none appearance-none"
           >
             <option value="">MAHALLE SEÇİN</option>
             {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
 
-        <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-bold outline-none" placeholder="Sokak / Cadde / No" />
+        <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-bold outline-none" placeholder="Sokak / Cadde / No" />
         
         <div className="grid grid-cols-2 gap-2">
-          <input type="text" value={buildingNo} onChange={(e) => setBuildingNo(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-bold text-center" placeholder="Bina No" />
-          <input type="text" value={apartmentNo} onChange={(e) => setApartmentNo(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-bold text-center" placeholder="Daire" />
+          <input type="text" value={buildingNo} onChange={(e) => setBuildingNo(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-bold text-center" placeholder="Bina No" />
+          <input type="text" value={apartmentNo} onChange={(e) => setApartmentNo(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-bold text-center" placeholder="Daire" />
         </div>
       </div>
 
       <div className="space-y-3 p-2">
         <div className="flex items-center justify-between">
-          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ÜRÜN SEÇİMİ</label>
-          <button type="button" onClick={addItemRow} className="text-[9px] font-black text-indigo-600 uppercase hover:text-indigo-700"><i className="fas fa-plus mr-1"></i> EKLE</button>
+          <label className="text-[12px] font-black text-slate-400 uppercase tracking-widest">ÜRÜN SEÇİMİ</label>
+          <button type="button" onClick={addItemRow} className="text-[12px] font-black text-indigo-600 uppercase hover:text-indigo-700"><i className="fas fa-plus mr-1"></i> EKLE</button>
         </div>
 
         {inventory.length === 0 ? (
           <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-center">
-            <p className="text-[10px] font-black text-amber-600 uppercase">Ürün bulunamadı</p>
-            <p className="text-[9px] text-amber-500 mt-1">Envanter güncellemesi gerekiyor</p>
+            <p className="text-[13px] font-black text-amber-600 uppercase">Ürün bulunamadı</p>
+            <p className="text-[12px] text-amber-500 mt-1">Envanter güncellemesi gerekiyor</p>
           </div>
         ) : (
           <>
@@ -271,7 +279,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
                 <select
                   value={item.productId}
                   onChange={(e) => updateItem(index, 'productId', e.target.value)}
-                  className="flex-[3] px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black outline-none focus:border-indigo-500"
+                  className="flex-[3] px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-black outline-none focus:border-indigo-500"
                 >
                   {inventory.map(p => (
                     <option key={p.id} value={p.id}>
@@ -284,7 +292,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
                   min="1"
                   value={item.quantity}
                   onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                  className="flex-1 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black text-center outline-none focus:border-indigo-500"
+                  className="flex-1 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-black text-center outline-none focus:border-indigo-500"
                 />
                 {selectedItems.length > 1 && (
                   <button type="button" onClick={() => removeItemRow(index)} className="text-rose-500 px-2 hover:text-rose-600">
@@ -297,14 +305,14 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
         )}
 
         <div className="flex justify-between items-center bg-slate-900 p-4 rounded-2xl text-white">
-          <span className="text-[10px] font-black uppercase tracking-widest">TOPLAM:</span>
+          <span className="text-[13px] font-black uppercase tracking-widest">TOPLAM:</span>
           <span className="text-xl font-black tracking-tighter">{totalAmount}₺</span>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">GÖREVLİ KURYE</label>
-        <select value={courierId} onChange={(e) => setCourierId(e.target.value)} className="w-full px-4 py-3 bg-indigo-50 border border-indigo-100 rounded-2xl text-[10px] font-black text-indigo-900 outline-none">
+        <label className="text-[12px] font-black text-slate-400 uppercase tracking-widest ml-2">GÖREVLİ KURYE</label>
+        <select value={courierId} onChange={(e) => setCourierId(e.target.value)} className="w-full px-4 py-3 bg-indigo-50 border border-indigo-100 rounded-2xl text-[13px] font-black text-indigo-900 outline-none">
           {sortedCouriers.map(c => {
             const load = orders.filter(o => o.courierId === c.id && (o.status === OrderStatus.PENDING || o.status === OrderStatus.ON_WAY)).length;
             return <option key={c.id} value={c.id}>{c.name} ({load} İş)</option>;
@@ -312,7 +320,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
         </select>
       </div>
 
-      <button type="submit" className="w-full bg-indigo-600 text-white font-black py-5 rounded-[1.8rem] text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-700 transition-all border-b-8 border-indigo-800">
+      <button type="submit" className="w-full bg-indigo-600 text-white font-black py-5 rounded-[1.8rem] text-[13px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-700 transition-all border-b-8 border-indigo-800">
         SİPARİŞİ ONAYLA
       </button>
     </form>
