@@ -88,7 +88,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
     };
 
     const order: Order = {
-      id: 'WEB' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+      id: 'WEB' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase(),
       customerId: customerDetails.id,
       customerName: formData.name,
       phone: formData.phone,

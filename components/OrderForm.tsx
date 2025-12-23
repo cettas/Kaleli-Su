@@ -145,7 +145,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
     };
 
     onAddOrder({
-      id: 'ORD' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+      id: 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase(),
       customerId: customerDetails.id,
       customerName: name, phone,
       address: `KARTAL, ${neighborhood.toUpperCase()}, ${street} No:${buildingNo} D:${apartmentNo}`,
