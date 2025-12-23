@@ -40,12 +40,26 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([
     { productId: '', quantity: 1 }
   ]);
-  
+
   const [note, setNote] = useState('');
   const [courierId, setCourierId] = useState('');
   const [matchedCustomer, setMatchedCustomer] = useState<Customer | null>(null);
 
   const phoneInputRef = useRef<HTMLInputElement>(null);
+
+  // İlk ürün seçimini otomatik yap (sadece inventory değişince)
+  useEffect(() => {
+    if (inventory.length > 0) {
+      setSelectedItems([{ productId: inventory[0].id, quantity: 1 }]);
+    }
+  }, [inventory]);
+
+  // İlk kuryeyi otomatik seç
+  useEffect(() => {
+    if (sortedCouriers.length > 0 && !courierId) {
+      setCourierId(sortedCouriers[0].id);
+    }
+  }, [sortedCouriers]);
 
   const sortedCouriers = React.useMemo(() => {
     return [...couriers].sort((a, b) => {
@@ -62,17 +76,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       return getScore(a) - getScore(b);
     });
   }, [couriers, orders, neighborhood]);
-
-  useEffect(() => {
-    if (inventory.length > 0 && selectedItems[0].productId === '') {
-      const updated = [...selectedItems];
-      updated[0].productId = inventory[0].id;
-      setSelectedItems(updated);
-    }
-    if (sortedCouriers.length > 0 && !courierId) {
-      setCourierId(sortedCouriers[0].id);
-    }
-  }, [inventory, sortedCouriers, courierId, selectedItems]);
 
   useEffect(() => {
     const cleanPhone = phone.replace(/\D/g, '');
@@ -155,7 +158,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
 
     setPhone(''); setName(''); setNeighborhood(''); setStreet(''); setBuildingNo(''); setApartmentNo(''); setNote('');
     setMatchedCustomer(null);
-    setSelectedItems([{ productId: inventory[0]?.id || '', quantity: 1 }]);
+    // Reset items to first product
+    if (inventory.length > 0) {
+      setSelectedItems([{ productId: inventory[0].id, quantity: 1 }]);
+    }
     phoneInputRef.current?.focus();
   };
 
@@ -248,19 +254,46 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       <div className="space-y-3 p-2">
         <div className="flex items-center justify-between">
           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ÜRÜN SEÇİMİ</label>
-          <button type="button" onClick={addItemRow} className="text-[9px] font-black text-indigo-600 uppercase"><i className="fas fa-plus mr-1"></i> EKLE</button>
+          <button type="button" onClick={addItemRow} className="text-[9px] font-black text-indigo-600 uppercase hover:text-indigo-700"><i className="fas fa-plus mr-1"></i> EKLE</button>
         </div>
-        
-        {selectedItems.map((item, index) => (
-          <div key={index} className="flex gap-2">
-            <select value={item.productId} onChange={(e) => updateItem(index, 'productId', e.target.value)} className="flex-[3] px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black outline-none">
-              {inventory.map(p => <option key={p.id} value={p.id}>{p.name} ({p.salePrice}₺)</option>)}
-            </select>
-            <input type="number" min="1" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)} className="flex-1 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black text-center" />
-            {selectedItems.length > 1 && <button type="button" onClick={() => removeItemRow(index)} className="text-rose-500 px-2"><i className="fas fa-times"></i></button>}
+
+        {inventory.length === 0 ? (
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-center">
+            <p className="text-[10px] font-black text-amber-600 uppercase">Ürün bulunamadı</p>
+            <p className="text-[9px] text-amber-500 mt-1">Envanter güncellemesi gerekiyor</p>
           </div>
-        ))}
-        
+        ) : (
+          <>
+            {selectedItems.map((item, index) => (
+              <div key={index} className="flex gap-2">
+                <select
+                  value={item.productId}
+                  onChange={(e) => updateItem(index, 'productId', e.target.value)}
+                  className="flex-[3] px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black outline-none focus:border-indigo-500"
+                >
+                  {inventory.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.salePrice}₺)
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min="1"
+                  value={item.quantity}
+                  onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                  className="flex-1 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black text-center outline-none focus:border-indigo-500"
+                />
+                {selectedItems.length > 1 && (
+                  <button type="button" onClick={() => removeItemRow(index)} className="text-rose-500 px-2 hover:text-rose-600">
+                    <i className="fas fa-times"></i>
+                  </button>
+                )}
+              </div>
+            ))}
+          </>
+        )}
+
         <div className="flex justify-between items-center bg-slate-900 p-4 rounded-2xl text-white">
           <span className="text-[10px] font-black uppercase tracking-widest">TOPLAM:</span>
           <span className="text-xl font-black tracking-tighter">{totalAmount}₺</span>

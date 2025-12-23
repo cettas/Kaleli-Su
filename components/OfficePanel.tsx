@@ -20,7 +20,8 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
   const [isMobileFormOpen, setIsMobileFormOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const activeStock = useMemo(() => stock.filter(item => item.isActive), [stock]);
+  // Tüm ürünleri göster (isActive filtresini kaldırdım)
+  const activeStock = stock;
 
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {
