@@ -174,25 +174,44 @@ const App: React.FC = () => {
 
   const addOrder = async (newOrder: Order, customerData: Customer) => {
     try {
-      // Siparişi ekle
-      const { error: orderError } = await supabase.from('orders').insert({
-        id: newOrder.id,
-        customer_id: newOrder.customerId,
-        customer_name: newOrder.customerName,
-        phone: newOrder.phone,
-        address: newOrder.address,
-        items: newOrder.items,
-        total_amount: newOrder.totalAmount,
-        courier_id: newOrder.courierId,
-        courier_name: newOrder.courierName,
-        status: newOrder.status,
-        source: newOrder.source,
-        note: newOrder.note,
-        created_at: newOrder.createdAt,
-        updated_at: newOrder.updatedAt
-      });
+      // Siparişi ekle - ID'yi Supabase otomatik oluştursun
+      const { data: insertedOrder, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_id: newOrder.customerId,
+          customer_name: newOrder.customerName,
+          phone: newOrder.phone,
+          address: newOrder.address,
+          items: newOrder.items,
+          total_amount: newOrder.totalAmount,
+          courier_id: newOrder.courierId,
+          courier_name: newOrder.courierName,
+          status: newOrder.status,
+          source: newOrder.source,
+          note: newOrder.note,
+          created_at: newOrder.createdAt,
+          updated_at: newOrder.updatedAt
+        })
+        .select()
+        .single();
 
       if (orderError) throw orderError;
+
+      // Insert edilmiş order'ı dönüştür (snake_case → camelCase)
+      const transformedOrder: Order = {
+        ...insertedOrder,
+        id: insertedOrder.id,
+        customerId: insertedOrder.customer_id,
+        customerName: insertedOrder.customer_name,
+        totalAmount: insertedOrder.total_amount,
+        courierId: insertedOrder.courier_id,
+        courierName: insertedOrder.courier_name,
+        createdAt: insertedOrder.created_at,
+        updatedAt: insertedOrder.updated_at
+      };
+
+      // Orders state'ine ekle (refresh bekle)
+      setOrders(prev => [transformedOrder, ...prev]);
 
       // Müşteriyi kontrol et ve güncelle
       const cleanNewPhone = customerData.phone.replace(/\D/g, '').slice(-10);
@@ -230,8 +249,20 @@ const App: React.FC = () => {
         });
       }
 
-      // Sadece siparişleri ve müşterileri yenile (inventory değişmesin)
-      await refreshOrders();
+      // Müşterileri yenile
+      const { data: customersData } = await supabase.from('customers').select('*');
+      if (customersData) {
+        const transformedCustomers = customersData.map((c: any) => ({
+          ...c,
+          buildingNo: c.building_no,
+          apartmentNo: c.apartment_no,
+          lastNote: c.last_note,
+          orderCount: c.order_count || 0,
+          lastOrderDate: c.last_order_date
+        }));
+        setCustomers(transformedCustomers as Customer[]);
+      }
+
       showToast('BAŞARILI', 'Sipariş başarıyla oluşturuldu.', 'success');
     } catch (error: any) {
       console.error('Sipariş ekleme hatası:', error);

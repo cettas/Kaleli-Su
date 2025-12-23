@@ -144,13 +144,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       orderCount: (matchedCustomer?.orderCount || 0) + 1
     };
 
-    // Daha benzersiz ID üret (crypto.randomUUID + timestamp)
-    const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID().replace(/-/g, '').substring(0, 16).toUpperCase()
-      : Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase();
-
+    // Supabase otomatik ID oluşturacak, geçici placeholder kullan
     onAddOrder({
-      id: 'ORD' + uniqueId,
+      id: '', // Supabase dolduracak
       customerId: customerDetails.id,
       customerName: name, phone,
       address: `KARTAL, ${neighborhood.toUpperCase()}, ${street} No:${buildingNo} D:${apartmentNo}`,
