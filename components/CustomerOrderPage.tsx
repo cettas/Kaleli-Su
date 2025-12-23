@@ -87,8 +87,13 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
       orderCount: 1
     };
 
+    // Daha benzersiz ID üret (crypto.randomUUID + timestamp)
+    const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID().replace(/-/g, '').substring(0, 16).toUpperCase()
+      : Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase();
+
     const order: Order = {
-      id: 'WEB' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase(),
+      id: 'WEB' + uniqueId,
       customerId: customerDetails.id,
       customerName: formData.name,
       phone: formData.phone,

@@ -144,8 +144,13 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       orderCount: (matchedCustomer?.orderCount || 0) + 1
     };
 
+    // Daha benzersiz ID üret (crypto.randomUUID + timestamp)
+    const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID().replace(/-/g, '').substring(0, 16).toUpperCase()
+      : Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase();
+
     onAddOrder({
-      id: 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase(),
+      id: 'ORD' + uniqueId,
       customerId: customerDetails.id,
       customerName: name, phone,
       address: `KARTAL, ${neighborhood.toUpperCase()}, ${street} No:${buildingNo} D:${apartmentNo}`,

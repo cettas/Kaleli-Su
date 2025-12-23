@@ -233,9 +233,15 @@ const App: React.FC = () => {
       // Sadece siparişleri ve müşterileri yenile (inventory değişmesin)
       await refreshOrders();
       showToast('BAŞARILI', 'Sipariş başarıyla oluşturuldu.', 'success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sipariş ekleme hatası:', error);
-      showToast('HATA', 'Sipariş kaydedilemedi.', 'warning');
+
+      // 409 hatası için özel mesaj
+      if (error?.code === '409' || error?.message?.includes('duplicate')) {
+        showToast('HATA', 'Sipariş ID çakışması. Lütfen tekrar deneyin.', 'warning');
+      } else {
+        showToast('HATA', 'Sipariş kaydedilemedi: ' + (error?.message || 'Bilinmeyen hata'), 'warning');
+      }
     }
   };
 
