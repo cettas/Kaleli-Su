@@ -1,7 +1,7 @@
 -- =====================================================
-// SU DAĞITIM SİSTEMİ - SUPABASE MIGRATION
-// =====================================================
-// Bu SQL'i Supabase SQL Editor'da çalıştırın
+-- SU DAĞITIM SİSTEMİ - SUPABASE MIGRATION
+-- =====================================================
+-- Bu SQL'i Supabase SQL Editor'da çalıştırın
 
 -- =====================================================
 -- 1. INTEGRATIONS TABLOSU (GÜNCELLENMİŞ)
