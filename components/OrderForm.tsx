@@ -1,14 +1,26 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Customer, Order, OrderStatus, InventoryItem, Courier, OrderSource } from '../types';
-import { KARTAL_NEIGHBORHOODS, POPULAR_NEIGHBORHOODS, ISTANBUL_DISTRICTS } from '../constants';
+import { KARTAL_NEIGHBORHOODS } from '../constants';
+
+// Favori Mahalleler (En çok sipariş gelen 8 mahalle)
+const FAVORITE_NEIGHBORHOODS = [
+  'YENİDOĞAN',
+  'ORHANGAZİ',
+  'CUMHURİYET',
+  'KARLIDERE',
+  'HURMALIK',
+  'ESKİ KARTAL',
+  'SOĞANLIK',
+  'TOPÇULAR'
+];
 
 interface OrderFormProps {
   onAddOrder: (order: Order, customerData: Customer) => void;
   customers: Customer[];
   couriers: Courier[];
   inventory: InventoryItem[];
-  orders: Order[]; 
+  orders: Order[];
 }
 
 interface SelectedItem {
@@ -19,7 +31,6 @@ interface SelectedItem {
 const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, inventory, orders }) => {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
-  const [district, setDistrict] = useState('KARTAL');
   const [neighborhood, setNeighborhood] = useState('');
   const [street, setStreet] = useState('');
   const [buildingNo, setBuildingNo] = useState('');
@@ -61,7 +72,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
     if (sortedCouriers.length > 0 && !courierId) {
       setCourierId(sortedCouriers[0].id);
     }
-  }, [inventory, sortedCouriers, courierId]);
+  }, [inventory, sortedCouriers, courierId, selectedItems]);
 
   useEffect(() => {
     const cleanPhone = phone.replace(/\D/g, '');
@@ -70,7 +81,6 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       const customer = customers.find(c => c.phone.replace(/\D/g, '').slice(-10) === inputSuffix);
       if (customer) {
         setName(customer.name);
-        setDistrict(customer.district || 'KARTAL');
         setNeighborhood(customer.neighborhood || '');
         setStreet(customer.street || '');
         setBuildingNo(customer.buildingNo || '');
@@ -125,7 +135,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
 
     const customerDetails: Customer = {
       id: matchedCustomer?.id || 'cust_' + Date.now(),
-      name, phone, district, neighborhood: neighborhood.toUpperCase(), street, buildingNo, apartmentNo,
+      name, phone, district: 'KARTAL', neighborhood: neighborhood.toUpperCase(), street, buildingNo, apartmentNo,
       lastNote: note,
       orderCount: (matchedCustomer?.orderCount || 0) + 1
     };
@@ -134,7 +144,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       id: 'ORD' + Math.random().toString(36).substr(2, 6).toUpperCase(),
       customerId: customerDetails.id,
       customerName: name, phone,
-      address: `${district}, ${neighborhood.toUpperCase()}, ${street} No:${buildingNo} D:${apartmentNo}`,
+      address: `KARTAL, ${neighborhood.toUpperCase()}, ${street} No:${buildingNo} D:${apartmentNo}`,
       items: orderItems,
       totalAmount,
       courierId: courier.id, courierName: courier.name,
@@ -142,8 +152,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       source: orderSource,
       note, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
     }, customerDetails);
-    
-    setPhone(''); setName(''); setDistrict('KARTAL'); setNeighborhood(''); setStreet(''); setBuildingNo(''); setApartmentNo(''); setNote('');
+
+    setPhone(''); setName(''); setNeighborhood(''); setStreet(''); setBuildingNo(''); setApartmentNo(''); setNote('');
     setMatchedCustomer(null);
     setSelectedItems([{ productId: inventory[0]?.id || '', quantity: 1 }]);
     phoneInputRef.current?.focus();
@@ -188,33 +198,45 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       </div>
 
       <div className="bg-slate-50 p-4 rounded-[1.8rem] border border-slate-200 space-y-3">
-        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2 block">TESLİMAT ADRESİ</label>
-        <div className="grid grid-cols-2 gap-2">
-          <select 
-            value={district} 
-            onChange={(e) => {
-              setDistrict(e.target.value);
-              setNeighborhood(''); // İlçe değişince mahalleyi sıfırla
-            }} 
+        <div className="flex items-center justify-between">
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">TESLİMAT ADRESİ</label>
+          <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase">KARTAL</div>
+        </div>
+
+        {/* Favori Mahalleler */}
+        <div className="space-y-2">
+          <label className="text-[8px] font-black text-indigo-500 uppercase tracking-widest ml-2 block">FAVORİ MAHALLELER</label>
+          <div className="grid grid-cols-4 gap-1.5">
+            {FAVORITE_NEIGHBORHOODS.map(fav => (
+              <button
+                key={fav}
+                type="button"
+                onClick={() => setNeighborhood(fav)}
+                className={`py-2 px-1 rounded-xl text-[7px] font-black uppercase tracking-tight border transition-all ${
+                  neighborhood === fav
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
+                    : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'
+                }`}
+              >
+                {fav}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tüm Mahalleler Dropdown */}
+        <div>
+          <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-2 block">TÜM MAHALLELER</label>
+          <select
+            value={neighborhood}
+            onChange={(e) => setNeighborhood(e.target.value)}
             className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black outline-none appearance-none"
           >
-            {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-          
-          <select 
-            value={neighborhood} 
-            onChange={(e) => setNeighborhood(e.target.value)} 
-            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black outline-none appearance-none"
-          >
-            <option value="">MAHALLE</option>
-            {district === 'KARTAL' ? (
-              KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)
-            ) : (
-              <option value="MERKEZ">MERKEZ</option>
-            )}
+            <option value="">MAHALLE SEÇİN</option>
+            {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
-        
+
         <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-bold outline-none" placeholder="Sokak / Cadde / No" />
         
         <div className="grid grid-cols-2 gap-2">

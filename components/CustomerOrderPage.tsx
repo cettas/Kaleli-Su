@@ -1,7 +1,19 @@
 
 import React, { useState, useMemo } from 'react';
 import { InventoryItem, Category, Order, OrderStatus, OrderSource, Customer, Courier } from '../types';
-import { ISTANBUL_DISTRICTS, KARTAL_NEIGHBORHOODS } from '../constants';
+import { KARTAL_NEIGHBORHOODS } from '../constants';
+
+// Favori Mahalleler (En çok sipariş gelen 8 mahalle)
+const FAVORITE_NEIGHBORHOODS = [
+  'YENİDOĞAN',
+  'ORHANGAZİ',
+  'CUMHURİYET',
+  'KARLIDERE',
+  'HURMALIK',
+  'ESKİ KARTAL',
+  'SOĞANLIK',
+  'TOPÇULAR'
+];
 
 interface CustomerOrderPageProps {
   inventory: InventoryItem[];
@@ -21,11 +33,10 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
   const [activeCategory, setActiveCategory] = useState('all');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [step, setStep] = useState<'browse' | 'checkout' | 'success'>('browse');
-  
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    district: 'KARTAL',
     neighborhood: '',
     street: '',
     buildingNo: '',
@@ -57,9 +68,9 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
     e.preventDefault();
     if (!formData.name || !formData.phone || !formData.street || !formData.neighborhood || cart.length === 0) return;
 
-    const matchedCourier = couriers.find(c => 
-      c.status === 'active' && 
-      formData.neighborhood && 
+    const matchedCourier = couriers.find(c =>
+      c.status === 'active' &&
+      formData.neighborhood &&
       c.serviceRegion?.toLowerCase().includes(formData.neighborhood.toLowerCase())
     ) || couriers.find(c => c.status === 'active') || couriers[0];
 
@@ -67,7 +78,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
       id: 'cust_' + Date.now(),
       name: formData.name,
       phone: formData.phone,
-      district: formData.district,
+      district: 'KARTAL',
       neighborhood: formData.neighborhood,
       street: formData.street,
       buildingNo: formData.buildingNo,
@@ -81,7 +92,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
       customerId: customerDetails.id,
       customerName: formData.name,
       phone: formData.phone,
-      address: `${formData.district}, ${formData.neighborhood}, ${formData.street} No:${formData.buildingNo} D:${formData.apartmentNo}`,
+      address: `KARTAL, ${formData.neighborhood}, ${formData.street} No:${formData.buildingNo} D:${formData.apartmentNo}`,
       items: cart.map(i => ({ productId: i.id, productName: i.name, quantity: i.quantity, price: i.price })),
       totalAmount,
       courierId: matchedCourier.id,
@@ -103,7 +114,6 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
     setFormData({
       name: '',
       phone: '',
-      district: 'KARTAL',
       neighborhood: '',
       street: '',
       buildingNo: '',
@@ -268,45 +278,62 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
             </div>
 
             <form onSubmit={handleCompleteOrder} className="pt-8 space-y-5 border-t border-slate-100">
-              <div className="flex items-center gap-3 mb-4">
-                <i className="fas fa-map-location-dot text-indigo-600"></i>
-                <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">ADRES BİLGİLERİNİZ</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <i className="fas fa-map-location-dot text-indigo-600"></i>
+                  <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">ADRES BİLGİLERİNİZ</h3>
+                </div>
+                <div className="bg-indigo-600 text-white px-4 py-1.5 rounded-full text-[9px] font-black uppercase">KARTAL</div>
               </div>
               <div className="space-y-4">
-                <input 
-                  type="text" required placeholder="ADINIZ VE SOYADINIZ" 
+                <input
+                  type="text" required placeholder="ADINIZ VE SOYADINIZ"
                   className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold uppercase outline-none focus:bg-white focus:border-indigo-600 transition-all shadow-sm"
                   value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
                 />
-                <input 
-                  type="tel" required placeholder="TELEFON NUMARANIZ" 
+                <input
+                  type="tel" required placeholder="TELEFON NUMARANIZ"
                   className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-indigo-600 outline-none focus:bg-white focus:border-indigo-600 transition-all shadow-sm"
                   value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}
                 />
-                <div className="grid grid-cols-2 gap-4">
-                  <select 
-                    className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase outline-none appearance-none"
-                    value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})}
-                  >
-                    {ISTANBUL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                  
-                  <select 
+
+                {/* Favori Mahalleler */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">FAVORİ MAHALLELER</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {FAVORITE_NEIGHBORHOODS.map(fav => (
+                      <button
+                        key={fav}
+                        type="button"
+                        onClick={() => setFormData({...formData, neighborhood: fav})}
+                        className={`py-3 px-2 rounded-xl text-[9px] font-black uppercase tracking-tight border transition-all ${
+                          formData.neighborhood === fav
+                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
+                            : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'
+                        }`}
+                      >
+                        {fav}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tüm Mahalleler Dropdown */}
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">TÜM MAHALLELER</label>
+                  <select
                     required
-                    className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase outline-none appearance-none"
-                    value={formData.neighborhood} 
+                    className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black uppercase outline-none appearance-none mt-2"
+                    value={formData.neighborhood}
                     onChange={e => setFormData({...formData, neighborhood: e.target.value})}
                   >
                     <option value="">MAHALLE SEÇİN</option>
-                    {formData.district === 'KARTAL' ? (
-                      KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)
-                    ) : (
-                      <option value="MERKEZ">MERKEZ MAHALLESİ</option>
-                    )}
+                    {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </div>
-                <input 
-                  type="text" required placeholder="SOKAK / CADDE / APARTMAN" 
+
+                <input
+                  type="text" required placeholder="SOKAK / CADDE / APARTMAN"
                   className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold uppercase outline-none"
                   value={formData.street} onChange={e => setFormData({...formData, street: e.target.value})}
                 />
