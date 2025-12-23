@@ -467,19 +467,21 @@ const App: React.FC = () => {
               couriers={couriers}
               customers={customers}
               inventory={inventory}
-              onUpdateCouriers={(couriers) => {
+              onUpdateCouriers={async (couriers) => {
                 setCouriers(couriers);
               }}
-              onUpdateCustomers={(customers) => {
+              onUpdateCustomers={async (customers) => {
                 setCustomers(customers);
               }}
-              onUpdateInventory={(inventory) => {
+              onUpdateInventory={async (inventory) => {
                 setInventory(inventory);
               }}
               categories={categories}
-              onUpdateCategories={(categories) => {
+              onUpdateCategories={async (categories) => {
                 setCategories(categories);
               }}
+              updateOrderStatus={updateOrderStatus}
+              updateOrderCourier={updateOrderCourier}
             />
           </ProtectedRoute>
         } />

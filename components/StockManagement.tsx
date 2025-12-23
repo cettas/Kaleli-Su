@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { InventoryItem, Category } from '../types';
+import { supabase } from '../services/supabaseClient';
 
 interface StockManagementProps {
   inventory: InventoryItem[];
@@ -38,15 +39,45 @@ const StockManagement: React.FC<StockManagementProps> = ({ inventory, categories
     });
   }, [inventory, activeCategory, searchTerm]);
 
-  const handleSubmitItem = (e: React.FormEvent) => {
+  const handleSubmitItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return;
 
     if (showForm === 'add') {
       const newItem: InventoryItem = { ...formData as InventoryItem, id: 'inv-' + Date.now() };
+
+      // Supabase'e kaydet
+      await supabase.from('inventory').insert({
+        id: newItem.id,
+        name: newItem.name,
+        quantity: newItem.quantity,
+        unit: newItem.unit,
+        cost_price: newItem.costPrice,
+        sale_price: newItem.salePrice,
+        is_active: newItem.isActive,
+        is_core: newItem.isCore,
+        category: newItem.category,
+        image_url: newItem.imageUrl
+      });
+
       onUpdateInventory([...inventory, newItem]);
     } else if (showForm === 'edit' && selectedItem) {
-      onUpdateInventory(inventory.map(i => i.id === selectedItem.id ? { ...i, ...formData } as InventoryItem : i));
+      const updatedItem = { ...selectedItem, ...formData } as InventoryItem;
+
+      // Supabase'e güncelle
+      await supabase.from('inventory').update({
+        name: updatedItem.name,
+        quantity: updatedItem.quantity,
+        unit: updatedItem.unit,
+        cost_price: updatedItem.costPrice,
+        sale_price: updatedItem.salePrice,
+        is_active: updatedItem.isActive,
+        is_core: updatedItem.isCore,
+        category: updatedItem.category,
+        image_url: updatedItem.imageUrl
+      }).eq('id', selectedItem.id);
+
+      onUpdateInventory(inventory.map(i => i.id === selectedItem.id ? updatedItem : i));
     }
     setShowForm(null);
     setSelectedItem(null);

@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Order, OrderStatus, Courier, Customer, InventoryItem, Category } from '../types';
 import { STATUS_COLORS, SOURCE_STYLES } from '../constants';
+import CourierManagement from './CourierManagement';
+import CustomerManagement from './CustomerManagement';
+import StockManagement from './StockManagement';
+import { supabase } from '../services/supabaseClient';
 
 interface AdminPanelProps {
   orders: Order[];
@@ -12,13 +16,16 @@ interface AdminPanelProps {
   onUpdateCustomers: (customers: Customer[]) => void;
   onUpdateInventory: (inventory: InventoryItem[]) => void;
   onUpdateCategories: (categories: Category[]) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  updateOrderCourier: (orderId: string, courierId: string) => void;
 }
 
 type TimeFilter = 'daily' | 'weekly' | 'monthly' | 'custom' | 'all';
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
   orders, couriers, customers, inventory, categories,
-  onUpdateCouriers, onUpdateCustomers, onUpdateInventory, onUpdateCategories
+  onUpdateCouriers, onUpdateCustomers, onUpdateInventory, onUpdateCategories,
+  updateOrderStatus, updateOrderCourier
 }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'customers' | 'couriers' | 'inventory'>('dashboard');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
@@ -28,9 +35,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Modal States
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
-  const [selectedInventory, setSelectedInventory] = useState<InventoryItem | null>(null);
 
   const filteredOrdersByTime = useMemo(() => {
     const now = new Date();
@@ -395,205 +399,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
 
           {activeTab === 'customers' && (
-            <div className="space-y-6 animate-in fade-in duration-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase">Müşteri Yönetimi</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{customers.length} Müşteri</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {customers.map((customer) => (
-                  <div key={customer.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-indigo-500 transition-all cursor-pointer group"
-                    onClick={() => setSelectedCustomer(customer)}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg shadow-indigo-600/20">
-                        {customer.name.charAt(0)}
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-black text-indigo-600">{customer.orderCount || 0}</p>
-                        <p className="text-[9px] font-black text-slate-400 uppercase">Sipariş</p>
-                      </div>
-                    </div>
-                    <h4 className="text-sm font-black text-slate-900 uppercase truncate">{customer.name}</h4>
-                    <p className="text-[10px] font-bold text-slate-500">{customer.phone}</p>
-                    <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
-                      <p className="text-[10px] font-bold text-slate-400">
-                        {customer.district} / {customer.neighborhood}
-                      </p>
-                      <i className="fas fa-chevron-right text-slate-300 group-hover:text-indigo-600 transition-colors"></i>
-                    </div>
-                  </div>
-                ))}
-                {customers.length === 0 && (
-                  <div className="col-span-3 text-center py-12">
-                    <p className="text-sm font-bold text-slate-400">Henüz müşteri yok</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <CustomerManagement customers={customers} orders={orders} onUpdateCustomers={onUpdateCustomers} />
           )}
 
           {activeTab === 'couriers' && (
-            <div className="space-y-6 animate-in fade-in duration-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase">Filo Yönetimi</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{couriers.length} Kurye</p>
-                </div>
-                <button
-                  onClick={() => setSelectedCourier({
-                    id: '',
-                    name: '',
-                    status: 'active',
-                    phone: '',
-                    fullInventory: 0,
-                    emptyInventory: 0,
-                    serviceRegion: ''
-                  } as Courier)}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase rounded-xl transition-all flex items-center gap-2"
-                >
-                  <i className="fas fa-plus"></i>
-                  YENİ KURYE
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {couriers.map((courier) => {
-                  const courierOrders = orders.filter(o => o.courierId === courier.id);
-                  const deliveredCount = courierOrders.filter(o => o.status === 'Delivered').length;
-
-                  return (
-                    <div key={courier.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-indigo-500 transition-all cursor-pointer group"
-                      onClick={() => setSelectedCourier(courier)}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg ${
-                          courier.status === 'active' ? 'bg-emerald-600' : courier.status === 'busy' ? 'bg-amber-600' : 'bg-slate-400'
-                        }`}>
-                          <i className="fas fa-motorcycle"></i>
-                        </div>
-                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${
-                          courier.status === 'active' ? 'bg-emerald-100 text-emerald-600' : courier.status === 'busy' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {courier.status === 'active' ? 'AKTİF' : courier.status === 'busy' ? 'MEŞGUL' : 'OFFLİNE'}
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-black text-slate-900 uppercase">{courier.name}</h4>
-                      <p className="text-[10px] font-bold text-slate-500">{courier.phone}</p>
-                      <div className="mt-4 pt-4 border-t border-slate-50 grid grid-cols-3 gap-4">
-                        <div className="text-center">
-                          <p className="text-lg font-black text-indigo-600">{courierOrders.length}</p>
-                          <p className="text-[8px] font-bold text-slate-400 uppercase">Toplam</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-lg font-black text-emerald-600">{deliveredCount}</p>
-                          <p className="text-[8px] font-bold text-slate-400 uppercase">Teslim</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-lg font-black text-amber-600">{courier.fullInventory}</p>
-                          <p className="text-[8px] font-bold text-slate-400 uppercase">Dolu</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {couriers.length === 0 && (
-                  <div className="col-span-3 text-center py-12">
-                    <p className="text-sm font-bold text-slate-400">Henüz kurye yok</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <CourierManagement couriers={couriers} orders={orders} onUpdateCouriers={onUpdateCouriers} />
           )}
 
           {activeTab === 'inventory' && (
-            <div className="space-y-6 animate-in fade-in duration-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase">Envanter Yönetimi</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{inventory.length} Ürün</p>
-                </div>
-                <button
-                  onClick={() => setSelectedInventory({
-                    id: '',
-                    name: '',
-                    quantity: 0,
-                    unit: 'Adet',
-                    costPrice: 0,
-                    salePrice: 0,
-                    isActive: true,
-                    isCore: false,
-                    category: categories[0]?.id || ''
-                  } as InventoryItem)}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase rounded-xl transition-all flex items-center gap-2"
-                >
-                  <i className="fas fa-plus"></i>
-                  YENİ ÜRÜN
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {inventory.filter(i => i.isActive).map((item) => {
-                  const category = categories.find(c => c.id === item.category);
-
-                  return (
-                    <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-indigo-500 transition-all cursor-pointer group"
-                      onClick={() => setSelectedInventory(item)}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 text-xl">
-                          <i className={`fas fa-${category?.icon || 'box'}`}></i>
-                        </div>
-                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${item.quantity > 50 ? 'bg-emerald-100 text-emerald-600' : item.quantity > 20 ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'}`}>
-                          {item.quantity} {item.unit}
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-black text-slate-900 uppercase truncate">{item.name}</h4>
-                      <p className="text-[10px] font-bold text-slate-500 mb-4">{category?.label || item.category}</p>
-                      <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-400">SATIŞ</p>
-                          <p className="text-base font-black text-indigo-600">{item.salePrice}₺</p>
-                        </div>
-                        <i className="fas fa-chevron-right text-slate-300 group-hover:text-indigo-600 transition-colors"></i>
-                      </div>
-                    </div>
-                  );
-                })}
-                {inventory.filter(i => i.isActive).length === 0 && (
-                  <div className="col-span-4 text-center py-12">
-                    <p className="text-sm font-bold text-slate-400">Aktif ürün yok</p>
-                  </div>
-                )}
-              </div>
-
-              {inventory.filter(i => !i.isActive).length > 0 && (
-                <>
-                  <div className="border-t border-slate-200 my-8"></div>
-                  <h4 className="text-lg font-black text-slate-900 uppercase">Pasif Ürünler</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {inventory.filter(i => !i.isActive).map((item) => (
-                      <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm opacity-60 hover:opacity-100 transition-all cursor-pointer group"
-                        onClick={() => setSelectedInventory(item)}
-                      >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 text-xl">
-                            <i className="fas fa-box"></i>
-                          </div>
-                          <span className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase bg-slate-100 text-slate-500">
-                            PASİF
-                          </span>
-                        </div>
-                        <h4 className="text-sm font-black text-slate-900 uppercase truncate">{item.name}</h4>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
+            <StockManagement inventory={inventory} onUpdateInventory={onUpdateInventory} categories={categories} onUpdateCategories={onUpdateCategories} />
           )}
         </div>
       </div>
@@ -601,7 +415,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       {/* Order Detail Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedOrder(null)}>
-          <div className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-[2rem] max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="p-8 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -614,6 +428,56 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
             <div className="p-8 space-y-6">
+              {/* Durum Değiştirme */}
+              <div>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Sipariş Durumu</h4>
+                <div className="flex flex-wrap gap-2">
+                  {['Bekliyor', 'Yolda', 'Teslim Edildi', 'İptal'].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => updateOrderStatus(selectedOrder.id, status as OrderStatus)}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${
+                        selectedOrder.status === status
+                          ? STATUS_COLORS[status as OrderStatus]
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Kurye Atama */}
+              <div>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Kurye Atama</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => updateOrderCourier(selectedOrder.id, '')}
+                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${
+                      !selectedOrder.courierId
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    Kurye Yok
+                  </button>
+                  {couriers.map((courier) => (
+                    <button
+                      key={courier.id}
+                      onClick={() => updateOrderCourier(selectedOrder.id, courier.id)}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${
+                        selectedOrder.courierId === courier.id
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {courier.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Müşteri Bilgileri</h4>
                 <div className="bg-slate-50 rounded-2xl p-4 space-y-2">

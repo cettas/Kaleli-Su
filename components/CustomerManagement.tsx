@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Customer, Order, OrderStatus } from '../types';
 import { STATUS_COLORS } from '../constants';
+import { supabase } from '../services/supabaseClient';
 
 interface CustomerManagementProps {
   customers: Customer[];
@@ -15,7 +16,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ customers, orde
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  const handleImport = () => {
+  const handleImport = async () => {
     try {
       const lines = importText.split('\n').filter(l => l.trim() !== '');
       const newCustomers: Customer[] = lines.map((line, index) => {
@@ -34,6 +35,21 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ customers, orde
           orderCount: 0
         };
       }).filter(c => c !== null) as Customer[];
+
+      // Supabase'e kaydet
+      for (const customer of newCustomers) {
+        await supabase.from('customers').insert({
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone,
+          district: customer.district,
+          neighborhood: customer.neighborhood,
+          street: customer.street,
+          building_no: customer.buildingNo,
+          apartment_no: customer.apartmentNo,
+          order_count: customer.orderCount
+        });
+      }
 
       onUpdateCustomers([...customers, ...newCustomers]);
       setImportText('');

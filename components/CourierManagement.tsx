@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Courier, Order, OrderStatus } from '../types';
+import { supabase } from '../services/supabaseClient';
 
 interface CourierManagementProps {
   couriers: Courier[];
@@ -58,7 +59,7 @@ const CourierManagement: React.FC<CourierManagementProps> = ({ couriers, orders,
     setFormMode('edit');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) return;
 
@@ -72,21 +73,46 @@ const CourierManagement: React.FC<CourierManagementProps> = ({ couriers, orders,
         emptyInventory: 0,
         serviceRegion: region
       };
+
+      // Supabase'e kaydet
+      await supabase.from('couriers').insert({
+        id: newCourier.id,
+        name: newCourier.name,
+        phone: newCourier.phone,
+        status: newCourier.status,
+        full_inventory: newCourier.fullInventory,
+        empty_inventory: newCourier.emptyInventory,
+        service_region: newCourier.serviceRegion
+      });
+
       onUpdateCouriers([...couriers, newCourier]);
     } else if (formMode === 'edit' && editingCourier) {
-      const updated = couriers.map(c => 
+      const updated = couriers.map(c =>
         c.id === editingCourier.id ? { ...c, name, phone, serviceRegion: region } : c
       );
+
+      // Supabase'e güncelle
+      await supabase.from('couriers').update({
+        name,
+        phone,
+        service_region: region
+      }).eq('id', editingCourier.id);
+
       onUpdateCouriers(updated);
     }
     resetForm();
   };
 
-  const setStatus = (id: string, newStatus: 'active' | 'busy' | 'offline') => {
-    const updated = couriers.map(c => 
+  const setStatus = async (id: string, newStatus: 'active' | 'busy' | 'offline') => {
+    const updated = couriers.map(c =>
       c.id === id ? { ...c, status: newStatus } : c
     );
     onUpdateCouriers(updated);
+
+    // Supabase'e güncelle
+    await supabase.from('couriers').update({
+      status: newStatus
+    }).eq('id', id);
   };
 
   return (
