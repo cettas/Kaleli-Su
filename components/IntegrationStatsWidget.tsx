@@ -55,7 +55,7 @@ const IntegrationStatsWidget: React.FC = () => {
           .select('*', { count: 'exact', head: true }),
         supabase
           .from('whatsapp_chats')
-          .select('*', { count: 'exact, head: true }),
+          .select('*', { count: 'exact', head: true }),
         supabase
           .from('whatsapp_failover_logs')
           .select('*', { count: 'exact', head: true })

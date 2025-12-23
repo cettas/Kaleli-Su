@@ -1042,7 +1042,6 @@ const IntegrationsManagement: React.FC = () => {
           )}
         </div>
       </div>
-      )}
 
       {/* Loglar Tab İçeriği */}
       {activeSubTab === 'logs' && (
