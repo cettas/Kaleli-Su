@@ -72,6 +72,14 @@ export interface OrderItem {
   price: number;
 }
 
+export const PaymentMethod = {
+  CASH: 'Nakit',
+  POS: 'POS',
+  NOT_COLLECTED: 'Alınmadı'
+} as const;
+
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
+
 export interface Order {
   id: string;
   customerId: string;
@@ -85,6 +93,7 @@ export interface Order {
   status: OrderStatus;
   source: OrderSource;
   note?: string;
+  paymentMethod?: PaymentMethod;
   createdAt: string;
   updatedAt: string;
 }

@@ -549,6 +549,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <IntegrationsManagement />
           )}
         </div>
+        </div>
       </div>
 
       {/* Order Detail Modal */}

@@ -82,11 +82,16 @@ const App: React.FC = () => {
               totalAmount: newOrder.total_amount,
               courierId: newOrder.courier_id,
               courierName: newOrder.courier_name,
+              paymentMethod: newOrder.payment_method,
               createdAt: newOrder.created_at,
               updatedAt: newOrder.updated_at
             };
 
             setOrders(prev => {
+              // Duplicate kontrolü - aynı ID'yi tekrar ekleme
+              if (prev.some(o => o.id === transformedOrder.id)) {
+                return prev;
+              }
               const updated = [transformedOrder, ...prev];
               localStorage.setItem('suda-orders', JSON.stringify(updated));
               return updated;
@@ -103,6 +108,7 @@ const App: React.FC = () => {
               totalAmount: updatedOrder.total_amount,
               courierId: updatedOrder.courier_id,
               courierName: updatedOrder.courier_name,
+              paymentMethod: updatedOrder.payment_method,
               createdAt: updatedOrder.created_at,
               updatedAt: updatedOrder.updated_at
             };
@@ -171,6 +177,7 @@ const App: React.FC = () => {
           totalAmount: o.total_amount,
           courierId: o.courier_id,
           courierName: o.courier_name,
+          paymentMethod: o.payment_method,
           createdAt: o.created_at,
           updatedAt: o.updated_at
         }));
@@ -238,6 +245,7 @@ const App: React.FC = () => {
           totalAmount: o.total_amount,
           courierId: o.courier_id,
           courierName: o.courier_name,
+          paymentMethod: o.payment_method,
           createdAt: o.created_at,
           updatedAt: o.updated_at
         }));
@@ -368,6 +376,7 @@ const App: React.FC = () => {
           status: newOrder.status,
           source: newOrder.source,
           note: newOrder.note,
+          payment_method: newOrder.paymentMethod || null,
           created_at: newOrder.createdAt,
           updated_at: newOrder.updatedAt
         })
@@ -385,12 +394,13 @@ const App: React.FC = () => {
         totalAmount: insertedOrder.total_amount,
         courierId: insertedOrder.courier_id,
         courierName: insertedOrder.courier_name,
+        paymentMethod: insertedOrder.payment_method,
         createdAt: insertedOrder.created_at,
         updatedAt: insertedOrder.updated_at
       };
 
-      // Orders state'ine ekle
-      setOrders(prev => [transformedOrder, ...prev]);
+      // Local state'i güncellemiyoruz - Realtime subscription halledecek
+      // Bu race condition ve duplicate siparişleri önler
 
       // Müşterileri yenile
       const { data: customersData } = await supabase.from('customers').select('*');
@@ -451,14 +461,13 @@ const App: React.FC = () => {
   const updateOrderCourier = async (orderId: string, courierId: string) => {
     try {
       const courier = couriers.find(c => c.id === courierId);
-      if (!courier) return;
 
       // Önce locale güncelle (hızlı UI için)
       const updatedOrders = orders.map(o =>
         o.id === orderId ? {
           ...o,
-          courierId,
-          courierName: courier.name,
+          courierId: courierId || null,
+          courierName: courier?.name || null,
           updatedAt: new Date().toISOString()
         } : o
       );
@@ -466,15 +475,27 @@ const App: React.FC = () => {
       localStorage.setItem('suda-orders', JSON.stringify(updatedOrders));
 
       // Sonra Supabase'e gönder
-      const { error } = await supabase.from('orders').update({
-        courier_id: courierId,
-        courier_name: courier.name,
+      const updateData: any = {
         updated_at: new Date().toISOString()
-      }).eq('id', orderId);
+      };
+
+      if (courierId) {
+        updateData.courier_id = courierId;
+        updateData.courier_name = courier!.name;
+      } else {
+        updateData.courier_id = null;
+        updateData.courier_name = null;
+      }
+
+      const { error } = await supabase.from('orders').update(updateData).eq('id', orderId);
 
       if (error) throw error;
 
-      showToast("GÜNCELENDİ", `Sipariş kuryesi ${courier.name} olarak değiştirildi.`, 'info');
+      if (courier) {
+        showToast("GÜNCELLENDİ", `Sipariş kuryesi ${courier.name} olarak atandı.`, 'info');
+      } else {
+        showToast("GÜNCELLENDİ", `Sipariş kuryesi kaldırıldı.`, 'info');
+      }
     } catch (error) {
       console.error('Kurye güncelleme hatası:', error);
     }
@@ -713,9 +734,9 @@ const App: React.FC = () => {
               </div>
             </header>
             <CourierPanel
-              orders={orders.filter(o => o.courierId === (currentUser?.courierId || selectedCourierId))}
+              orders={orders.filter(o => o.courierId === selectedCourierId)}
               updateOrderStatus={updateOrderStatus}
-              courierId={currentUser?.courierId || selectedCourierId}
+              courierId={selectedCourierId}
               onCourierChange={setSelectedCourierId}
               couriers={couriers}
               onUpdateCourier={onUpdateCourier}

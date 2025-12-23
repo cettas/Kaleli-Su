@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { CallLog } from '../types';
-import IntegrationLogsViewer from './IntegrationLogsViewer';
 
 interface IntegrationSettings {
   trendyol_api_key: string;
@@ -165,7 +164,6 @@ const IntegrationsManagement: React.FC = () => {
   const testConnection = async (service: 'trendyol') => {
     setTestStatus('testing');
     try {
-      // Basit bir bağlantı testi
       const response = await fetch('/api/test-integration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -185,54 +183,91 @@ const IntegrationsManagement: React.FC = () => {
     }
   };
 
+  // İstatistikleri hesapla
+  const activeIntegrations = [
+    settings.trendyol_enabled,
+    settings.getir_enabled,
+    settings.yemeksepeti_enabled,
+    settings.ai_phone_enabled,
+    settings.netgsm_enabled,
+    settings.whatsapp_enabled
+  ].filter(Boolean).length;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Ana Başlık ve Alt Tab Navigasyonu */}
+      {/* Ana Başlık */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">ENTEGRASYON YÖNETİMİ</h2>
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-2">
-            API Ayarları, Loglar ve İstatistikler
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Entegrasyon Yönetimi</h2>
+          <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-2">
+            API Ayarları ve Harici Servisler
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {testStatus === 'success' && (
-            <span className="text-xs font-black text-emerald-600 uppercase flex items-center gap-2">
-              <i className="fas fa-check-circle"></i> Bağlantı Başarılı
-            </span>
-          )}
-          {testStatus === 'error' && (
-            <span className="text-xs font-black text-rose-600 uppercase flex items-center gap-2">
-              <i className="fas fa-exclamation-circle"></i> Bağlantı Hatası
+          {saveStatus === 'saved' && (
+            <span className="text-xs font-black text-emerald-600 uppercase flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl">
+              <i className="fas fa-check-circle"></i> Kaydedildi
             </span>
           )}
           <button
             onClick={saveSettings}
             disabled={saveStatus === 'saving'}
-            className={`px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+            className={`px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 ${
               saveStatus === 'saved'
                 ? 'bg-emerald-600 text-white'
                 : saveStatus === 'error'
                 ? 'bg-rose-600 text-white'
-                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl'
+                : 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:shadow-2xl hover:shadow-indigo-600/30 hover:scale-105'
             }`}
           >
-            {saveStatus === 'saving' ? 'KAYDEDİLİYOR...' :
-             saveStatus === 'saved' ? 'KAYDEDİLDİ ✓' :
-             saveStatus === 'error' ? 'HATA ✗' :
-             'AYARLARI KAYDET'}
+            {saveStatus === 'saving' ? (
+              <><i className="fas fa-spinner fa-spin mr-2"></i>Kaydediliyor...</>
+            ) : saveStatus === 'saved' ? (
+              <><i className="fas fa-check mr-2"></i>Kaydedildi</>
+            ) : saveStatus === 'error' ? (
+              'Hata'
+            ) : (
+              <><i className="fas fa-save mr-2"></i>Ayarları Kaydet</>
+            )}
           </button>
         </div>
       </div>
 
+      {/* İstatistik Kartları */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-5 rounded-2xl text-white relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+          <span className="text-[10px] font-black uppercase opacity-80 block mb-1">Toplam Entegrasyon</span>
+          <span className="text-3xl font-black tracking-tighter">6</span>
+        </div>
+
+        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-5 rounded-2xl text-white relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+          <span className="text-[10px] font-black uppercase opacity-80 block mb-1">Aktif</span>
+          <span className="text-3xl font-black tracking-tighter">{activeIntegrations}</span>
+        </div>
+
+        <div className="bg-gradient-to-br from-violet-500 to-violet-600 p-5 rounded-2xl text-white relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+          <span className="text-[10px] font-black uppercase opacity-80 block mb-1">AI Botlar</span>
+          <span className="text-3xl font-black tracking-tighter">3</span>
+        </div>
+
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-5 rounded-2xl text-white relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+          <span className="text-[10px] font-black uppercase opacity-80 block mb-1">Pazaryeri</span>
+          <span className="text-3xl font-black tracking-tighter">3</span>
+        </div>
+      </div>
+
       {/* Alt Tab Navigasyonu */}
-      <div className="bg-white rounded-2xl p-2 border border-slate-200 inline-flex gap-2">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-1.5 border border-slate-200/60 inline-flex gap-2 shadow-lg shadow-slate-200/50">
         <button
           onClick={() => setActiveSubTab('settings')}
           className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
             activeSubTab === 'settings'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+              ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/30'
+              : 'bg-transparent text-slate-500 hover:bg-slate-100'
           }`}
         >
           <i className="fas fa-cog"></i>
@@ -242,8 +277,8 @@ const IntegrationsManagement: React.FC = () => {
           onClick={() => setActiveSubTab('logs')}
           className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
             activeSubTab === 'logs'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+              ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/30'
+              : 'bg-transparent text-slate-500 hover:bg-slate-100'
           }`}
         >
           <i className="fas fa-history"></i>
@@ -252,796 +287,834 @@ const IntegrationsManagement: React.FC = () => {
       </div>
 
       {/* Ayarlar Tab İçeriği */}
-      <div className="space-y-8">
-          {/* Buraya mevcut tüm entegrasyon ayarları gelecek */}
-
-      {/* Trendyol Entegrasyonu */}
-      <div className="bg-white rounded-[3rem] border-2 border-[#ff6000] p-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#ff6000]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="relative">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-[#ff6000] rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
-                <i className="fas fa-shopping-bag"></i>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase">Trendyol</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Otomatik Sipariş Entegrasyonu</p>
-              </div>
+      {activeSubTab === 'settings' && (
+        <div className="space-y-6">
+          {/* Pazaryeri Entegrasyonları Başlığı */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white">
+              <i className="fas fa-store"></i>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.trendyol_enabled}
-                onChange={(e) => setSettings({ ...settings, trendyol_enabled: e.target.checked })}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#ff6000]"></div>
-            </label>
+            <div>
+              <h3 className="text-sm font-black text-slate-900 uppercase">Pazaryeri Entegrasyonları</h3>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Otomatik sipariş çekme</p>
+            </div>
           </div>
 
-          <div className="space-y-5">
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-              <div className="flex items-start gap-3">
-                <i className="fas fa-info-circle text-amber-600 mt-0.5"></i>
-                <div className="flex-1">
-                  <p className="text-[10px] font-black text-amber-800 uppercase mb-1">API Bilgileri</p>
-                  <p className="text-xs text-amber-700">
-                    Trendyol Satıcı Paneli (CMP) üzerinden API bilgilerinizi alabilirsiniz.
-                    Ayarlar &gt; Entegrasyonlar &gt; API Bilgileri bölümünde bulunur.
-                  </p>
+          {/* Trendyol Entegrasyonu */}
+          <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-[#ff6000]/30 transition-all duration-300 group">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#ff6000]/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2"></div>
+
+            {/* Header */}
+            <div className="relative p-8 border-b border-slate-100">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#ff6000] to-[#ff4500] rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-[#ff6000]/30 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <i className="fas fa-shopping-bag relative z-10"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase">Trendyol</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Otomatik Sipariş Entegrasyonu</p>
+                  </div>
                 </div>
+                <label className="relative inline-flex items-center cursor-pointer group/toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings.trendyol_enabled}
+                    onChange={(e) => setSettings({ ...settings, trendyol_enabled: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-16 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-[#ff6000] peer-checked:to-[#ff4500]"></div>
+                </label>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">API Key</label>
-                <input
-                  type="password"
-                  value={settings.trendyol_api_key}
-                  onChange={(e) => setSettings({ ...settings, trendyol_api_key: e.target.value })}
-                  placeholder="Trendyol API Key"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-[#ff6000] transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">API Secret</label>
-                <input
-                  type="password"
-                  value={settings.trendyol_api_secret}
-                  onChange={(e) => setSettings({ ...settings, trendyol_api_secret: e.target.value })}
-                  placeholder="Trendyol API Secret"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-[#ff6000] transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Satıcı ID (Supplier ID)</label>
-                <input
-                  type="text"
-                  value={settings.trendyol_supplier_id}
-                  onChange={(e) => setSettings({ ...settings, trendyol_supplier_id: e.target.value })}
-                  placeholder="12345678"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-[#ff6000] transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${settings.trendyol_enabled ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                  <span className="text-[10px] font-black text-slate-400 uppercase">
-                    {settings.trendyol_enabled ? 'Aktif' : 'Pasif'}
-                  </span>
-                </div>
-                {settings.trendyol_enabled && (
-                  <span className="text-[10px] font-black text-emerald-600 uppercase">
-                    <i className="fas fa-sync-alt mr-1"></i> Otomatik Çekme Aktif
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => testConnection('trendyol')}
-                disabled={testStatus === 'testing' || !settings.trendyol_api_key}
-                className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-all disabled:opacity-50"
-              >
-                {testStatus === 'testing' ? 'Test Ediliyor...' : 'Bağlantıyı Test Et'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Getir Bilgilendirme */}
-      <div className="bg-white rounded-[3rem] border-2 border-[#5d3ebc] p-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#5d3ebc]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="relative">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-[#5d3ebc] rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
-                <i className="fas fa-bolt"></i>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase">Getir</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manuel Sipariş Girişi</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.getir_enabled}
-                onChange={(e) => setSettings({ ...settings, getir_enabled: e.target.checked })}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#5d3ebc]"></div>
-            </label>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-            <div className="flex items-start gap-3">
-              <i className="fas fa-info-circle text-blue-600 mt-0.5"></i>
-              <div className="flex-1">
-                <p className="text-[10px] font-black text-blue-800 uppercase mb-1">Manuel Entegrasyon</p>
-                <p className="text-xs text-blue-700">
-                  Getir API entegrasyonu için ofis panelindeki "Getir Siparişi Ekle" butonunu kullanın.
-                  Bu, hesap güvenliğiniz için en güvenli yöntemdir. Otomasyon yapılmaz.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Yemeksepeti Bilgilendirme */}
-      <div className="bg-white rounded-[3rem] border-2 border-[#ea004b] p-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#ea004b]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="relative">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-[#ea004b] rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
-                <i className="fas fa-utensils"></i>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase">Yemeksepeti</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manuel Sipariş Girişi</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.yemeksepeti_enabled}
-                onChange={(e) => setSettings({ ...settings, yemeksepeti_enabled: e.target.checked })}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#ea004b]"></div>
-            </label>
-          </div>
-
-          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4">
-            <div className="flex items-start gap-3">
-              <i className="fas fa-info-circle text-rose-600 mt-0.5"></i>
-              <div className="flex-1">
-                <p className="text-[10px] font-black text-rose-800 uppercase mb-1">Manuel Entegrasyon</p>
-                <p className="text-xs text-rose-700">
-                  Yemeksepeti siparişleri için ofis panelindeki "Yemeksepeti Siparişi Ekle" butonunu kullanın.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* =====================================================
-           AI TELEFON ROBOTU ENTEGRASYONU
-           ===================================================== */}
-      <div className="bg-white rounded-[3rem] border-2 border-violet-600 p-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="relative">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-violet-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
-                <i className="fas fa-robot"></i>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase">AI Telefon Robotu</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Otomatik Sipariş Karşılama</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => {
-                  setShowCallLogs(!showCallLogs);
-                  if (!showCallLogs) loadCallLogs();
-                }}
-                className="px-4 py-2 bg-violet-100 text-violet-700 rounded-xl text-[10px] font-black uppercase hover:bg-violet-200 transition-all flex items-center gap-2"
-              >
-                <i className="fas fa-history"></i>
-                {showCallLogs ? 'Ayarları Gizle' : 'Çağrı Logları'}
-              </button>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.ai_phone_enabled}
-                  onChange={(e) => setSettings({ ...settings, ai_phone_enabled: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-violet-600"></div>
-              </label>
-            </div>
-          </div>
-
-          {!showCallLogs ? (
-            <>
-              <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4 mb-5">
+            {/* Content */}
+            <div className="relative p-8 space-y-5">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
                 <div className="flex items-start gap-3">
-                  <i className="fas fa-microphone text-violet-600 mt-0.5"></i>
+                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <i className="fas fa-info-circle text-sm"></i>
+                  </div>
                   <div className="flex-1">
-                    <p className="text-[10px] font-black text-violet-800 uppercase mb-1">AI Telefon Entegrasyonu</p>
-                    <p className="text-xs text-violet-700">
-                      Telefonla gelen çağrılarda AI robot müşteriyi tanır, adres bilgisini alır ve siparişi otomatik oluşturur.
-                      Twilio, Vonage veya custom SIP trunk ile çalışır.
+                    <p className="text-[10px] font-black text-amber-800 uppercase mb-1">API Bilgileri</p>
+                    <p className="text-xs text-amber-700">
+                      Trendyol Satıcı Paneli (CMP) üzerinden API bilgilerinizi alabilirsiniz.
+                      Ayarlar {'>'} Entegrasyonlar {'>'} API Bilgileri bölümünde bulunur.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Provider</label>
-                  <select
-                    value={settings.ai_phone_provider}
-                    onChange={(e) => setSettings({ ...settings, ai_phone_provider: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 transition-all"
-                  >
-                    <option value="twilio">Twilio</option>
-                    <option value="vonage">Vonage (Nexmo)</option>
-                    <option value="custom">Custom SIP Trunk</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Telefon Numarası</label>
-                  <input
-                    type="text"
-                    value={settings.ai_phone_number}
-                    onChange={(e) => setSettings({ ...settings, ai_phone_number: e.target.value })}
-                    placeholder="+905551234567"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 transition-all"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">API Key</label>
+                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <i className="fas fa-key text-amber-500"></i>
+                    API Key
+                  </label>
                   <input
                     type="password"
-                    value={settings.ai_phone_api_key}
-                    onChange={(e) => setSettings({ ...settings, ai_phone_api_key: e.target.value })}
-                    placeholder="Provider API Key"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 transition-all"
+                    value={settings.trendyol_api_key}
+                    onChange={(e) => setSettings({ ...settings, trendyol_api_key: e.target.value })}
+                    placeholder="Trendyol API Key"
+                    className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-[#ff6000] focus:bg-white transition-all"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Webhook URL</label>
+                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <i className="fas fa-lock text-amber-500"></i>
+                    API Secret
+                  </label>
+                  <input
+                    type="password"
+                    value={settings.trendyol_api_secret}
+                    onChange={(e) => setSettings({ ...settings, trendyol_api_secret: e.target.value })}
+                    placeholder="Trendyol API Secret"
+                    className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-[#ff6000] focus:bg-white transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <i className="fas fa-id-badge text-amber-500"></i>
+                    Satıcı ID
+                  </label>
                   <input
                     type="text"
-                    value={settings.ai_phone_webhook_url}
-                    onChange={(e) => setSettings({ ...settings, ai_phone_webhook_url: e.target.value })}
-                    placeholder="https://api.example.com/webhook/phone"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 transition-all"
+                    value={settings.trendyol_supplier_id}
+                    onChange={(e) => setSettings({ ...settings, trendyol_supplier_id: e.target.value })}
+                    placeholder="12345678"
+                    className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-[#ff6000] focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2 mb-5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Sistem Promptu (AI Kişiliği)
-                </label>
-                <textarea
-                  value={settings.ai_phone_system_prompt}
-                  onChange={(e) => setSettings({ ...settings, ai_phone_system_prompt: e.target.value })}
-                  placeholder="Sen bir su dağıtım firması sipariş robotusun..."
-                  rows={6}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 transition-all resize-none"
-                />
-              </div>
-
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
-                <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3">
-                  <i className="fas fa-code mr-2"></i>API Endpoint'leri
-                </p>
-                <div className="space-y-2 text-xs font-mono">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-600 font-black">GET</span>
-                    <span className="text-slate-600">/api/customer/by-phone?phone={'<caller_id>'}</span>
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full">
+                    <span className={`w-2 h-2 rounded-full ${settings.trendyol_enabled ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50' : 'bg-slate-300'}`}></span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase">
+                      {settings.trendyol_enabled ? 'Aktif' : 'Pasif'}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-indigo-600 font-black">POST</span>
-                    <span className="text-slate-600">/api/order/create</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-indigo-600 font-black">POST</span>
-                    <span className="text-slate-600">/api/call/log</span>
-                  </div>
+                  {settings.trendyol_enabled && (
+                    <span className="text-[10px] font-black text-emerald-600 uppercase px-3 py-1 bg-emerald-50 rounded-full">
+                      <i className="fas fa-sync-alt mr-1"></i> Otomatik Çekme Aktif
+                    </span>
+                  )}
                 </div>
-              </div>
-            </>
-          ) : (
-            /* Çağrı Logları Görünümü */
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-black text-slate-900 uppercase">Son Çağrılar</h4>
                 <button
-                  onClick={loadCallLogs}
-                  className="px-4 py-2 bg-violet-100 text-violet-700 rounded-xl text-[10px] font-black uppercase hover:bg-violet-200 transition-all"
+                  onClick={() => testConnection('trendyol')}
+                  disabled={testStatus === 'testing' || !settings.trendyol_api_key}
+                  className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  <i className="fas fa-sync-alt mr-1"></i> Yenile
+                  <i className="fas fa-plug"></i>
+                  {testStatus === 'testing' ? 'Test Ediliyor...' : 'Bağlantıyı Test Et'}
                 </button>
               </div>
+            </div>
+          </div>
 
-              {callLogs.length === 0 ? (
-                <div className="bg-slate-50 rounded-2xl p-8 text-center">
-                  <i className="fas fa-phone-slash text-3xl text-slate-300 mb-3"></i>
-                  <p className="text-xs font-black text-slate-400 uppercase">Henüz çağrı kaydı yok</p>
+          {/* Getir Bilgilendirme */}
+          <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-[#5d3ebc]/30 transition-all duration-300 group">
+            <div className="relative p-8 border-b border-slate-100">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#5d3ebc] to-[#4a2fa0] rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-[#5d3ebc]/30 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <i className="fas fa-bolt relative z-10"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase">Getir</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Manuel Sipariş Girişi</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer group/toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings.getir_enabled}
+                    onChange={(e) => setSettings({ ...settings, getir_enabled: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-16 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-[#5d3ebc] peer-checked:to-[#4a2fa0]"></div>
+                </label>
+              </div>
+            </div>
+
+            <div className="relative p-8">
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <i className="fas fa-info-circle text-sm"></i>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-black text-blue-800 uppercase mb-1">Manuel Entegrasyon</p>
+                    <p className="text-xs text-blue-700">
+                      Getir API entegrasyonu için ofis panelindeki "Getir Siparişi Ekle" butonunu kullanın.
+                      Bu, hesap güvenliğiniz için en güvenli yöntemdir. Otomasyon yapılmaz.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Yemeksepeti Bilgilendirme */}
+          <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-[#ea004b]/30 transition-all duration-300 group">
+            <div className="relative p-8 border-b border-slate-100">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#ea004b] to-[#c7003e] rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-[#ea004b]/30 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <i className="fas fa-utensils relative z-10"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase">Yemeksepeti</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Manuel Sipariş Girişi</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer group/toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings.yemeksepeti_enabled}
+                    onChange={(e) => setSettings({ ...settings, yemeksepeti_enabled: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-16 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-[#ea004b] peer-checked:to-[#c7003e]"></div>
+                </label>
+              </div>
+            </div>
+
+            <div className="relative p-8">
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-rose-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <i className="fas fa-info-circle text-sm"></i>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-black text-rose-800 uppercase mb-1">Manuel Entegrasyon</p>
+                    <p className="text-xs text-rose-700">
+                      Yemeksepeti siparişleri için ofis panelindeki "Yemeksepeti Siparişi Ekle" butonunu kullanın.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Entegrasyonları Başlığı */}
+          <div className="flex items-center gap-3 pt-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
+              <i className="fas fa-robot"></i>
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-slate-900 uppercase">AI Entegrasyonları</h3>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Otomatik sipariş karşılama</p>
+            </div>
+          </div>
+
+          {/* AI Telefon Robotu */}
+          <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-violet-600/30 transition-all duration-300 group">
+            <div className="relative p-8 border-b border-slate-100">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-violet-700 rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-violet-600/30 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <i className="fas fa-robot relative z-10"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase">AI Telefon Robotu</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Otomatik Sipariş Karşılama</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setShowCallLogs(!showCallLogs);
+                      if (!showCallLogs) loadCallLogs();
+                    }}
+                    className="px-4 py-2.5 bg-violet-100 text-violet-700 rounded-xl text-[10px] font-black uppercase hover:bg-violet-200 transition-all flex items-center gap-2"
+                  >
+                    <i className="fas fa-history"></i>
+                    {showCallLogs ? 'Ayarlar' : 'Loglar'}
+                  </button>
+                  <label className="relative inline-flex items-center cursor-pointer group/toggle">
+                    <input
+                      type="checkbox"
+                      checked={settings.ai_phone_enabled}
+                      onChange={(e) => setSettings({ ...settings, ai_phone_enabled: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-16 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-violet-700"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative p-8">
+              {!showCallLogs ? (
+                <div className="space-y-5">
+                  <div className="bg-violet-50 border border-violet-200 rounded-2xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-violet-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                        <i className="fas fa-microphone text-sm"></i>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black text-violet-800 uppercase mb-1">AI Telefon Entegrasyonu</p>
+                        <p className="text-xs text-violet-700">
+                          Telefonla gelen çağrılarda AI robot müşteriyi tanır, adres bilgisini alır ve siparişi otomatik oluşturur.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-server text-violet-500"></i>
+                        Provider
+                      </label>
+                      <select
+                        value={settings.ai_phone_provider}
+                        onChange={(e) => setSettings({ ...settings, ai_phone_provider: e.target.value })}
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 focus:bg-white transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="twilio">Twilio</option>
+                        <option value="vonage">Vonage (Nexmo)</option>
+                        <option value="custom">Custom SIP Trunk</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-phone text-violet-500"></i>
+                        Telefon Numarası
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.ai_phone_number}
+                        onChange={(e) => setSettings({ ...settings, ai_phone_number: e.target.value })}
+                        placeholder="+905551234567"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-key text-violet-500"></i>
+                        API Key
+                      </label>
+                      <input
+                        type="password"
+                        value={settings.ai_phone_api_key}
+                        onChange={(e) => setSettings({ ...settings, ai_phone_api_key: e.target.value })}
+                        placeholder="Provider API Key"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-link text-violet-500"></i>
+                        Webhook URL
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.ai_phone_webhook_url}
+                        onChange={(e) => setSettings({ ...settings, ai_phone_webhook_url: e.target.value })}
+                        placeholder="https://api.example.com/webhook/phone"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 focus:bg-white transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <i className="fas fa-comment-dots text-violet-500"></i>
+                      Sistem Promptu (AI Kişiliği)
+                    </label>
+                    <textarea
+                      value={settings.ai_phone_system_prompt}
+                      onChange={(e) => setSettings({ ...settings, ai_phone_system_prompt: e.target.value })}
+                      placeholder="Sen bir su dağıtım firması sipariş robotusun..."
+                      rows={5}
+                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-violet-600 focus:bg-white transition-all resize-none"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {callLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="bg-slate-50 rounded-xl p-4 border border-slate-200 hover:border-violet-300 transition-all"
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-black text-slate-900 uppercase">Son Çağrılar</h4>
+                    <button
+                      onClick={loadCallLogs}
+                      className="px-4 py-2 bg-violet-100 text-violet-700 rounded-xl text-[10px] font-black uppercase hover:bg-violet-200 transition-all flex items-center gap-2"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm ${
-                            log.status === 'success' ? 'bg-emerald-500' :
-                            log.status === 'failed' ? 'bg-rose-500' :
-                            'bg-amber-500'
-                          }`}>
-                            <i className={`fas ${
-                              log.status === 'success' ? 'fa-check' :
-                              log.status === 'failed' ? 'fa-times' :
-                              'fa-clock'
-                            }`}></i>
-                          </div>
-                          <div>
-                            <p className="text-sm font-black text-slate-900">{log.callerId}</p>
-                            <p className="text-[10px] font-bold text-slate-400">
-                              {log.customerName || 'Kayıtsız Müşteri'}
-                            </p>
-                          </div>
-                        </div>
-                        <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-full ${
-                          log.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
-                          log.status === 'failed' ? 'bg-rose-100 text-rose-700' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>
-                          {log.status}
-                        </span>
+                      <i className="fas fa-sync-alt"></i>
+                      Yenile
+                    </button>
+                  </div>
+
+                  {callLogs.length === 0 ? (
+                    <div className="bg-slate-50 rounded-2xl p-12 text-center">
+                      <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300 text-2xl mx-auto mb-4">
+                        <i className="fas fa-phone-slash"></i>
                       </div>
-
-                      {log.transcript && (
-                        <div className="mb-2 pl-13">
-                          <p className="text-[10px] text-slate-600 italic">"{log.transcript.slice(0, 100)}{log.transcript.length > 100 ? '...' : ''}"</p>
-                        </div>
-                      )}
-
-                      {log.orderData && (
-                        <div className="bg-white rounded-lg p-2 pl-13 border border-slate-200">
-                          <div className="flex items-center gap-4 text-[10px]">
-                            <span className="font-black text-violet-600">{log.orderData.product} x {log.orderData.quantity}</span>
-                            <span className="text-slate-400">•</span>
-                            <span className="text-slate-600 truncate max-w-[200px]">{log.orderData.address}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      <p className="text-[9px] text-slate-400 pl-13">
-                        {new Date(log.createdAt).toLocaleString('tr-TR')}
-                      </p>
+                      <p className="text-xs font-black text-slate-400 uppercase">Henüz çağrı kaydı yok</p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {callLogs.map((log) => (
+                        <div
+                          key={log.id}
+                          className="bg-white rounded-xl p-4 border-2 border-slate-100 hover:border-violet-300 hover:shadow-lg transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${
+                                log.status === 'success' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
+                                log.status === 'failed' ? 'bg-gradient-to-br from-rose-500 to-rose-600' :
+                                'bg-gradient-to-br from-amber-500 to-amber-600'
+                              }`}>
+                                <i className={`fas ${
+                                  log.status === 'success' ? 'fa-check' :
+                                  log.status === 'failed' ? 'fa-times' :
+                                  'fa-clock'
+                                }`}></i>
+                              </div>
+                              <div>
+                                <p className="text-sm font-black text-slate-900">{log.callerId}</p>
+                                <p className="text-[10px] font-bold text-slate-400">
+                                  {log.customerName || 'Kayıtsız Müşteri'}
+                                </p>
+                              </div>
+                            </div>
+                            <span className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-full ${
+                              log.status === 'success' ? 'bg-emerald-100 text-emerald-700' :
+                              log.status === 'failed' ? 'bg-rose-100 text-rose-700' :
+                              'bg-amber-100 text-amber-700'
+                            }`}>
+                              {log.status}
+                            </span>
+                          </div>
+
+                          {log.transcript && (
+                            <div className="mb-3 pl-13">
+                              <p className="text-[10px] text-slate-600 italic bg-slate-50 rounded-lg p-3">"{log.transcript.slice(0, 100)}{log.transcript.length > 100 ? '...' : ''}"</p>
+                            </div>
+                          )}
+
+                          {log.orderData && (
+                            <div className="bg-violet-50 rounded-xl p-3 border border-violet-100 pl-13">
+                              <div className="flex items-center gap-4 text-[10px]">
+                                <span className="font-black text-violet-600">{log.orderData.product} x {log.orderData.quantity}</span>
+                                <span className="text-slate-400">•</span>
+                                <span className="text-slate-600 truncate max-w-[200px]">{log.orderData.address}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          <p className="text-[9px] text-slate-400 pl-13 mt-2">
+                            {new Date(log.createdAt).toLocaleString('tr-TR')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* =====================================================
-           NETGSM SESLİ SİPARİŞ ROBOTU ENTEGRASYONU
-           ===================================================== */}
-      <div className="bg-white rounded-[3rem] border-2 border-emerald-600 p-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="relative">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
-                <i className="fas fa-headset"></i>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase">Netgsm Sesli Robot</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gelişmiş AI Sipariş Karşılama</p>
+          {/* Netgsm Sesli Robot */}
+          <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-emerald-600/30 transition-all duration-300 group">
+            <div className="relative p-8 border-b border-slate-100">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-emerald-600/30 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <i className="fas fa-headset relative z-10"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase">Netgsm Sesli Robot</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Gelişmiş AI Sipariş Karşılama</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowNetgsmSettings(!showNetgsmSettings)}
+                    className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-200 transition-all flex items-center gap-2"
+                  >
+                    <i className="fas fa-cog"></i>
+                    {showNetgsmSettings ? 'Ayarlar' : 'Webhook'}
+                  </button>
+                  <label className="relative inline-flex items-center cursor-pointer group/toggle">
+                    <input
+                      type="checkbox"
+                      checked={settings.netgsm_enabled}
+                      onChange={(e) => setSettings({ ...settings, netgsm_enabled: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-16 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-emerald-600 peer-checked:to-emerald-700"></div>
+                  </label>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowNetgsmSettings(!showNetgsmSettings)}
-                className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-200 transition-all flex items-center gap-2"
-              >
-                <i className="fas fa-cog"></i>
-                {showNetgsmSettings ? 'Ayarları Gizle' : 'Ayarlar'}
-              </button>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.netgsm_enabled}
-                  onChange={(e) => setSettings({ ...settings, netgsm_enabled: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-600"></div>
-              </label>
+
+            <div className="relative p-8">
+              {!showNetgsmSettings ? (
+                <div className="space-y-5">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                        <i className="fas fa-phone-volume text-sm"></i>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black text-emerald-800 uppercase mb-1">Netgsm Sesli AI Entegrasyonu</p>
+                        <p className="text-xs text-emerald-700">
+                          Netgsm üzerinden gelen çağrıları AI robot karşılar. Müşteriyi tanır, "Her zamanki gibi" dediğinde son siparişi getirir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-key text-emerald-500"></i>
+                        API Key
+                      </label>
+                      <input
+                        type="password"
+                        value={settings.netgsm_api_key}
+                        onChange={(e) => setSettings({ ...settings, netgsm_api_key: e.target.value })}
+                        placeholder="Netgsm API Anahtarı"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-phone text-emerald-500"></i>
+                        Santral Numarası
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.netgsm_phone_number}
+                        onChange={(e) => setSettings({ ...settings, netgsm_phone_number: e.target.value })}
+                        placeholder="+905551234567"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-extension text-emerald-500"></i>
+                        Operatör Dahilisi
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.netgsm_operator_extension}
+                        onChange={(e) => setSettings({ ...settings, netgsm_operator_extension: e.target.value })}
+                        placeholder="100"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                      />
+                      <p className="text-[9px] text-slate-400 pl-1">Failover durumunda çağrı buraya aktarılır</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-link text-emerald-500"></i>
+                        Webhook URL
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.netgsm_webhook_url}
+                        onChange={(e) => setSettings({ ...settings, netgsm_webhook_url: e.target.value })}
+                        placeholder="https://api.example.com/webhook/netgsm"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                      />
+                      <p className="text-[9px] text-slate-400 pl-1">Netgsm paneline bu URL'i girin</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
+                    <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <i className="fas fa-robot text-emerald-500"></i>
+                      AI Özellikleri
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>Kayıtlı müşteriyi tanır</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>"Her zamanki" çalışır</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>Adres sistemden alınır</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>2 hata → operatör</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>"Operatöre bağla" çalışır</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>0 tuşu → operatör</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h4 className="text-sm font-black text-slate-900 uppercase">NetgSM Webhook Ayarları</h4>
+
+                  <div className="bg-slate-50 rounded-2xl p-5 space-y-4">
+                    <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <i className="fas fa-link text-emerald-500"></i>
+                      Webhook URL'leri
+                    </p>
+
+                    <div className="space-y-3">
+                      <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Çağrı Başlangıç</p>
+                        <code className="text-xs text-emerald-600 break-all font-mono">
+                          POST {window.location.origin}/webhook/netgsm/call/start
+                        </code>
+                      </div>
+
+                      <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Konuşma (STT)</p>
+                        <code className="text-xs text-emerald-600 break-all font-mono">
+                          POST {window.location.origin}/webhook/netgsm/call/speech
+                        </code>
+                      </div>
+
+                      <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Çağrı Sonu</p>
+                        <code className="text-xs text-emerald-600 break-all font-mono">
+                          POST {window.location.origin}/webhook/netgsm/call/end
+                        </code>
+                      </div>
+
+                      <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase mb-2">DTMF (Tuşlama)</p>
+                        <code className="text-xs text-emerald-600 break-all font-mono">
+                          POST {window.location.origin}/webhook/netgsm/call/dtmf
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                        <i className="fas fa-exclamation-triangle text-sm"></i>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black text-amber-800 uppercase mb-1">Önemli Not</p>
+                        <p className="text-xs text-amber-700">
+                          API sunucusunun (npm run api) çalıştığından emin olun. Webhook URL'leri dışarıdan erişilebilir olmalıdır.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {!showNetgsmSettings ? (
-            <>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-5">
-                <div className="flex items-start gap-3">
-                  <i className="fas fa-phone-volume text-emerald-600 mt-0.5"></i>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-black text-emerald-800 uppercase mb-1">Netgsm Sesli AI Entegrasyonu</p>
-                    <p className="text-xs text-emerald-700">
-                      Netgsm üzerinden gelen çağrıları AI robot karşılar. Müşteriyi tanır, "Her zamanki gibi" dediğinde son siparişi getirir,
-                      adres sorar, siparişi alır ve gerekirse operatöre devreder.
-                    </p>
+          {/* WhatsApp Bot */}
+          <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-emerald-500/30 transition-all duration-300 group">
+            <div className="relative p-8 border-b border-slate-100">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-emerald-500/30 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <i className="fab fa-whatsapp relative z-10"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 uppercase">WhatsApp Sipariş Botu</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Mesajla Sipariş Karşılama</p>
                   </div>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Netgsm API Key</label>
-                  <input
-                    type="password"
-                    value={settings.netgsm_api_key}
-                    onChange={(e) => setSettings({ ...settings, netgsm_api_key: e.target.value })}
-                    placeholder="Netgsm API Anahtarı"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 transition-all"
-                  />
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowWhatsAppSettings(!showWhatsAppSettings)}
+                    className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-200 transition-all flex items-center gap-2"
+                  >
+                    <i className="fas fa-cog"></i>
+                    {showWhatsAppSettings ? 'Ayarlar' : 'Webhook'}
+                  </button>
+                  <label className="relative inline-flex items-center cursor-pointer group/toggle">
+                    <input
+                      type="checkbox"
+                      checked={settings.whatsapp_enabled}
+                      onChange={(e) => setSettings({ ...settings, whatsapp_enabled: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-16 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-emerald-600"></div>
+                  </label>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sanal Telefon Numarası</label>
-                  <input
-                    type="text"
-                    value={settings.netgsm_phone_number}
-                    onChange={(e) => setSettings({ ...settings, netgsm_phone_number: e.target.value })}
-                    placeholder="+905551234567"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 transition-all"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operatör Dahilisi</label>
-                  <input
-                    type="text"
-                    value={settings.netgsm_operator_extension}
-                    onChange={(e) => setSettings({ ...settings, netgsm_operator_extension: e.target.value })}
-                    placeholder="100"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 transition-all"
-                  />
-                  <p className="text-[9px] text-slate-400">Failover durumunda çağrı buraya aktarılır</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Webhook URL</label>
-                  <input
-                    type="text"
-                    value={settings.netgsm_webhook_url}
-                    onChange={(e) => setSettings({ ...settings, netgsm_webhook_url: e.target.value })}
-                    placeholder="https://api.example.com/webhook/netgsm"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 transition-all"
-                  />
-                  <p className="text-[9px] text-slate-400">Netgsm paneline bu URL'i girin</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
-                <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3">
-                  <i className="fas fa-robot mr-2"></i>AI Özellikleri
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>Kayıtlı müşteriyi tanır</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>"Her zamanki gibi" çalışır</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>Adres sistemden alınır</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>2 kez anlaşılamazsa operatöre devreder</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>"Operatöre bağla" dediğinde devreder</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>0 tuşu → operatör</span>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            /* Netgsm Webhook Bilgileri */
-            <div className="space-y-4">
-              <h4 className="text-sm font-black text-slate-900 uppercase">NetgSM Webhook Ayarları</h4>
-
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
-                <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3">
-                  <i className="fas fa-link mr-2"></i>Netgsm Paneline Girmeniz Gereken Webhook URL'leri
-                </p>
-
-                <div className="space-y-3">
-                  <div className="bg-white rounded-xl p-3 border border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Çağrı Başlangıç</p>
-                    <code className="text-xs text-emerald-600 break-all">
-                      POST {window.location.origin}/webhook/netgsm/call/start
-                    </code>
-                  </div>
-
-                  <div className="bg-white rounded-xl p-3 border border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Konuşma (STT)</p>
-                    <code className="text-xs text-emerald-600 break-all">
-                      POST {window.location.origin}/webhook/netgsm/call/speech
-                    </code>
-                  </div>
-
-                  <div className="bg-white rounded-xl p-3 border border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Çağrı Sonu</p>
-                    <code className="text-xs text-emerald-600 break-all">
-                      POST {window.location.origin}/webhook/netgsm/call/end
-                    </code>
-                  </div>
-
-                  <div className="bg-white rounded-xl p-3 border border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">DTMF (Tuşlama)</p>
-                    <code className="text-xs text-emerald-600 break-all">
-                      POST {window.location.origin}/webhook/netgsm/call/dtmf
-                    </code>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <i className="fas fa-exclamation-triangle text-amber-600 mt-0.5"></i>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-black text-amber-800 uppercase mb-1">Önemli Not</p>
-                    <p className="text-xs text-amber-700">
-                      API sunucusunun (npm run api) çalıştığından emin olun. Webhook URL'leri dışarıdan erişilebilir olmalıdır.
-                      Geliştirmede ngrok gibi tünel servisleri kullanabilirsiniz.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                <p className="text-[10px] font-black text-blue-800 uppercase mb-2">Test Komutu</p>
-                <code className="text-[10px] text-blue-700 block">
-                  curl -X POST http://localhost:3001/webhook/netgsm/call/start {'<br/>'}
-                  &nbsp;&nbsp;-H "Content-Type: application/json" {'<br/>'}
-                  &nbsp;&nbsp;-d '{'{"call_id":"test-123","caller_id":"905551234567"}'}'
-                </code>
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* =====================================================
-           WHATSAPP SİPARİŞ BOTU ENTEGRASYONU
-           ===================================================== */}
-      <div className="bg-white rounded-[3rem] border-2 border-emerald-500 p-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="relative">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
-                <i className="fab fa-whatsapp"></i>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase">WhatsApp Sipariş Botu</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mesajla Sipariş Karşılama</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowWhatsAppSettings(!showWhatsAppSettings)}
-                className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-200 transition-all flex items-center gap-2"
-              >
-                <i className="fas fa-cog"></i>
-                {showWhatsAppSettings ? 'Ayarları Gizle' : 'Ayarlar'}
-              </button>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.whatsapp_enabled}
-                  onChange={(e) => setSettings({ ...settings, whatsapp_enabled: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>
-              </label>
+            <div className="relative p-8">
+              {!showWhatsAppSettings ? (
+                <div className="space-y-5">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                        <i className="fab fa-whatsapp text-sm"></i>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black text-emerald-800 uppercase mb-1">WhatsApp Business API</p>
+                        <p className="text-xs text-emerald-700">
+                          WhatsApp üzerinden gelen mesajları AI bot karşılar. Müşteriyi tanır, "Her zamanki gibi" dediğinde son siparişi getirir.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-key text-emerald-500"></i>
+                        Access Token
+                      </label>
+                      <input
+                        type="password"
+                        value={settings.whatsapp_access_token}
+                        onChange={(e) => setSettings({ ...settings, whatsapp_access_token: e.target.value })}
+                        placeholder="Meta Business API Token"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-id-badge text-emerald-500"></i>
+                        Phone Number ID
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.whatsapp_phone_number_id}
+                        onChange={(e) => setSettings({ ...settings, whatsapp_phone_number_id: e.target.value })}
+                        placeholder="123456789012345"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-shield-alt text-emerald-500"></i>
+                        Verify Token
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.whatsapp_verify_token}
+                        onChange={(e) => setSettings({ ...settings, whatsapp_verify_token: e.target.value })}
+                        placeholder="Webhook doğrulama anahtarı"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      />
+                      <p className="text-[9px] text-slate-400 pl-1">Meta webhook doğrulaması için</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <i className="fas fa-user-tie text-emerald-500"></i>
+                        Operatör Telefonu
+                      </label>
+                      <input
+                        type="text"
+                        value={settings.whatsapp_operator_phone}
+                        onChange={(e) => setSettings({ ...settings, whatsapp_operator_phone: e.target.value })}
+                        placeholder="905551234567"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                      />
+                      <p className="text-[9px] text-slate-400 pl-1">Failover durumunda bildirim gider</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
+                    <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <i className="fab fa-whatsapp text-emerald-500"></i>
+                      Bot Özellikleri
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>Kayıtlı müşteriyi tanır</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>"Her zamanki" çalışır</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>Adres sistemden alınır</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>2 hata → operatör</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>"Operatör" yazınca devreder</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <i className="fas fa-check-circle text-emerald-500"></i>
+                        <span>Kısa ve net mesajlar</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h4 className="text-sm font-black text-slate-900 uppercase">WhatsApp Webhook Ayarları</h4>
+
+                  <div className="bg-slate-50 rounded-2xl p-5 space-y-4">
+                    <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <i className="fas fa-link text-emerald-500"></i>
+                      Meta Panel URL'leri
+                    </p>
+
+                    <div className="space-y-3">
+                      <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Webhook URL</p>
+                        <code className="text-xs text-emerald-600 break-all font-mono">
+                          POST {window.location.origin}/webhook/whatsapp/message
+                        </code>
+                      </div>
+
+                      <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Verify URL</p>
+                        <code className="text-xs text-emerald-600 break-all font-mono">
+                          GET {window.location.origin}/webhook/whatsapp/verify
+                        </code>
+                      </div>
+
+                      <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
+                        <p className="text-[9px] font-black text-amber-800 uppercase mb-2">Verify Token</p>
+                        <code className="text-xs text-amber-700 break-all font-mono">
+                          {settings.whatsapp_verify_token}
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          {!showWhatsAppSettings ? (
-            <>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-5">
-                <div className="flex items-start gap-3">
-                  <i className="fab fa-whatsapp text-emerald-600 mt-0.5 text-lg"></i>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-black text-emerald-800 uppercase mb-1">WhatsApp Business API Entegrasyonu</p>
-                    <p className="text-xs text-emerald-700">
-                      WhatsApp üzerinden gelen mesajları AI bot karşılar. Müşteriyi tanır, "Her zamanki gibi" dediğinde son siparişi getirir,
-                      adres sorar, siparişi alır ve gerekirse operatöre devreder.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Access Token</label>
-                  <input
-                    type="password"
-                    value={settings.whatsapp_access_token}
-                    onChange={(e) => setSettings({ ...settings, whatsapp_access_token: e.target.value })}
-                    placeholder="Meta Business API Access Token"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 transition-all"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number ID</label>
-                  <input
-                    type="text"
-                    value={settings.whatsapp_phone_number_id}
-                    onChange={(e) => setSettings({ ...settings, whatsapp_phone_number_id: e.target.value })}
-                    placeholder="123456789012345"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 transition-all"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Verify Token</label>
-                  <input
-                    type="text"
-                    value={settings.whatsapp_verify_token}
-                    onChange={(e) => setSettings({ ...settings, whatsapp_verify_token: e.target.value })}
-                    placeholder="Webhook doğrulama anahtarı"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 transition-all"
-                  />
-                  <p className="text-[9px] text-slate-400">Meta webhook doğrulaması için</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operatör Telefonu</label>
-                  <input
-                    type="text"
-                    value={settings.whatsapp_operator_phone}
-                    onChange={(e) => setSettings({ ...settings, whatsapp_operator_phone: e.target.value })}
-                    placeholder="905551234567"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-500 transition-all"
-                  />
-                  <p className="text-[9px] text-slate-400">Failover durumunda bildirim gider</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
-                <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3">
-                  <i className="fab fa-whatsapp mr-2"></i>WhatsApp Bot Özellikleri
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>Kayıtlı müşteriyi tanır</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>"Her zamanki gibi" çalışır</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>Adres sistemden alınır</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>2 kez anlaşılamazsa operatöre devreder</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>"Operatör" yazınca devreder</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <i className="fas fa-check-circle text-emerald-500"></i>
-                    <span>Emoji yok, kısa ve net mesajlar</span>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            /* WhatsApp Webhook Bilgileri */
-            <div className="space-y-4">
-              <h4 className="text-sm font-black text-slate-900 uppercase">WhatsApp Webhook Ayarları</h4>
-
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
-                <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3">
-                  <i className="fas fa-link mr-2"></i>Meta Business Paneline Girmeniz Gereken Webhook URL'leri
-                </p>
-
-                <div className="space-y-3">
-                  <div className="bg-white rounded-xl p-3 border border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Webhook URL</p>
-                    <code className="text-xs text-emerald-600 break-all">
-                      POST {window.location.origin}/webhook/whatsapp/message
-                    </code>
-                  </div>
-
-                  <div className="bg-white rounded-xl p-3 border border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Verify URL</p>
-                    <code className="text-xs text-emerald-600 break-all">
-                      GET {window.location.origin}/webhook/whatsapp/verify
-                    </code>
-                  </div>
-
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                    <p className="text-[9px] font-black text-amber-800 uppercase mb-1">Verify Token</p>
-                    <code className="text-xs text-amber-700 break-all">
-                      {settings.whatsapp_verify_token}
-                    </code>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                <p className="text-[10px] font-black text-blue-800 uppercase mb-2">Test Komutu</p>
-                <code className="text-[10px] text-blue-700 block">
-                  curl -X POST http://localhost:3001/api/whatsapp/test \<br/>
-                  &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
-                  &nbsp;&nbsp;-d '&#123;"phone":"905551234567","message":"2 tane damacana"&#125;'
-                </code>
-              </div>
-
-              <div className="bg-slate-50 rounded-2xl p-4">
-                <p className="text-[10px] font-black text-slate-700 uppercase mb-3">
-                  <i className="fas fa-terminal mr-2"></i>Aktif Oturumlar
-                </p>
-                <button
-                  onClick={() => fetch('http://localhost:3001/api/whatsapp/sessions')
-                    .then(r => r.json())
-                    .then(d => console.log('WhatsApp sessions:', d))
-                  }
-                  className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-200 transition-all"
-                >
-                  Oturumları Konsola Yazdır
-                </button>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
-      </div>
+      )}
     </div>
   );
 };

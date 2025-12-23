@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Customer, Order, OrderStatus, InventoryItem, Courier, OrderSource } from '../types';
+import { Customer, Order, OrderStatus, InventoryItem, Courier, OrderSource, PaymentMethod } from '../types';
 import { KARTAL_NEIGHBORHOODS, SOURCE_STYLES } from '../constants';
 
 // Favori Mahalleler (En çok sipariş gelen 8 mahalle)
@@ -43,6 +43,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
 
   const [note, setNote] = useState('');
   const [courierId, setCourierId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [matchedCustomer, setMatchedCustomer] = useState<Customer | null>(null);
 
   const phoneInputRef = useRef<HTMLInputElement>(null);
@@ -119,9 +121,12 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
     return sum + (inv ? inv.salePrice * item.quantity : 0);
   }, 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!phone || !name || !street || !neighborhood || selectedItems.length === 0) return;
+
+    setIsSubmitting(true);
 
     const orderItems = selectedItems.map(si => {
       const inv = inventory.find(i => i.id === si.productId);
@@ -133,7 +138,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       };
     }).filter(item => item.productId !== '');
 
-    if (orderItems.length === 0) return;
+    if (orderItems.length === 0) {
+      setIsSubmitting(false);
+      return;
+    }
 
     const courier = couriers.find(c => c.id === courierId) || couriers[0];
 
@@ -145,7 +153,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
     };
 
     // Supabase otomatik ID oluşturacak, geçici placeholder kullan
-    onAddOrder({
+    await onAddOrder({
       id: '', // Supabase dolduracak
       customerId: customerDetails.id,
       customerName: name, phone,
@@ -155,11 +163,14 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
       courierId: courier.id, courierName: courier.name,
       status: OrderStatus.PENDING,
       source: orderSource,
-      note, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      note,
+      paymentMethod,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
     }, customerDetails);
 
-    setPhone(''); setName(''); setNeighborhood(''); setStreet(''); setBuildingNo(''); setApartmentNo(''); setNote('');
+    setPhone(''); setName(''); setNeighborhood(''); setStreet(''); setBuildingNo(''); setApartmentNo(''); setNote(''); setPaymentMethod(undefined);
     setMatchedCustomer(null);
+    setIsSubmitting(false);
     // Reset items to first product
     if (inventory.length > 0) {
       setSelectedItems([{ productId: inventory[0].id, quantity: 1 }]);
@@ -292,13 +303,16 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
                   min="1"
                   value={item.quantity}
                   onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                  className="flex-1 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-black text-center outline-none focus:border-indigo-500"
+                  className="w-16 px-2 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-black text-center outline-none focus:border-indigo-500"
                 />
-                {selectedItems.length > 1 && (
-                  <button type="button" onClick={() => removeItemRow(index)} className="text-rose-500 px-2 hover:text-rose-600">
-                    <i className="fas fa-times"></i>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => removeItemRow(index)}
+                  disabled={selectedItems.length === 1}
+                  className="w-12 h-12 flex items-center justify-center rounded-2xl font-black transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-rose-500 text-white hover:bg-rose-600 shadow-md hover:shadow-lg active:scale-95"
+                >
+                  <i className="fas fa-trash-alt text-sm"></i>
+                </button>
               </div>
             ))}
           </>
@@ -320,8 +334,51 @@ const OrderForm: React.FC<OrderFormProps> = ({ onAddOrder, customers, couriers, 
         </select>
       </div>
 
-      <button type="submit" className="w-full bg-indigo-600 text-white font-black py-5 rounded-[1.8rem] text-[13px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-700 transition-all border-b-8 border-indigo-800">
-        SİPARİŞİ ONAYLA
+      <div className="space-y-2">
+        <label className="text-[12px] font-black text-slate-400 uppercase tracking-widest ml-2">ÖDEME YÖNTEMİ</label>
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => setPaymentMethod(paymentMethod === PaymentMethod.CASH ? undefined : PaymentMethod.CASH)}
+            className={`py-3 px-2 rounded-xl text-[11px] font-black uppercase border-2 transition-all ${
+              paymentMethod === PaymentMethod.CASH
+                ? 'bg-emerald-600 border-emerald-600 text-white'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-emerald-300'
+            }`}
+          >
+            💵 Nakit
+          </button>
+          <button
+            type="button"
+            onClick={() => setPaymentMethod(paymentMethod === PaymentMethod.POS ? undefined : PaymentMethod.POS)}
+            className={`py-3 px-2 rounded-xl text-[11px] font-black uppercase border-2 transition-all ${
+              paymentMethod === PaymentMethod.POS
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-300'
+            }`}
+          >
+            💳 POS
+          </button>
+          <button
+            type="button"
+            onClick={() => setPaymentMethod(paymentMethod === PaymentMethod.NOT_COLLECTED ? undefined : PaymentMethod.NOT_COLLECTED)}
+            className={`py-3 px-2 rounded-xl text-[11px] font-black uppercase border-2 transition-all ${
+              paymentMethod === PaymentMethod.NOT_COLLECTED
+                ? 'bg-rose-600 border-rose-600 text-white'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-rose-300'
+            }`}
+          >
+            ❌ Alınmadı
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-indigo-600 text-white font-black py-5 rounded-[1.8rem] text-[13px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-700 transition-all border-b-8 border-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isSubmitting ? 'KAYDEDİLİYOR...' : 'SİPARİŞİ ONAYLA'}
       </button>
     </form>
   );

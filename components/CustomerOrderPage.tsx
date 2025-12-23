@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { InventoryItem, Category, Order, OrderStatus, OrderSource, Customer, Courier } from '../types';
+import { InventoryItem, Category, Order, OrderStatus, OrderSource, Customer, Courier, PaymentMethod } from '../types';
 import { KARTAL_NEIGHBORHOODS } from '../constants';
 
 // Favori Mahalleler (En çok sipariş gelen 8 mahalle)
@@ -41,7 +41,8 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
     street: '',
     buildingNo: '',
     apartmentNo: '',
-    note: ''
+    note: '',
+    paymentMethod: undefined as PaymentMethod | undefined
   });
 
   const activeProducts = useMemo(() => {
@@ -101,6 +102,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
       status: OrderStatus.PENDING,
       source: OrderSource.WEB,
       note: formData.note,
+      paymentMethod: formData.paymentMethod,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -119,7 +121,8 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
       street: '',
       buildingNo: '',
       apartmentNo: '',
-      note: ''
+      note: '',
+      paymentMethod: undefined
     });
   };
 
@@ -272,9 +275,24 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <span className="text-xs font-black text-slate-900">{item.price * item.quantity}₺</span>
                 </div>
               ))}
-              <div className="bg-slate-900 p-8 rounded-[2.5rem] flex justify-between items-center text-white shadow-2xl relative overflow-hidden">
-                 <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">TOPLAM TUTAR</span>
-                 <span className="text-3xl font-black tracking-tighter">{totalAmount}₺</span>
+              <div className="bg-slate-900 p-8 rounded-[2.5rem] flex flex-col gap-3 text-white shadow-2xl relative overflow-hidden">
+                 <div className="flex justify-between items-center">
+                   <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">TOPLAM TUTAR</span>
+                   <div className="flex items-center gap-3">
+                     <span className="text-3xl font-black tracking-tighter">{totalAmount}₺</span>
+                     {formData.paymentMethod && (
+                       <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase ${
+                         formData.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-500/30 text-emerald-300' :
+                         formData.paymentMethod === PaymentMethod.POS ? 'bg-blue-500/30 text-blue-300' :
+                         'bg-rose-500/30 text-rose-300'
+                       }`}>
+                         {formData.paymentMethod === PaymentMethod.CASH ? '💵 NAKİT' :
+                          formData.paymentMethod === PaymentMethod.POS ? '💳 POS' :
+                          '❌ ALINMADI'}
+                       </span>
+                     )}
+                   </div>
+                 </div>
               </div>
             </div>
 
@@ -342,11 +360,51 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <input type="text" placeholder="BİNA NO" className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-center outline-none" value={formData.buildingNo} onChange={e => setFormData({...formData, buildingNo: e.target.value})} />
                   <input type="text" placeholder="DAİRE" className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-center outline-none" value={formData.apartmentNo} onChange={e => setFormData({...formData, apartmentNo: e.target.value})} />
                 </div>
-                <textarea 
-                  placeholder="SİPARİŞ NOTUNUZ (OPSİYONEL)..." 
+                <textarea
+                  placeholder="SİPARİŞ NOTUNUZ (OPSİYONEL)..."
                   className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-bold outline-none h-24"
                   value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})}
                 />
+
+                {/* Ödeme Yöntemi Seçimi */}
+                <div className="space-y-2 pt-2">
+                  <label className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">ÖDEME YÖNTEMİ</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, paymentMethod: formData.paymentMethod === PaymentMethod.CASH ? undefined : PaymentMethod.CASH})}
+                      className={`py-4 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all ${
+                        formData.paymentMethod === PaymentMethod.CASH
+                          ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-emerald-400'
+                      }`}
+                    >
+                      💵 Nakit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, paymentMethod: formData.paymentMethod === PaymentMethod.POS ? undefined : PaymentMethod.POS})}
+                      className={`py-4 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all ${
+                        formData.paymentMethod === PaymentMethod.POS
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-400'
+                      }`}
+                    >
+                      💳 POS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, paymentMethod: formData.paymentMethod === PaymentMethod.NOT_COLLECTED ? undefined : PaymentMethod.NOT_COLLECTED})}
+                      className={`py-4 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all ${
+                        formData.paymentMethod === PaymentMethod.NOT_COLLECTED
+                          ? 'bg-rose-600 border-rose-600 text-white shadow-lg'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-rose-400'
+                      }`}
+                    >
+                      ❌ Alınmadı
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <button 

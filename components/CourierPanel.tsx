@@ -1,6 +1,6 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Order, OrderStatus, Courier } from '../types';
+import { Order, OrderStatus, Courier, PaymentMethod } from '../types';
 import { STATUS_COLORS } from '../constants';
 
 interface CourierPanelProps {
@@ -34,6 +34,8 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [confirmingAction, setConfirmingAction] = useState<{orderId: string, status: OrderStatus} | null>(null);
+  const [selectingPayment, setSelectingPayment] = useState<{orderId: string, status: OrderStatus} | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
   const selectedCourier = useMemo(() => couriers.find(c => c.id === courierId), [couriers, courierId]);
 
   // Online/offline dinle
@@ -217,127 +219,172 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
   };
 
   const renderTasks = () => (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
-      {/* Ses Test Butonu - Her zaman görünür */}
+    <div className="space-y-3 pb-40">
+      {/* Ses Test Butonu - Minimal */}
       <button
         onClick={unlockAudio}
-        className={`w-full text-white p-4 rounded-2xl font-black text-xs uppercase tracking-[0.15em] flex flex-col items-center justify-center gap-2 shadow-xl border-b-4 transition-all ${
+        className={`w-full p-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
           isAudioUnlocked
-            ? 'bg-emerald-600 border-emerald-800'
-            : 'bg-rose-600 border-rose-800 animate-bounce'
+            ? 'bg-emerald-600 text-white'
+            : 'bg-slate-800 text-white border-2 border-rose-500'
         }`}
       >
-        <div className="flex items-center gap-3">
-          <i className="fas fa-volume-high text-lg"></i>
-          <span className="text-sm">{isAudioUnlocked ? 'SES AKTİF ✓' : 'SESİ AÇ'}</span>
-        </div>
-        <span className="text-[10px] opacity-70">
-          {isAudioUnlocked ? 'Bildirimler için hazır' : 'İlk sipariş için sesi aç'}
-        </span>
+        <i className="fas fa-volume-high text-sm"></i>
+        <span>{isAudioUnlocked ? 'SES AKTİF' : 'SESİ AÇ'}</span>
       </button>
 
-      <div className="grid grid-cols-2 gap-2 mb-2">
-        <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center space-y-1">
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">AKTİF İŞ</span>
-          <span className="text-xl font-black text-indigo-600 tracking-tighter">{activeOrders.length}</span>
+      {/* İstatistikler - Küçük ve minimal */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+          <span className="text-[10px] font-black text-slate-500 uppercase">AKTİF</span>
+          <span className="text-2xl font-black text-slate-900">{activeOrders.length}</span>
         </div>
-        <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center space-y-1">
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">TAMAMLANAN</span>
-          <span className="text-xl font-black text-emerald-500 tracking-tighter">{completedToday.length}</span>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between px-2">
-        <h2 className="text-xs font-black text-slate-900 uppercase tracking-[0.1em]">GÜNCEL GÖREVLER</h2>
-        <div className="flex items-center gap-2 bg-indigo-50 px-2 py-1 rounded-full">
-           <div className="w-1 h-1 bg-indigo-500 rounded-full animate-ping"></div>
-           <span className="text-[11px] font-black text-indigo-600">CANLI</span>
+        <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+          <span className="text-[10px] font-black text-slate-500 uppercase">TAMAM</span>
+          <span className="text-2xl font-black text-emerald-600">{completedToday.length}</span>
         </div>
       </div>
 
       {activeOrders.length > 0 ? (
-        activeOrders.map(order => (
-          <div key={order.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">
-            <div className={`h-1 ${order.status === OrderStatus.ON_WAY ? 'bg-indigo-500' : 'bg-amber-400'}`}></div>
+        activeOrders.map(order => {
+          // Durum rengi
+          const statusColor = order.status === OrderStatus.ON_WAY
+            ? 'border-amber-500'
+            : 'border-indigo-600';
 
-            <div className="p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div className="space-y-0.5 flex-1 min-w-0">
-                   <div className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                      <span className="text-[10px] font-black text-slate-400 uppercase">#{order.id.slice(-4)}</span>
-                   </div>
-                   <h3 className="text-sm font-black text-slate-900 uppercase leading-tight truncate">{order.customerName}</h3>
-                </div>
-                <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-right shrink-0 ml-2">
-                   <p className="text-base font-black text-slate-900">{order.totalAmount}₺</p>
-                </div>
-              </div>
+          return (
+            <div key={order.id} className={`bg-white rounded-2xl shadow-md overflow-hidden border-l-4 ${statusColor}`}>
+              <div className="p-4 space-y-4">
 
-              <div className="flex items-start gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-rose-500 shadow-sm shrink-0 border border-slate-100">
-                   <i className="fas fa-location-dot text-sm"></i>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-bold text-slate-700 leading-snug uppercase line-clamp-2">{order.address}</p>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] font-black text-indigo-600 mt-1 uppercase hover:text-indigo-800"
-                  >
-                    <i className="fas fa-diamond-turn-right text-xs"></i> HARİTA
-                  </a>
-                </div>
-              </div>
-
-              {order.note && (
-                <div className="flex items-start gap-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-100">
-                  <i className="fas fa-quote-left text-amber-300 text-xs mt-0.5"></i>
-                  <p className="text-[10px] font-bold text-amber-900 italic leading-snug">{order.note}</p>
-                </div>
-              )}
-
-              <div className="flex flex-wrap gap-1.5">
-                {order.items.map((item, idx) => (
-                  <div key={idx} className="bg-white px-2 py-1 rounded-lg border border-slate-200 flex items-center gap-1.5 shadow-sm">
-                    <span className="bg-indigo-600 text-white w-4 h-4 rounded-md flex items-center justify-center text-[10px] font-black">{item.quantity}</span>
-                    <span className="text-[11px] font-black text-slate-600 uppercase">{item.productName}</span>
+                {/* ÜST BİLGİ: Tutar + Ödeme + Not İkonu */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-black text-slate-900">{order.totalAmount}₺</span>
+                    {order.paymentMethod && (
+                      <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${
+                        order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-100 text-emerald-700' :
+                        order.paymentMethod === PaymentMethod.POS ? 'bg-blue-100 text-blue-700' :
+                        'bg-rose-100 text-rose-700'
+                      }`}>
+                        {order.paymentMethod === PaymentMethod.CASH ? '💵 NAKİT' :
+                         order.paymentMethod === PaymentMethod.POS ? '💳 POS' :
+                         '❌ ALINMADI'}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
+                  {order.note && (
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+                      <i className="fas fa-sticky-note text-sm"></i>
+                    </div>
+                  )}
+                </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <a href={`tel:${order.phone}`} className="flex items-center justify-center gap-1.5 py-3 bg-white border-2 border-slate-100 rounded-xl text-slate-600 font-black text-[10px] uppercase active:bg-slate-50 transition-all">
-                  <i className="fas fa-phone text-sm"></i> ARA
-                </a>
-                {order.status === OrderStatus.PENDING ? (
-                  <button
-                    onClick={() => setConfirmingAction({orderId: order.id, status: OrderStatus.ON_WAY})}
-                    className="flex items-center justify-center gap-1.5 py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase shadow active:scale-95 transition-all border-b-3 border-indigo-800"
-                  >
-                    <i className="fas fa-truck-fast text-sm"></i> YOLA ÇIK
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setConfirmingAction({orderId: order.id, status: OrderStatus.DELIVERED})}
-                    className="flex items-center justify-center gap-1.5 py-3 bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase shadow active:scale-95 transition-all border-b-3 border-emerald-800"
-                  >
-                    <i className="fas fa-check-double text-sm"></i> TESLİM
-                  </button>
+                {/* ADRES - EN BÜYÜK VE EN ÖNEMLİ */}
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white shrink-0 mt-0.5">
+                      <i className="fas fa-location-dot text-sm"></i>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-black text-slate-900 uppercase leading-snug">
+                        {order.address}
+                      </p>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-black text-[11px] uppercase tracking-wider"
+                      >
+                        <i className="fas fa-diamond-turn-right"></i> YOL TARİFİ
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ÜRÜNLER - Orta boy */}
+                <div className="flex flex-wrap gap-2">
+                  {order.items.map((item, idx) => (
+                    <div key={idx} className="px-3 py-2 bg-slate-100 rounded-lg flex items-center gap-2">
+                      <span className="bg-slate-900 text-white w-6 h-6 rounded flex items-center justify-center text-[11px] font-black">
+                        {item.quantity}
+                      </span>
+                      <span className="text-sm font-black text-slate-700 uppercase">{item.productName}</span>
+                      <span className="text-xs font-bold text-slate-500">{item.price}₺</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* MÜŞTERİ - Küçük */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                      <i className="fas fa-user text-slate-500 text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900 uppercase">{order.customerName}</p>
+                      <p className="text-[10px] font-bold text-slate-400">
+                        {new Date(order.createdAt).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* İLETİŞİM BUTONLARI */}
+                  <div className="flex gap-2">
+                    <a
+                      href={`https://wa.me/${order.phone.replace(/\D/g, '')}?text=Merhaba, siparişiniz yolda.`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center text-white active:bg-emerald-600"
+                    >
+                      <i className="fab fa-whatsapp text-xl"></i>
+                    </a>
+                    <a href={`tel:${order.phone}`} className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 active:bg-slate-200">
+                      <i className="fas fa-phone text-lg"></i>
+                    </a>
+                  </div>
+                </div>
+
+                {/* NOT */}
+                {order.note && (
+                  <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-[11px] font-bold text-amber-900 uppercase leading-snug">📝 {order.note}</p>
+                  </div>
                 )}
+
+                {/* TESLİM BUTONU - EN BÜYÜK VE EN NET */}
+                <div className="pt-2 border-t border-slate-100">
+                  {order.status === OrderStatus.PENDING ? (
+                    <button
+                      onClick={() => setConfirmingAction({orderId: order.id, status: OrderStatus.ON_WAY})}
+                      className="w-full py-4 bg-amber-500 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg active:scale-98 transition-all"
+                    >
+                      <i className="fas fa-truck mr-2"></i> YOLA ÇIK
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setSelectedPaymentMethod(PaymentMethod.CASH);
+                        setSelectingPayment({orderId: order.id, status: OrderStatus.DELIVERED});
+                      }}
+                      className="w-full py-5 bg-emerald-600 text-white rounded-xl font-black text-base uppercase tracking-widest shadow-xl active:scale-98 transition-all"
+                    >
+                      <i className="fas fa-check-circle mr-2"></i> TESLİM ETTİM
+                    </button>
+                  )}
+                </div>
+
               </div>
             </div>
-          </div>
-        ))
+          );
+        })
       ) : (
-        <div className="py-16 text-center space-y-4">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-lg border border-slate-50">
-            <i className="fas fa-mug-hot text-2xl text-slate-200"></i>
+        <div className="py-20 text-center space-y-3">
+          <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto">
+            <i className="fas fa-check text-3xl text-slate-300"></i>
           </div>
           <div className="space-y-1">
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Şu an işin yok</h3>
-            <p className="text-[11px] font-bold text-slate-400 uppercase">Mola verebilirsin!</p>
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">İşin yok</h3>
+            <p className="text-[11px] font-bold text-slate-400 uppercase">Mola verebilirsin</p>
           </div>
         </div>
       )}
@@ -391,57 +438,67 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
   );
 
   const renderProfile = () => (
-    <div className="space-y-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-lg text-center space-y-5 relative overflow-hidden">
-        <div className="flex flex-col items-center relative z-10">
-          <div className="relative mb-4">
-            <div className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center text-3xl font-black text-white shadow-xl border-b-4 border-indigo-800 rotate-3">
-              {selectedCourier?.name.charAt(0)}
-            </div>
-            <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-emerald-500 rounded-xl border-3 border-white flex items-center justify-center text-white text-xs">
-              <i className="fas fa-check text-xs"></i>
-            </div>
+    <div className="space-y-3 pb-32">
+      {/* Günlük Özet Kartı */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-lg space-y-4">
+        {/* Kurye Bilgisi */}
+        <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+          <div className="w-14 h-14 rounded-xl bg-slate-900 flex items-center justify-center text-2xl font-black text-white">
+            {selectedCourier?.name.charAt(0)}
           </div>
-          <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">{selectedCourier?.name}</h2>
-          <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-            <span className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-3 py-1 rounded-full border border-indigo-100 uppercase">
-              {selectedCourier?.serviceRegion || 'SAHA PERSONELİ'}
-            </span>
-            <span className="bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-full border border-slate-800 uppercase">
-              {selectedCourier?.id}
-            </span>
+          <div>
+            <h2 className="text-base font-black text-slate-900 uppercase">{selectedCourier?.name}</h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase">{selectedCourier?.id}</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">DAMACANA</p>
-            <p className="text-2xl font-black text-indigo-600 tracking-tighter">{totalDeliveredProducts}</p>
+
+        {/* İstatistikler - 4'lü grid */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <p className="text-[10px] font-black text-slate-400 uppercase">ADRES</p>
+            <p className="text-2xl font-black text-slate-900">{completedToday.length}</p>
           </div>
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">TOPLAM ADRES</p>
-            <p className="text-2xl font-black text-slate-900 tracking-tighter">{completedToday.length}</p>
+          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <p className="text-[10px] font-black text-slate-400 uppercase">DAMACANA</p>
+            <p className="text-2xl font-black text-indigo-600">{totalDeliveredProducts}</p>
+          </div>
+          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <p className="text-[10px] font-black text-slate-400 uppercase">TOPLAM L</p>
+            <p className="text-2xl font-black text-emerald-600">
+              {completedToday.reduce((sum, o) => {
+                const liters = o.items.reduce((itemSum, item) => {
+                  const productMatch = item.productName.toLowerCase().includes('19') ? 19 : 5;
+                  return itemSum + (productMatch * item.quantity);
+                }, 0);
+                return sum + liters;
+              }, 0)}
+            </p>
+          </div>
+          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+            <p className="text-[10px] font-black text-slate-400 uppercase">CİRO</p>
+            <p className="text-xl font-black text-amber-600">
+              {completedToday.reduce((sum, o) => sum + o.totalAmount, 0)}₺
+            </p>
           </div>
         </div>
-        <div className="bg-slate-900 p-4 rounded-xl text-white flex justify-between items-center shadow-xl relative overflow-hidden">
-          <div className="text-left">
-            <span className="text-[11px] font-black text-indigo-400 uppercase tracking-widest block mb-1">GÜNLÜK CİRO</span>
-            <p className="text-2xl font-black tracking-tighter">{completedToday.reduce((sum, o) => sum + o.totalAmount, 0)}₺</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-xl backdrop-blur-sm">
-             <i className="fas fa-wallet text-indigo-400"></i>
-          </div>
+
+        {/* Tahmini Kazanç */}
+        <div className="bg-emerald-600 p-4 rounded-xl text-white">
+          <p className="text-[10px] font-black text-emerald-200 uppercase tracking-widest mb-1">TAHMİNİ KAZANÇ</p>
+          <p className="text-3xl font-black tracking-tighter">
+            {(completedToday.reduce((sum, o) => sum + o.totalAmount, 0) * 0.15).toFixed(0)}₺
+          </p>
+          <p className="text-[10px] font-bold text-emerald-200 mt-1">%15 tahmini komisyon</p>
         </div>
-        <button className="w-full py-3 bg-rose-50 text-rose-600 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 border-rose-100 active:bg-rose-100 flex items-center justify-center gap-2">
-          <i className="fas fa-power-off"></i>
-          MESAİYİ SONLANDIR
-        </button>
       </div>
+
+      {/* Son Teslimatlar */}
       <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-lg space-y-4">
         <div className="flex justify-between items-center px-2">
-           <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <i className="fas fa-history text-indigo-500 text-sm"></i> SON TESLİMATLAR
+           <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+              <i className="fas fa-check-circle text-emerald-500"></i> SON TESLİMATLAR
            </h3>
-           <span className="text-[10px] font-bold text-slate-300">GÜNCEL</span>
+           <span className="text-[10px] font-bold text-slate-400">{completedToday.length} ADET</span>
         </div>
         <div className="space-y-3">
           {completedToday.slice().sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 10).map(order => (
@@ -461,6 +518,17 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                 </div>
                 <div className="text-right">
                    <p className="text-xs font-black text-slate-900">{order.totalAmount}₺</p>
+                   {order.paymentMethod && (
+                     <p className={`text-[9px] font-black uppercase mt-0.5 ${
+                       order.paymentMethod === PaymentMethod.CASH ? 'text-emerald-600' :
+                       order.paymentMethod === PaymentMethod.POS ? 'text-blue-600' :
+                       'text-rose-600'
+                     }`}>
+                       {order.paymentMethod === PaymentMethod.CASH ? '💵 NAKİT' :
+                        order.paymentMethod === PaymentMethod.POS ? '💳 POS' :
+                        '❌ ALINMADI'}
+                     </p>
+                   )}
                 </div>
               </div>
               <div className="space-y-2 pt-2 border-t border-slate-100">
@@ -522,23 +590,112 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       )}
 
-      <div className="bg-[#0f172a] text-white pt-8 pb-6 px-4 rounded-b-2xl shadow-lg shrink-0 z-[110] relative overflow-hidden">
-        <div className="flex justify-between items-center relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-xl font-black shadow-lg border-b-3 border-indigo-800 rotate-6">
-                {selectedCourier?.name.charAt(0)}
+      {/* Ödeme Yöntemi Seçimi Modalı */}
+      {selectingPayment && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto">
+                <i className="fas fa-wallet text-2xl text-emerald-600"></i>
               </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0f172a] animate-pulse"></div>
+              <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">ÖDEME YÖNTEMİ</h3>
+              <p className="text-[11px] font-bold text-slate-400 uppercase">Nasıl ödendi?</p>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base font-black tracking-tighter leading-tight uppercase truncate max-w-[120px]">{selectedCourier?.name.split(' ')[0]}</h1>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-rose-500'} ${isOnline ? 'animate-pulse' : ''}`}></div>
-                <p className="text-[10px] font-black uppercase tracking-[0.15em]">{isOnline ? 'ONLINE' : 'OFFLINE'}</p>
-              </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => setSelectedPaymentMethod(PaymentMethod.CASH)}
+                className={`py-4 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 transition-all ${
+                  selectedPaymentMethod === PaymentMethod.CASH
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}
+              >
+                <i className="fas fa-money-bill-wave text-lg mb-1"></i>
+                <div>NAKİT</div>
+              </button>
+              <button
+                onClick={() => setSelectedPaymentMethod(PaymentMethod.POS)}
+                className={`py-4 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 transition-all ${
+                  selectedPaymentMethod === PaymentMethod.POS
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}
+              >
+                <i className="fas fa-credit-card text-lg mb-1"></i>
+                <div>POS</div>
+              </button>
+              <button
+                onClick={() => setSelectedPaymentMethod(PaymentMethod.NOT_COLLECTED)}
+                className={`py-4 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 transition-all ${
+                  selectedPaymentMethod === PaymentMethod.NOT_COLLECTED
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}
+              >
+                <i className="fas fa-times-circle text-lg mb-1"></i>
+                <div>ALINMADI</div>
+              </button>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setSelectingPayment(null)}
+                className="flex-1 py-3 bg-slate-100 text-slate-500 rounded-xl font-black text-[11px] uppercase tracking-widest"
+              >
+                İPTAL
+              </button>
+              <button
+                onClick={() => {
+                  if (selectingPayment) {
+                    // Ödeme yöntemini kaydet ve teslimi tamamla
+                    updateOrderStatus(selectingPayment.orderId, selectingPayment.status);
+                    setSelectingPayment(null);
+                    if ('vibrate' in navigator) navigator.vibrate(50);
+                  }
+                }}
+                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg"
+              >
+                TESLİMİ ONAYLA
+              </button>
             </div>
           </div>
+        </div>
+      )}
+
+      <div className="bg-slate-900 text-white pt-10 pb-3 px-4 shadow-lg shrink-0 z-[110]">
+        <div className="flex justify-between items-center">
+          {/* Sol: Kurye adı */}
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center text-slate-900 text-xl font-black">
+              {selectedCourier?.name.charAt(0)}
+            </div>
+            <div>
+              <h1 className="text-base font-black uppercase tracking-tight">{selectedCourier?.name.split(' ')[0]}</h1>
+            </div>
+          </div>
+
+          {/* Orta: Durum rozeti */}
+          <div className="flex items-center gap-2">
+            {activeOrders.length === 0 ? (
+              <div className="px-3 py-1.5 bg-emerald-500 rounded-full flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <span className="text-[11px] font-black uppercase">MÜSAİT</span>
+              </div>
+            ) : activeOrders.some(o => o.status === OrderStatus.ON_WAY) ? (
+              <div className="px-3 py-1.5 bg-amber-500 rounded-full flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <span className="text-[11px] font-black uppercase">YOLDA</span>
+              </div>
+            ) : (
+              <div className="px-3 py-1.5 bg-indigo-500 rounded-full flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <span className="text-[11px] font-black uppercase">BEKLİYOR</span>
+              </div>
+            )}
+          </div>
+
+          {/* Sağ: Yenile ve kurye değiştir */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -546,20 +703,20 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                 onRefresh?.();
                 setTimeout(() => setIsRefreshing(false), 1000);
               }}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-white transition-all ${isRefreshing ? 'bg-emerald-500 animate-spin' : 'bg-white/10 hover:bg-white/20'}`}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isRefreshing ? 'bg-emerald-500 animate-spin' : 'bg-white/10'}`}
               disabled={isRefreshing}
             >
-              <i className={`fas fa-sync-alt text-sm ${isRefreshing ? '' : ''}`}></i>
+              <i className="fas fa-sync-alt text-sm"></i>
             </button>
             <div className="relative">
               <select
                 value={courierId}
                 onChange={(e) => onCourierChange(e.target.value)}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-[11px] font-black uppercase tracking-widest outline-none px-3 py-2 appearance-none pr-6 text-white min-w-[100px]"
+                className="bg-white/10 border border-white/20 rounded-xl text-[11px] font-black uppercase outline-none px-3 py-2 appearance-none pr-7 text-white w-24"
               >
                 {couriers.map(c => <option key={c.id} value={c.id} className="bg-slate-900">{c.name.split(' ')[0]}</option>)}
               </select>
-              <i className="fas fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-xs pointer-events-none text-white/50"></i>
+              <i className="fas fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none text-white/50"></i>
             </div>
           </div>
         </div>
@@ -573,34 +730,34 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      <div className="fixed bottom-4 left-4 right-4 z-[120]">
-        <div className="bg-[#0f172a]/95 backdrop-blur-2xl border border-white/10 h-18 rounded-2xl shadow-xl flex justify-around items-center px-3 max-w-md mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-slate-900 border-t border-white/10">
+        <div className="flex justify-around items-center py-3 px-4 max-w-md mx-auto">
           <button
             onClick={() => setActiveTab('tasks')}
-            className={`flex-1 flex flex-col items-center gap-1.5 transition-all duration-300 ${activeTab === 'tasks' ? 'scale-105' : 'opacity-40'}`}
+            className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'tasks' ? 'scale-105' : 'opacity-40'}`}
           >
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${activeTab === 'tasks' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-white'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-white text-slate-900' : 'text-white'}`}>
               <i className="fas fa-clipboard-list text-base"></i>
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${activeTab === 'tasks' ? 'text-indigo-400' : 'text-white'}`}>İşler</span>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'tasks' ? 'text-white' : 'text-white/60'}`}>İşler</span>
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
-            className={`flex-1 flex flex-col items-center gap-1.5 transition-all duration-300 ${activeTab === 'inventory' ? 'scale-105' : 'opacity-40'}`}
+            className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'inventory' ? 'scale-105' : 'opacity-40'}`}
           >
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${activeTab === 'inventory' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-white'}`}>
-              <i className="fas fa-truck-ramp-box text-base"></i>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-white text-slate-900' : 'text-white'}`}>
+              <i className="fas fa-boxes-stacked text-base"></i>
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${activeTab === 'inventory' ? 'text-indigo-400' : 'text-white'}`}>Stok</span>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'inventory' ? 'text-white' : 'text-white/60'}`}>Stok</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 flex flex-col items-center gap-1.5 transition-all duration-300 ${activeTab === 'profile' ? 'scale-105' : 'opacity-40'}`}
+            className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'profile' ? 'scale-105' : 'opacity-40'}`}
           >
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${activeTab === 'profile' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-white'}`}>
-              <i className="fas fa-user-ninja text-base"></i>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-white text-slate-900' : 'text-white'}`}>
+              <i className="fas fa-user text-base"></i>
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest ${activeTab === 'profile' ? 'text-indigo-400' : 'text-white'}`}>Profil</span>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'profile' ? 'text-white' : 'text-white/60'}`}>Profil</span>
           </button>
         </div>
       </div>
