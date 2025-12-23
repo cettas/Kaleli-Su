@@ -4,47 +4,141 @@
 -- Bu SQL'i Supabase SQL Editor'da çalıştırın
 
 -- =====================================================
--- 1. INTEGRATIONS TABLOSU (GÜNCELLENMİŞ)
+-- 1. INTEGRATIONS TABLOSU (GÜNCELLEME)
 -- =====================================================
 
--- Integrations tablosu oluştur veya güncelle
-CREATE TABLE IF NOT EXISTS integrations (
-  id INTEGER PRIMARY KEY DEFAULT 1,
+-- Yeni kolonları ekle (varsa hata vermez, ALTER TABLE IF EXISTS'tir)
+DO $$
+BEGIN
+    -- Pazaryeri Entegrasyonları
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'trendyol_api_key') THEN
+        ALTER TABLE integrations ADD COLUMN trendyol_api_key TEXT;
+    END IF;
 
-  -- Pazaryeri Entegrasyonları
-  trendyol_api_key TEXT,
-  trendyol_api_secret TEXT,
-  trendyol_supplier_id TEXT,
-  trendyol_enabled BOOLEAN DEFAULT false,
-  getir_enabled BOOLEAN DEFAULT false,
-  yemeksepeti_enabled BOOLEAN DEFAULT false,
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'trendyol_api_secret') THEN
+        ALTER TABLE integrations ADD COLUMN trendyol_api_secret TEXT;
+    END IF;
 
-  -- AI Telefon Robotu Ayarları
-  ai_phone_enabled BOOLEAN DEFAULT false,
-  ai_phone_provider TEXT,
-  ai_phone_api_key TEXT,
-  ai_phone_number TEXT,
-  ai_phone_webhook_url TEXT,
-  ai_phone_system_prompt TEXT,
-  ai_phone_voice_settings JSONB DEFAULT '{"language":"tr-TR","voice":"default","speed":1.0}'::jsonb,
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'trendyol_supplier_id') THEN
+        ALTER TABLE integrations ADD COLUMN trendyol_supplier_id TEXT;
+    END IF;
 
-  -- Netgsm Sesli Robot Ayarları
-  netgsm_enabled BOOLEAN DEFAULT false,
-  netgsm_api_key TEXT,
-  netgsm_phone_number TEXT,
-  netgsm_operator_extension TEXT DEFAULT '100',
-  netgsm_webhook_url TEXT,
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'trendyol_enabled') THEN
+        ALTER TABLE integrations ADD COLUMN trendyol_enabled BOOLEAN DEFAULT false;
+    END IF;
 
-  -- WhatsApp Bot Ayarları
-  whatsapp_enabled BOOLEAN DEFAULT false,
-  whatsapp_access_token TEXT,
-  whatsapp_phone_number_id TEXT,
-  whatsapp_verify_token TEXT DEFAULT 'su_siparis_bot_2024',
-  whatsapp_operator_phone TEXT,
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'getir_enabled') THEN
+        ALTER TABLE integrations ADD COLUMN getir_enabled BOOLEAN DEFAULT false;
+    END IF;
 
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'yemeksepeti_enabled') THEN
+        ALTER TABLE integrations ADD COLUMN yemeksepeti_enabled BOOLEAN DEFAULT false;
+    END IF;
+
+    -- AI Telefon Robotu Ayarları
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'ai_phone_enabled') THEN
+        ALTER TABLE integrations ADD COLUMN ai_phone_enabled BOOLEAN DEFAULT false;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'ai_phone_provider') THEN
+        ALTER TABLE integrations ADD COLUMN ai_phone_provider TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'ai_phone_api_key') THEN
+        ALTER TABLE integrations ADD COLUMN ai_phone_api_key TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'ai_phone_number') THEN
+        ALTER TABLE integrations ADD COLUMN ai_phone_number TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'ai_phone_webhook_url') THEN
+        ALTER TABLE integrations ADD COLUMN ai_phone_webhook_url TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'ai_phone_system_prompt') THEN
+        ALTER TABLE integrations ADD COLUMN ai_phone_system_prompt TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'ai_phone_voice_settings') THEN
+        ALTER TABLE integrations ADD COLUMN ai_phone_voice_settings JSONB DEFAULT '{"language":"tr-TR","voice":"default","speed":1.0}'::jsonb;
+    END IF;
+
+    -- Netgsm Sesli Robot Ayarları
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'netgsm_enabled') THEN
+        ALTER TABLE integrations ADD COLUMN netgsm_enabled BOOLEAN DEFAULT false;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'netgsm_api_key') THEN
+        ALTER TABLE integrations ADD COLUMN netgsm_api_key TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'netgsm_phone_number') THEN
+        ALTER TABLE integrations ADD COLUMN netgsm_phone_number TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'netgsm_operator_extension') THEN
+        ALTER TABLE integrations ADD COLUMN netgsm_operator_extension TEXT DEFAULT '100';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'netgsm_webhook_url') THEN
+        ALTER TABLE integrations ADD COLUMN netgsm_webhook_url TEXT;
+    END IF;
+
+    -- WhatsApp Bot Ayarları
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'whatsapp_enabled') THEN
+        ALTER TABLE integrations ADD COLUMN whatsapp_enabled BOOLEAN DEFAULT false;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'whatsapp_access_token') THEN
+        ALTER TABLE integrations ADD COLUMN whatsapp_access_token TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'whatsapp_phone_number_id') THEN
+        ALTER TABLE integrations ADD COLUMN whatsapp_phone_number_id TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'whatsapp_verify_token') THEN
+        ALTER TABLE integrations ADD COLUMN whatsapp_verify_token TEXT DEFAULT 'su_siparis_bot_2024';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'whatsapp_operator_phone') THEN
+        ALTER TABLE integrations ADD COLUMN whatsapp_operator_phone TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'created_at') THEN
+        ALTER TABLE integrations ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'integrations' AND column_name = 'updated_at') THEN
+        ALTER TABLE integrations ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+END $$;
 
 -- İlk kaydı oluştur (eğer tablo boşsa)
 INSERT INTO integrations (id)
@@ -255,33 +349,6 @@ SET
   whatsapp_verify_token = 'su_siparis_bot_2024',
   netgsm_operator_extension = '100'
 WHERE id = 1;
-
--- =====================================================
--- 8. FAYDALI GÖRÜNÜMLER (QUERIES)
--- =====================================================
-
--- Aktif entegrasyonları görüntüle
--- SELECT
---   CASE WHEN trendyol_enabled THEN 1 ELSE 0 END AS trendyol,
---   CASE WHEN netgsm_enabled THEN 1 ELSE 0 END AS netgsm,
---   CASE WHEN whatsapp_enabled THEN 1 ELSE 0 END AS whatsapp
--- FROM integrations WHERE id = 1;
-
--- Bugünkü WhatsApp siparişleri
--- SELECT COUNT(*), COALESCE(SUM((order_data->>'adet')::int * 50), 0) AS tahmini_gelir
--- FROM whatsapp_chats
--- WHERE status = 'success'
---   AND DATE(created_at) = CURRENT_DATE;
-
--- Failover oranları
--- SELECT
---   reason_type,
---   COUNT(*) as count,
---   ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) as percentage
--- FROM call_failover_logs
--- WHERE created_at > NOW() - INTERVAL '30 days'
--- GROUP BY reason_type
--- ORDER BY count DESC;
 
 -- =====================================================
 -- KURULUM TAMAMLANDI
