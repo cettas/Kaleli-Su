@@ -1,25 +1,30 @@
+export const OrderStatus = {
+  PENDING: 'Bekliyor',
+  ON_WAY: 'Yolda',
+  DELIVERED: 'Teslim Edildi',
+  CANCELLED: 'İptal'
+} as const;
 
-export enum OrderStatus {
-  PENDING = 'Bekliyor',
-  ON_WAY = 'Yolda',
-  DELIVERED = 'Teslim Edildi',
-  CANCELLED = 'İptal'
-}
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 
-export enum OrderSource {
-  WEB = 'Web/Müşteri',
-  PHONE = 'Telefon',
-  GETIR = 'Getir',
-  TRENDYOL = 'Trendyol',
-  YEMEKSEPETI = 'Yemeksepeti'
-}
+export const OrderSource = {
+  WEB: 'Web/Müşteri',
+  PHONE: 'Telefon',
+  GETIR: 'Getir',
+  TRENDYOL: 'Trendyol',
+  YEMEKSEPETI: 'Yemeksepeti'
+} as const;
 
-export enum UserRole {
-  ADMIN = 'Admin',
-  OFFICE = 'Ofis Personeli',
-  COURIER = 'Kurye',
-  CUSTOMER = 'Müşteri'
-}
+export type OrderSource = (typeof OrderSource)[keyof typeof OrderSource];
+
+export const UserRole = {
+  ADMIN: 'Admin',
+  OFFICE: 'Ofis Personeli',
+  COURIER: 'Kurye',
+  CUSTOMER: 'Müşteri'
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export interface Category {
   id: string;
