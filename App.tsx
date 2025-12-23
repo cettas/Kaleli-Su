@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserRole, Order, OrderStatus, Customer, Courier, InventoryItem, Category, User } from './types';
-import { INITIAL_CUSTOMERS, COURIERS as INITIAL_COURIERS } from './constants';
+import { COURIERS as INITIAL_COURIERS } from './constants';
 import OfficePanel from './components/OfficePanel';
 import CourierPanel from './components/CourierPanel';
 import AdminPanel from './components/AdminPanel';
 import CustomerOrderPage from './components/CustomerOrderPage';
 import LoginPage from './components/LoginPage';
+import { supabase } from './services/supabaseClient';
 
 interface Toast {
   id: string;
@@ -15,64 +16,55 @@ interface Toast {
   type: 'info' | 'success' | 'warning';
 }
 
-interface AppState {
-  orders: Order[];
-  customers: Customer[];
-  couriers: Courier[];
-  categories: Category[];
-  inventory: InventoryItem[];
-  selectedCourierId: string;
-  currentUser: User | null;
-}
-
 const App: React.FC = () => {
   const [role, setRole] = useState<UserRole | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const prevOrderCount = useRef<number | null>(null);
-  const location = useLocation();
 
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('suda-orders');
-    if (saved) return JSON.parse(saved);
-    return [];
-  });
-
-  const [customers, setCustomers] = useState<Customer[]>(() => {
-    const saved = localStorage.getItem('suda-customers');
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
-  });
-
-  const [couriers, setCouriers] = useState<Courier[]>(() => {
-    const saved = localStorage.getItem('suda-couriers');
-    return saved ? JSON.parse(saved) : INITIAL_COURIERS;
-  });
-
-  const [selectedCourierId, setSelectedCourierId] = useState<string>(INITIAL_COURIERS[0].id);
-
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem('suda-categories');
-    return saved ? JSON.parse(saved) : [
-      { id: 'su', label: 'SU', icon: 'droplet' },
-      { id: 'ekipman', label: 'EKİPMAN', icon: 'faucet' },
-      { id: 'aksesuar', label: 'AKSESUAR', icon: 'bottle-water' },
-      { id: 'diger', label: 'DİĞER', icon: 'ellipsis-h' }
-    ];
-  });
-
-  const [inventory, setInventory] = useState<InventoryItem[]>(() => {
-    const saved = localStorage.getItem('suda-inventory');
-    return saved ? JSON.parse(saved) : [
-      { id: 'core-full', name: '19L Dolu Damacana', quantity: 450, unit: 'Adet', costPrice: 45, salePrice: 85, isCore: true, category: 'su', isActive: true },
-      { id: 'core-empty', name: '19L Boş Damacana', quantity: 120, unit: 'Adet', costPrice: 200, salePrice: 0, isCore: true, category: 'su', isActive: true },
-      { id: 'core-pump', name: 'Yedek Pompalar', quantity: 35, unit: 'Adet', costPrice: 80, salePrice: 150, isCore: true, category: 'ekipman', isActive: true },
-      { id: 'extra-1', name: '0.5L Koli Su', quantity: 80, unit: 'Koli', costPrice: 90, salePrice: 130, category: 'su', isActive: true }
-    ];
-  });
-
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [couriers, setCouriers] = useState<Courier[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [selectedCourierId, setSelectedCourierId] = useState<string>('');
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('suda-currentUser');
     return saved ? JSON.parse(saved) : null;
   });
+  const [loading, setLoading] = useState(true);
+
+  // Verileri Supabase'den yükle
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [ordersRes, customersRes, couriersRes, categoriesRes, inventoryRes] = await Promise.all([
+        supabase.from('orders').select('*').order('created_at', { ascending: false }),
+        supabase.from('customers').select('*'),
+        supabase.from('couriers').select('*'),
+        supabase.from('categories').select('*'),
+        supabase.from('inventory').select('*')
+      ]);
+
+      if (ordersRes.data) setOrders(ordersRes.data as Order[]);
+      if (customersRes.data) setCustomers(customersRes.data as Customer[]);
+      if (couriersRes.data) {
+        setCouriers(couriersRes.data as Courier[]);
+        if (couriersRes.data.length > 0) {
+          setSelectedCourierId(couriersRes.data[0].id);
+        }
+      }
+      if (categoriesRes.data) setCategories(categoriesRes.data as Category[]);
+      if (inventoryRes.data) setInventory(inventoryRes.data as InventoryItem[]);
+    } catch (error) {
+      console.error('Veri yükleme hatası:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showToast = (title: string, message: string, type: 'info' | 'success' | 'warning' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -82,36 +74,20 @@ const App: React.FC = () => {
     }, 5000);
   };
 
+  // Yeni sipariş bildirimi
   useEffect(() => {
     if (prevOrderCount.current !== null && orders.length > prevOrderCount.current) {
       const newOrder = orders[0];
       if (newOrder) {
         showToast(
           "YENİ SİPARİŞ!",
-          `${newOrder.customerName} - ${newOrder.totalAmount}₺ değerinde sipariş alındı.`,
+          `${newOrder.customer_name} - ${newOrder.total_amount}₺ değerinde sipariş alındı.`,
           'success'
         );
       }
     }
     prevOrderCount.current = orders.length;
-    localStorage.setItem('suda-orders', JSON.stringify(orders));
   }, [orders]);
-
-  useEffect(() => {
-    localStorage.setItem('suda-customers', JSON.stringify(customers));
-  }, [customers]);
-
-  useEffect(() => {
-    localStorage.setItem('suda-inventory', JSON.stringify(inventory));
-  }, [inventory]);
-
-  useEffect(() => {
-    localStorage.setItem('suda-couriers', JSON.stringify(couriers));
-  }, [couriers]);
-
-  useEffect(() => {
-    localStorage.setItem('suda-categories', JSON.stringify(categories));
-  }, [categories]);
 
   useEffect(() => {
     if (currentUser) {
@@ -121,67 +97,150 @@ const App: React.FC = () => {
     }
   }, [currentUser]);
 
-  const addOrder = (newOrder: Order, customerData: Customer) => {
-    setOrders(prev => [newOrder, ...prev]);
+  // Realtime subscriptions
+  useEffect(() => {
+    const ordersChannel = supabase
+      .channel('orders_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setOrders(prev => [payload.new as Order, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+          setOrders(prev => prev.map(o => o.id === payload.new.id ? payload.new as Order : o));
+        } else if (payload.eventType === 'DELETE') {
+          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
+        }
+      })
+      .subscribe();
 
-    setCustomers(prevCustomers => {
+    return () => {
+      supabase.removeChannel(ordersChannel);
+    };
+  }, []);
+
+  const addOrder = async (newOrder: Order, customerData: Customer) => {
+    try {
+      // Siparişi ekle
+      const { error: orderError } = await supabase.from('orders').insert({
+        id: newOrder.id,
+        customer_id: newOrder.customerId,
+        customer_name: newOrder.customerName,
+        phone: newOrder.phone,
+        address: newOrder.address,
+        items: newOrder.items,
+        total_amount: newOrder.totalAmount,
+        courier_id: newOrder.courierId,
+        courier_name: newOrder.courierName,
+        status: newOrder.status,
+        source: newOrder.source,
+        note: newOrder.note,
+        created_at: newOrder.createdAt,
+        updated_at: newOrder.updatedAt
+      });
+
+      if (orderError) throw orderError;
+
+      // Müşteriyi kontrol et ve güncelle
       const cleanNewPhone = customerData.phone.replace(/\D/g, '').slice(-10);
-      const existingIndex = prevCustomers.findIndex(c =>
+      const existingCustomer = customers.find(c =>
         c.phone.replace(/\D/g, '').slice(-10) === cleanNewPhone
       );
 
-      if (existingIndex > -1) {
-        const updated = [...prevCustomers];
-        updated[existingIndex] = {
-          ...updated[existingIndex],
+      if (existingCustomer) {
+        await supabase.from('customers').update({
           name: customerData.name,
           phone: customerData.phone,
           district: customerData.district,
           neighborhood: customerData.neighborhood,
           street: customerData.street,
-          buildingNo: customerData.buildingNo,
-          apartmentNo: customerData.apartmentNo,
-          orderCount: (updated[existingIndex].orderCount || 0) + 1,
-          lastOrderDate: new Date().toISOString(),
-          lastNote: customerData.lastNote || updated[existingIndex].lastNote
-        };
-        return updated;
+          building_no: customerData.buildingNo,
+          apartment_no: customerData.apartmentNo,
+          order_count: (existingCustomer.orderCount || 0) + 1,
+          last_order_date: new Date().toISOString(),
+          last_note: customerData.lastNote || existingCustomer.lastNote,
+          updated_at: new Date().toISOString()
+        }).eq('id', existingCustomer.id);
       } else {
-        const newCustomerEntry: Customer = {
-          ...customerData,
+        await supabase.from('customers').insert({
           id: customerData.id || 'cust_' + Date.now(),
-          orderCount: 1,
-          lastOrderDate: new Date().toISOString()
-        };
-        return [...prevCustomers, newCustomerEntry];
+          phone: customerData.phone,
+          name: customerData.name,
+          district: customerData.district,
+          neighborhood: customerData.neighborhood,
+          street: customerData.street,
+          building_no: customerData.buildingNo,
+          apartment_no: customerData.apartmentNo,
+          last_note: customerData.lastNote,
+          order_count: 1,
+          last_order_date: new Date().toISOString()
+        });
       }
-    });
+    } catch (error) {
+      console.error('Sipariş ekleme hatası:', error);
+      showToast('HATA', 'Sipariş kaydedilemedi.', 'warning');
+    }
   };
 
-  const updateOrderStatus = (orderId: string, status: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status, updatedAt: new Date().toISOString() } : o));
+  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
+    try {
+      const { error } = await supabase.from('orders').update({
+        status,
+        updated_at: new Date().toISOString()
+      }).eq('id', orderId);
+
+      if (error) throw error;
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status, updatedAt: new Date().toISOString() } : o));
+    } catch (error) {
+      console.error('Durum güncelleme hatası:', error);
+    }
   };
 
-  const updateOrderCourier = (orderId: string, courierId: string) => {
-    const courier = couriers.find(c => c.id === courierId);
-    if (!courier) return;
+  const updateOrderCourier = async (orderId: string, courierId: string) => {
+    try {
+      const courier = couriers.find(c => c.id === courierId);
+      if (!courier) return;
 
-    setOrders(prev => prev.map(o =>
-      o.id === orderId ? {
-        ...o,
-        courierId,
-        courierName: courier.name,
-        updatedAt: new Date().toISOString()
-      } : o
-    ));
-    showToast("GÜNCELENDİ", `Sipariş kuryesi ${courier.name} olarak değiştirildi.`, 'info');
+      const { error } = await supabase.from('orders').update({
+        courier_id: courierId,
+        courier_name: courier.name,
+        updated_at: new Date().toISOString()
+      }).eq('id', orderId);
+
+      if (error) throw error;
+
+      setOrders(prev => prev.map(o =>
+        o.id === orderId ? {
+          ...o,
+          courierId,
+          courierName: courier.name,
+          updatedAt: new Date().toISOString()
+        } : o
+      ));
+      showToast("GÜNCELENDİ", `Sipariş kuryesi ${courier.name} olarak değiştirildi.`, 'info');
+    } catch (error) {
+      console.error('Kurye güncelleme hatası:', error);
+    }
   };
 
-  const onUpdateCourier = (updatedCourier: Courier) => {
-    setCouriers(prev => prev.map(c => c.id === updatedCourier.id ? updatedCourier : c));
+  const onUpdateCourier = async (updatedCourier: Courier) => {
+    try {
+      const { error } = await supabase.from('couriers').update({
+        name: updatedCourier.name,
+        status: updatedCourier.status,
+        phone: updatedCourier.phone,
+        full_inventory: updatedCourier.fullInventory,
+        empty_inventory: updatedCourier.emptyInventory,
+        service_region: updatedCourier.serviceRegion,
+        updated_at: new Date().toISOString()
+      }).eq('id', updatedCourier.id);
+
+      if (error) throw error;
+      setCouriers(prev => prev.map(c => c.id === updatedCourier.id ? updatedCourier : c));
+    } catch (error) {
+      console.error('Kurye güncelleme hatası:', error);
+    }
   };
 
-  const handleLogin = (user: User) => {
+  const handleLogin = async (user: User) => {
     setCurrentUser(user);
   };
 
@@ -199,6 +258,14 @@ const App: React.FC = () => {
     }
     return <>{children}</>;
   };
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl font-bold">Yükleniyor...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 relative overflow-hidden">
@@ -420,11 +487,19 @@ const App: React.FC = () => {
               couriers={couriers}
               customers={customers}
               inventory={inventory}
-              onUpdateCouriers={setCouriers}
-              onUpdateCustomers={setCustomers}
-              onUpdateInventory={setInventory}
+              onUpdateCouriers={(couriers) => {
+                setCouriers(couriers);
+              }}
+              onUpdateCustomers={(customers) => {
+                setCustomers(customers);
+              }}
+              onUpdateInventory={(inventory) => {
+                setInventory(inventory);
+              }}
               categories={categories}
-              onUpdateCategories={setCategories}
+              onUpdateCategories={(categories) => {
+                setCategories(categories);
+              }}
             />
           </ProtectedRoute>
         } />
