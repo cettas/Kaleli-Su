@@ -841,7 +841,7 @@ const IntegrationsManagement: React.FC = () => {
                 <code className="text-[10px] text-blue-700 block">
                   curl -X POST http://localhost:3001/webhook/netgsm/call/start \<br/>
                   &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
-                  &nbsp;&nbsp;-d '{{"call_id":"test-123","caller_id":"905551234567"}}'
+                  &nbsp;&nbsp;-d '&#123;"call_id":"test-123","caller_id":"905551234567"&#125;'
                 </code>
               </div>
             </div>
@@ -1019,7 +1019,7 @@ const IntegrationsManagement: React.FC = () => {
                 <code className="text-[10px] text-blue-700 block">
                   curl -X POST http://localhost:3001/api/whatsapp/test \<br/>
                   &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
-                  &nbsp;&nbsp;-d '{{"phone":"905551234567","message":"2 tane damacana"}}'
+                  &nbsp;&nbsp;-d '&#123;"phone":"905551234567","message":"2 tane damacana"&#125;'
                 </code>
               </div>
 
