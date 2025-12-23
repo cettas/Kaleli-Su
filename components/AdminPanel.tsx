@@ -232,8 +232,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   { label: 'İPTAL EDİLENLER', value: stats.cancelledCount, sub: `${((stats.cancelledCount / (stats.totalCount || 1)) * 100).toFixed(1)}% Kayıp Oranı`, icon: 'ban', color: 'rose' }
                 ].map((kpi, idx) => (
                   <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group hover:border-indigo-500 transition-all duration-500">
-                    <div className={`absolute -right-4 -top-4 w-24 h-24 bg-${kpi.color}-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <i className={`fas fa-${kpi.icon} text-${kpi.color}-500/20 text-4xl`}></i>
+                    <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${
+                      kpi.color === 'indigo' ? 'bg-indigo-50' :
+                      kpi.color === 'emerald' ? 'bg-emerald-50' :
+                      kpi.color === 'amber' ? 'bg-amber-50' :
+                      'bg-rose-50'
+                    }`}>
+                      <i className={`fas fa-${kpi.icon} text-4xl ${
+                        kpi.color === 'indigo' ? 'text-indigo-500/20' :
+                        kpi.color === 'emerald' ? 'text-emerald-500/20' :
+                        kpi.color === 'amber' ? 'text-amber-500/20' :
+                        'text-rose-500/20'
+                      }`}></i>
                     </div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 relative z-10">{kpi.label}</p>
                     <h3 className="text-4xl font-black text-slate-900 tracking-tighter mb-2 relative z-10">{kpi.value}</h3>

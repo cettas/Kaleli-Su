@@ -69,7 +69,7 @@ const App: React.FC = () => {
           buildingNo: c.building_no,
           apartmentNo: c.apartment_no,
           lastNote: c.last_note,
-          orderCount: c.order_count,
+          orderCount: c.order_count || 0,
           lastOrderDate: c.last_order_date
         }));
         setCustomers(transformedCustomers as Customer[]);
@@ -102,6 +102,42 @@ const App: React.FC = () => {
       console.error('Veri yükleme hatası:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Sadece siparişleri yenile (form reset olmasın diye)
+  const refreshOrders = async () => {
+    try {
+      const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      if (data) {
+        const transformedOrders = data.map((o: any) => ({
+          ...o,
+          customerId: o.customer_id,
+          customerName: o.customer_name,
+          totalAmount: o.total_amount,
+          courierId: o.courier_id,
+          courierName: o.courier_name,
+          createdAt: o.created_at,
+          updatedAt: o.updated_at
+        }));
+        setOrders(transformedOrders as Order[]);
+      }
+
+      // Sadece müşterileri de yenile
+      const { data: customersData } = await supabase.from('customers').select('*');
+      if (customersData) {
+        const transformedCustomers = customersData.map((c: any) => ({
+          ...c,
+          buildingNo: c.building_no,
+          apartmentNo: c.apartment_no,
+          lastNote: c.last_note,
+          orderCount: c.order_count || 0,
+          lastOrderDate: c.last_order_date
+        }));
+        setCustomers(transformedCustomers as Customer[]);
+      }
+    } catch (error) {
+      console.error('Sipariş yenileme hatası:', error);
     }
   };
 
@@ -194,8 +230,8 @@ const App: React.FC = () => {
         });
       }
 
-      // Verileri yenile (sipariş listesini güncelle)
-      await loadData();
+      // Sadece siparişleri ve müşterileri yenile (inventory değişmesin)
+      await refreshOrders();
       showToast('BAŞARILI', 'Sipariş başarıyla oluşturuldu.', 'success');
     } catch (error) {
       console.error('Sipariş ekleme hatası:', error);

@@ -79,8 +79,12 @@ const StockManagement: React.FC<StockManagementProps> = ({ inventory, categories
 
       onUpdateInventory(inventory.map(i => i.id === selectedItem.id ? updatedItem : i));
     }
+    // Formu kapat ve resetle
     setShowForm(null);
     setSelectedItem(null);
+    setFormData({
+      name: '', quantity: 0, unit: 'Adet', costPrice: 0, salePrice: 0, category: categories[0]?.id || 'diger', isActive: true, imageUrl: ''
+    });
   };
 
   return (
