@@ -556,7 +556,7 @@ const IntegrationsManagement: React.FC = () => {
                 <div className="space-y-2 text-xs font-mono">
                   <div className="flex items-center gap-2">
                     <span className="text-emerald-600 font-black">GET</span>
-                    <span className="text-slate-600">/api/customer/by-phone?phone=&lt;caller_id&gt;</span>
+                    <span className="text-slate-600">/api/customer/by-phone?phone={'<caller_id>'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-indigo-600 font-black">POST</span>
@@ -839,9 +839,9 @@ const IntegrationsManagement: React.FC = () => {
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                 <p className="text-[10px] font-black text-blue-800 uppercase mb-2">Test Komutu</p>
                 <code className="text-[10px] text-blue-700 block">
-                  curl -X POST http://localhost:3001/webhook/netgsm/call/start \<br/>
-                  &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
-                  &nbsp;&nbsp;-d '&#123;"call_id":"test-123","caller_id":"905551234567"&#125;'
+                  curl -X POST http://localhost:3001/webhook/netgsm/call/start {'<br/>'}
+                  &nbsp;&nbsp;-H "Content-Type: application/json" {'<br/>'}
+                  &nbsp;&nbsp;-d '{'{"call_id":"test-123","caller_id":"905551234567"}'}'
                 </code>
               </div>
             </div>
