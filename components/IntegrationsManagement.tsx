@@ -252,8 +252,7 @@ const IntegrationsManagement: React.FC = () => {
       </div>
 
       {/* Ayarlar Tab İçeriği */}
-      {activeSubTab === 'settings' && (
-        <div className="space-y-8">
+      <div className="space-y-8">
           {/* Buraya mevcut tüm entegrasyon ayarları gelecek */}
 
       {/* Trendyol Entegrasyonu */}
@@ -1042,11 +1041,7 @@ const IntegrationsManagement: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Loglar Tab İçeriği */}
-      {activeSubTab === 'logs' && (
-        <IntegrationLogsViewer />
-      )}
+      </div>
     </div>
   );
 };
