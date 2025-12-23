@@ -1,0 +1,7 @@
+{
+  "name": "SuDağıtım Pro - Sipariş Yönetim Sistemi",
+  "description": "Profesyonel su dağıtım şirketleri için tasarlanmış, hızlı sipariş girişli, kurye takipli ve detaylı raporlama özellikli uçtan uca yönetim sistemi.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
