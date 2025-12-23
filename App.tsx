@@ -49,16 +49,55 @@ const App: React.FC = () => {
         supabase.from('inventory').select('*')
       ]);
 
-      if (ordersRes.data) setOrders(ordersRes.data as Order[]);
-      if (customersRes.data) setCustomers(customersRes.data as Customer[]);
+      if (ordersRes.data) {
+        // Transform snake_case to camelCase
+        const transformedOrders = ordersRes.data.map((o: any) => ({
+          ...o,
+          customerId: o.customer_id,
+          customerName: o.customer_name,
+          totalAmount: o.total_amount,
+          courierId: o.courier_id,
+          courierName: o.courier_name,
+          createdAt: o.created_at,
+          updatedAt: o.updated_at
+        }));
+        setOrders(transformedOrders as Order[]);
+      }
+      if (customersRes.data) {
+        const transformedCustomers = customersRes.data.map((c: any) => ({
+          ...c,
+          buildingNo: c.building_no,
+          apartmentNo: c.apartment_no,
+          lastNote: c.last_note,
+          orderCount: c.order_count,
+          lastOrderDate: c.last_order_date
+        }));
+        setCustomers(transformedCustomers as Customer[]);
+      }
       if (couriersRes.data) {
-        setCouriers(couriersRes.data as Courier[]);
+        const transformedCouriers = couriersRes.data.map((c: any) => ({
+          ...c,
+          fullInventory: c.full_inventory || 0,
+          emptyInventory: c.empty_inventory || 0,
+          serviceRegion: c.service_region
+        }));
+        setCouriers(transformedCouriers as Courier[]);
         if (couriersRes.data.length > 0) {
           setSelectedCourierId(couriersRes.data[0].id);
         }
       }
       if (categoriesRes.data) setCategories(categoriesRes.data as Category[]);
-      if (inventoryRes.data) setInventory(inventoryRes.data as InventoryItem[]);
+      if (inventoryRes.data) {
+        const transformedInventory = inventoryRes.data.map((i: any) => ({
+          ...i,
+          costPrice: i.cost_price || 0,
+          salePrice: i.sale_price || 0,
+          isActive: i.is_active !== false,
+          isCore: i.is_core,
+          imageUrl: i.image_url
+        }));
+        setInventory(transformedInventory as InventoryItem[]);
+      }
     } catch (error) {
       console.error('Veri yükleme hatası:', error);
     } finally {
@@ -154,6 +193,10 @@ const App: React.FC = () => {
           last_order_date: new Date().toISOString()
         });
       }
+
+      // Verileri yenile (sipariş listesini güncelle)
+      await loadData();
+      showToast('BAŞARILI', 'Sipariş başarıyla oluşturuldu.', 'success');
     } catch (error) {
       console.error('Sipariş ekleme hatası:', error);
       showToast('HATA', 'Sipariş kaydedilemedi.', 'warning');
