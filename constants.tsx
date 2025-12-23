@@ -1,5 +1,12 @@
 
-import { Product, Courier, OrderStatus, OrderSource } from './types';
+import { Product, Courier, OrderStatus, OrderSource, User } from './types';
+
+export const DEFAULT_USERS: User[] = [
+  { id: 'admin1', username: 'admin', password: 'admin123', name: 'Sistem Yöneticisi', role: UserRole.ADMIN },
+  { id: 'office1', username: 'ofis', password: 'ofis123', name: 'Ofis Personeli', role: UserRole.OFFICE },
+  { id: 'courier1', username: 'kurye', password: 'kurye123', name: 'Ahmet Yılmaz', role: UserRole.COURIER, courierId: 'c1' },
+  { id: 'courier2', username: 'kurye2', password: 'kurye123', name: 'Mehmet Demir', role: UserRole.COURIER, courierId: 'c2' },
+];
 
 export const ISTANBUL_DISTRICTS = [
   "ADALAR", "ARNAVUTKÖY", "ATAŞEHİR", "AVCILAR", "BAĞCILAR", "BAHÇELİEVLER", 

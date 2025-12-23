@@ -87,10 +87,19 @@ export interface InventoryItem {
   name: string;
   quantity: number;
   unit: string;
-  costPrice: number;   
-  salePrice: number;   
-  isActive: boolean;   
+  costPrice: number;
+  salePrice: number;
+  isActive: boolean;
   isCore?: boolean;
   category: string;
   imageUrl?: string;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  password: string;
+  name: string;
+  role: UserRole;
+  courierId?: string;
 }

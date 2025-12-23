@@ -1,11 +1,12 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { UserRole, Order, OrderStatus, Customer, Courier, InventoryItem, Category } from './types';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { UserRole, Order, OrderStatus, Customer, Courier, InventoryItem, Category, User } from './types';
 import { INITIAL_CUSTOMERS, COURIERS as INITIAL_COURIERS } from './constants';
 import OfficePanel from './components/OfficePanel';
 import CourierPanel from './components/CourierPanel';
 import AdminPanel from './components/AdminPanel';
 import CustomerOrderPage from './components/CustomerOrderPage';
+import LoginPage from './components/LoginPage';
 
 interface Toast {
   id: string;
@@ -14,11 +15,22 @@ interface Toast {
   type: 'info' | 'success' | 'warning';
 }
 
+interface AppState {
+  orders: Order[];
+  customers: Customer[];
+  couriers: Courier[];
+  categories: Category[];
+  inventory: InventoryItem[];
+  selectedCourierId: string;
+  currentUser: User | null;
+}
+
 const App: React.FC = () => {
   const [role, setRole] = useState<UserRole | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const prevOrderCount = useRef<number | null>(null);
-  
+  const location = useLocation();
+
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('suda-orders');
     if (saved) return JSON.parse(saved);
@@ -34,9 +46,9 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('suda-couriers');
     return saved ? JSON.parse(saved) : INITIAL_COURIERS;
   });
-  
+
   const [selectedCourierId, setSelectedCourierId] = useState<string>(INITIAL_COURIERS[0].id);
-  
+
   const [categories, setCategories] = useState<Category[]>(() => {
     const saved = localStorage.getItem('suda-categories');
     return saved ? JSON.parse(saved) : [
@@ -57,7 +69,11 @@ const App: React.FC = () => {
     ];
   });
 
-  // Toast Bildirimi Ekleme Fonksiyonu
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('suda-currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const showToast = (title: string, message: string, type: 'info' | 'success' | 'warning' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts(prev => [...prev, { id, title, message, type }]);
@@ -66,13 +82,12 @@ const App: React.FC = () => {
     }, 5000);
   };
 
-  // Yeni Sipariş Takibi
   useEffect(() => {
     if (prevOrderCount.current !== null && orders.length > prevOrderCount.current) {
       const newOrder = orders[0];
       if (newOrder) {
         showToast(
-          "YENİ SİPARİŞ! 🔔", 
+          "YENİ SİPARİŞ!",
           `${newOrder.customerName} - ${newOrder.totalAmount}₺ değerinde sipariş alındı.`,
           'success'
         );
@@ -98,12 +113,20 @@ const App: React.FC = () => {
     localStorage.setItem('suda-categories', JSON.stringify(categories));
   }, [categories]);
 
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('suda-currentUser', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('suda-currentUser');
+    }
+  }, [currentUser]);
+
   const addOrder = (newOrder: Order, customerData: Customer) => {
     setOrders(prev => [newOrder, ...prev]);
-    
+
     setCustomers(prevCustomers => {
       const cleanNewPhone = customerData.phone.replace(/\D/g, '').slice(-10);
-      const existingIndex = prevCustomers.findIndex(c => 
+      const existingIndex = prevCustomers.findIndex(c =>
         c.phone.replace(/\D/g, '').slice(-10) === cleanNewPhone
       );
 
@@ -143,12 +166,12 @@ const App: React.FC = () => {
     const courier = couriers.find(c => c.id === courierId);
     if (!courier) return;
 
-    setOrders(prev => prev.map(o => 
-      o.id === orderId ? { 
-        ...o, 
-        courierId, 
+    setOrders(prev => prev.map(o =>
+      o.id === orderId ? {
+        ...o,
+        courierId,
         courierName: courier.name,
-        updatedAt: new Date().toISOString() 
+        updatedAt: new Date().toISOString()
       } : o
     ));
     showToast("GÜNCELENDİ", `Sipariş kuryesi ${courier.name} olarak değiştirildi.`, 'info');
@@ -158,63 +181,31 @@ const App: React.FC = () => {
     setCouriers(prev => prev.map(c => c.id === updatedCourier.id ? updatedCourier : c));
   };
 
-  if (!role) {
-    return (
-      <div className="h-screen bg-slate-900 flex items-center justify-center p-6 overflow-y-auto">
-        <div className="w-full max-w-md space-y-8 text-center py-10">
-          <div className="space-y-4">
-             <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white text-4xl mx-auto shadow-2xl shadow-indigo-500/20">
-                <i className="fas fa-droplet"></i>
-             </div>
-             <h1 className="text-3xl font-black text-white tracking-tighter uppercase">SUDAGITIM <span className="text-indigo-500">PRO</span></h1>
-             <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Lütfen çalışma alanını seç</p>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            {/* MÜŞTERİ BUTONU - EN ÜSTTE VE DAHA ŞIK */}
-            <button onClick={() => setRole(UserRole.CUSTOMER)} className="bg-indigo-600 p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-500 transition-all duration-300 shadow-xl shadow-indigo-600/20">
-               <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-2xl text-white group-hover:scale-110 transition-transform"><i className="fas fa-shopping-basket"></i></div>
-               <div className="text-left">
-                  <p className="font-black text-white uppercase text-sm">HIZLI SİPARİŞ VER</p>
-                  <p className="text-[10px] font-bold text-white/60">Giriş Yapmadan Su İste</p>
-               </div>
-            </button>
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
+  };
 
-            <div className="h-px bg-slate-800 my-2"></div>
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setRole(null);
+  };
 
-            <button onClick={() => setRole(UserRole.OFFICE)} className="bg-white p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-600 transition-all duration-300">
-               <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-slate-600 group-hover:bg-white/20 group-hover:text-white"><i className="fas fa-desktop"></i></div>
-               <div className="text-left">
-                  <p className="font-black text-slate-900 uppercase text-sm group-hover:text-white">OFİS PERSONELİ</p>
-                  <p className="text-[10px] font-bold text-slate-400 group-hover:text-white/60">Sipariş Kaydı ve Planlama</p>
-               </div>
-            </button>
-            <button onClick={() => setRole(UserRole.COURIER)} className="bg-white p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-600 transition-all duration-300">
-               <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-slate-600 group-hover:bg-white/20 group-hover:text-white"><i className="fas fa-motorcycle"></i></div>
-               <div className="text-left">
-                  <p className="font-black text-slate-900 uppercase text-sm group-hover:text-white">KURYE PANELİ</p>
-                  <p className="text-[10px] font-bold text-slate-400 group-hover:text-white/60">Teslimat ve Saha İşlemleri</p>
-               </div>
-            </button>
-            <button onClick={() => setRole(UserRole.ADMIN)} className="bg-slate-800 p-6 rounded-3xl flex items-center gap-6 group hover:bg-slate-700 transition-all duration-300 border border-slate-700">
-               <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center text-2xl text-indigo-400"><i className="fas fa-user-shield"></i></div>
-               <div className="text-left">
-                  <p className="font-black text-white uppercase text-sm">ADMİN PANELİ</p>
-                  <p className="text-[10px] font-bold text-slate-500">Tam Yetkili Yönetim</p>
-               </div>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole: UserRole }> = ({ children, requiredRole }) => {
+    if (!currentUser) {
+      return <LoginPage role={requiredRole as UserRole.OFFICE | UserRole.COURIER | UserRole.ADMIN} onLogin={handleLogin} onCancel={() => {}} />;
+    }
+    if (currentUser.role !== requiredRole) {
+      return <Navigate to="/" replace />;
+    }
+    return <>{children}</>;
+  };
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 relative overflow-hidden">
-      {/* GLOBAL TOAST CONTAINER */}
       <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-sm px-4 flex flex-col gap-3 pointer-events-none">
         {toasts.map(toast => (
-          <div 
-            key={toast.id} 
+          <div
+            key={toast.id}
             className="bg-[#0f172a] text-white p-5 rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.3)] border border-white/10 flex items-center gap-5 animate-in slide-in-from-top-full duration-500 pointer-events-auto"
           >
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-indigo-500'}`}>
@@ -228,76 +219,229 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
-              <i className="fas fa-droplet text-sm"></i>
+      <Routes>
+        {/* Home - Role Selection */}
+        <Route path="/" element={
+          !currentUser ? (
+            <div className="h-screen bg-slate-900 flex items-center justify-center p-6 overflow-y-auto">
+              <div className="w-full max-w-md space-y-8 text-center py-10">
+                <div className="space-y-4">
+                  <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white text-4xl mx-auto shadow-2xl shadow-indigo-500/20">
+                    <i className="fas fa-droplet"></i>
+                  </div>
+                  <h1 className="text-3xl font-black text-white tracking-tighter uppercase">SUDAGITIM <span className="text-indigo-500">PRO</span></h1>
+                  <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Lütfen çalışma alanını seç</p>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <button onClick={() => window.location.href = '/musteri'} className="bg-indigo-600 p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-500 transition-all duration-300 shadow-xl shadow-indigo-600/20">
+                    <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-2xl text-white group-hover:scale-110 transition-transform"><i className="fas fa-shopping-basket"></i></div>
+                    <div className="text-left">
+                      <p className="font-black text-white uppercase text-sm">HIZLI SİPARİŞ VER</p>
+                      <p className="text-[10px] font-bold text-white/60">Giriş Yapmadan Su İste</p>
+                    </div>
+                  </button>
+
+                  <div className="h-px bg-slate-800 my-2"></div>
+
+                  <button onClick={() => window.location.href = '/ofis'} className="bg-white p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-600 transition-all duration-300">
+                    <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-slate-600 group-hover:bg-white/20 group-hover:text-white"><i className="fas fa-desktop"></i></div>
+                    <div className="text-left">
+                      <p className="font-black text-slate-900 uppercase text-sm group-hover:text-white">OFİS PERSONELİ</p>
+                      <p className="text-[10px] font-bold text-slate-400 group-hover:text-white/60">Sipariş Kaydı ve Planlama</p>
+                    </div>
+                  </button>
+                  <button onClick={() => window.location.href = '/kurye'} className="bg-white p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-600 transition-all duration-300">
+                    <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-slate-600 group-hover:bg-white/20 group-hover:text-white"><i className="fas fa-motorcycle"></i></div>
+                    <div className="text-left">
+                      <p className="font-black text-slate-900 uppercase text-sm group-hover:text-white">KURYE PANELİ</p>
+                      <p className="text-[10px] font-bold text-slate-400 group-hover:text-white/60">Teslimat ve Saha İşlemleri</p>
+                    </div>
+                  </button>
+                  <button onClick={() => window.location.href = '/admin'} className="bg-slate-800 p-6 rounded-3xl flex items-center gap-6 group hover:bg-slate-700 transition-all duration-300 border border-slate-700">
+                    <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center text-2xl text-indigo-400"><i className="fas fa-user-shield"></i></div>
+                    <div className="text-left">
+                      <p className="font-black text-white uppercase text-sm">ADMİN PANELİ</p>
+                      <p className="text-[10px] font-bold text-slate-500">Tam Yetkili Yönetim</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
-            <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
-              SUDAĞITIM<span className="text-indigo-600">PRO</span>
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
-             <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">{role}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setRole(null)} 
-            className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
-          >
-            ÇIKIŞ YAP
-          </button>
-        </div>
-      </header>
-      <main className="flex-1 overflow-hidden">
-        {role === UserRole.OFFICE && (
-          <OfficePanel 
-            orders={orders} 
-            addOrder={addOrder} 
-            customers={customers} 
-            couriers={couriers}
-            updateOrderStatus={updateOrderStatus}
-            updateOrderCourier={updateOrderCourier}
-            stock={inventory}
-          />
-        )}
-        {role === UserRole.COURIER && (
-          <CourierPanel 
-            orders={orders.filter(o => o.courierId === selectedCourierId)} 
-            updateOrderStatus={updateOrderStatus}
-            courierId={selectedCourierId}
-            onCourierChange={setSelectedCourierId}
-            couriers={couriers}
-            onUpdateCourier={onUpdateCourier}
-          />
-        )}
-        {role === UserRole.ADMIN && (
-          <AdminPanel 
-            orders={orders} 
-            couriers={couriers} 
-            customers={customers} 
-            inventory={inventory}
-            onUpdateCouriers={setCouriers}
-            onUpdateCustomers={setCustomers}
-            onUpdateInventory={setInventory}
-            categories={categories}
-            onUpdateCategories={setCategories}
-          />
-        )}
-        {role === UserRole.CUSTOMER && (
-          <CustomerOrderPage 
-            inventory={inventory} 
-            categories={categories} 
-            addOrder={addOrder}
-            couriers={couriers}
-          />
-        )}
-      </main>
+          ) : (
+            <Navigate to={`/${currentUser.role.toLowerCase().replace(' ', '-')}`} replace />
+          )
+        } />
+
+        {/* Customer Page - No Login Required */}
+        <Route path="/musteri" element={
+          <>
+            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                    <i className="fas fa-droplet text-sm"></i>
+                  </div>
+                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
+                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
+                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">MÜŞTERİ</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                >
+                  ÇIKIŞ YAP
+                </button>
+              </div>
+            </header>
+            <CustomerOrderPage
+              inventory={inventory}
+              categories={categories}
+              addOrder={addOrder}
+              couriers={couriers}
+            />
+          </>
+        } />
+
+        {/* Office Page - Login Required */}
+        <Route path="/ofis" element={
+          <ProtectedRoute requiredRole={UserRole.OFFICE}>
+            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                    <i className="fas fa-droplet text-sm"></i>
+                  </div>
+                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
+                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
+                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">OFİS</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-slate-600">{currentUser?.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                >
+                  ÇIKIŞ
+                </button>
+              </div>
+            </header>
+            <OfficePanel
+              orders={orders}
+              addOrder={addOrder}
+              customers={customers}
+              couriers={couriers}
+              updateOrderStatus={updateOrderStatus}
+              updateOrderCourier={updateOrderCourier}
+              stock={inventory}
+            />
+          </ProtectedRoute>
+        } />
+
+        {/* Courier Page - Login Required */}
+        <Route path="/kurye" element={
+          <ProtectedRoute requiredRole={UserRole.COURIER}>
+            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                    <i className="fas fa-droplet text-sm"></i>
+                  </div>
+                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
+                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
+                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">KURYE</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-slate-600">{currentUser?.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                >
+                  ÇIKIŞ
+                </button>
+              </div>
+            </header>
+            <CourierPanel
+              orders={orders.filter(o => o.courierId === (currentUser?.courierId || selectedCourierId))}
+              updateOrderStatus={updateOrderStatus}
+              courierId={currentUser?.courierId || selectedCourierId}
+              onCourierChange={setSelectedCourierId}
+              couriers={couriers}
+              onUpdateCourier={onUpdateCourier}
+            />
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Page - Login Required */}
+        <Route path="/admin" element={
+          <ProtectedRoute requiredRole={UserRole.ADMIN}>
+            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                    <i className="fas fa-droplet text-sm"></i>
+                  </div>
+                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
+                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
+                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">ADMİN</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-slate-600">{currentUser?.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                >
+                  ÇIKIŞ
+                </button>
+              </div>
+            </header>
+            <AdminPanel
+              orders={orders}
+              couriers={couriers}
+              customers={customers}
+              inventory={inventory}
+              onUpdateCouriers={setCouriers}
+              onUpdateCustomers={setCustomers}
+              onUpdateInventory={setInventory}
+              categories={categories}
+              onUpdateCategories={setCategories}
+            />
+          </ProtectedRoute>
+        } />
+
+        {/* 404 - Redirect to Home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 };
 
-export default App;
+const AppWrapper: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+};
+
+export default AppWrapper;
