@@ -508,6 +508,16 @@ const App: React.FC = () => {
     setRole(null);
   };
 
+  // Role to path mapping
+  const getRolePath = (role: string): string => {
+    const roleMap: { [key: string]: string } = {
+      'Ofis Personeli': '/ofis',
+      'Kurye': '/kurye',
+      'Admin': '/admin'
+    };
+    return roleMap[role] || '/';
+  };
+
   const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole: string }> = ({ children, requiredRole }) => {
     if (!currentUser) {
       return <LoginPage role={requiredRole as "Ofis Personeli" | "Kurye" | "Admin"} onLogin={handleLogin} onCancel={() => {}} />;
@@ -594,7 +604,7 @@ const App: React.FC = () => {
               </div>
             </div>
           ) : (
-            <Navigate to={`/${currentUser.role.toLowerCase().replace(' ', '-')}`} replace />
+            <Navigate to={getRolePath(currentUser.role)} replace />
           )
         } />
 
