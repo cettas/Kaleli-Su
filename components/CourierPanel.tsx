@@ -305,137 +305,167 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
   };
 
   const renderTasks = () => (
-    <div className="space-y-4 pb-24">
-      {/* Ses Test Butonu */}
-      <button
-        onClick={unlockAudio}
-        className={`w-full p-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 transition-all ${
-          isAudioUnlocked
-            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30'
-            : 'bg-slate-800 text-white border-2 border-rose-500 shadow-lg'
-        }`}
-      >
-        <i className={`fas ${isAudioUnlocked ? 'fa-volume-high' : 'fa-volume-xmark'} text-lg`}></i>
-        <span>{isAudioUnlocked ? 'BİLDİRİMLER AKTİF' : 'SES BİLDİRİMLERİ AÇ'}</span>
-      </button>
+    <div className="space-y-4 pb-28">
+      {/* Ses Test Butonu - Daha Modern */}
+      <div className={`p-5 rounded-3xl shadow-xl border-2 transition-all ${
+        isAudioUnlocked
+          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400'
+          : 'bg-gradient-to-br from-slate-800 to-slate-900 border-rose-500'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isAudioUnlocked ? 'bg-white/20' : 'bg-rose-500/20'}`}>
+              <i className={`fas ${isAudioUnlocked ? 'fa-volume-high' : 'fa-volume-xmark'} text-2xl text-white`}></i>
+            </div>
+            <div className="text-left">
+              <p className={`text-xs font-black uppercase tracking-widest ${isAudioUnlocked ? 'text-white/80' : 'text-rose-300'}`}>BİLDİRİMLER</p>
+              <p className={`text-base font-black uppercase ${isAudioUnlocked ? 'text-white' : 'text-rose-400'}`}>
+                {isAudioUnlocked ? 'AKTİF' : 'KAPALI'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={unlockAudio}
+            className={`px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
+              isAudioUnlocked
+                ? 'bg-white/20 text-white'
+                : 'bg-rose-500 text-white'
+            }`}
+          >
+            {isAudioUnlocked ? 'AKTİF' : 'AÇ'}
+          </button>
+        </div>
+      </div>
 
       {activeOrders.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {activeOrders.map((order, index) => {
             const isOnWay = order.status === OrderStatus.ON_WAY;
             return (
               <div
                 key={order.id}
-                className={`bg-white rounded-3xl shadow-xl overflow-hidden border-2 transition-all duration-300 animate-in slide-in-from-bottom-4 ${
-                  isOnWay ? 'border-amber-400' : 'border-indigo-400'
+                className={`bg-white rounded-3xl shadow-2xl overflow-hidden border-2 transition-all duration-300 animate-in slide-in-from-bottom-4 ${
+                  isOnWay ? 'border-amber-400 ring-4 ring-amber-100' : 'border-indigo-400'
                 }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {/* Status Bar */}
-                <div className={`py-2 px-4 ${isOnWay ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-indigo-500 to-indigo-600'} flex items-center justify-between`}>
-                  <div className="flex items-center gap-2">
-                    <i className={`fas ${isOnWay ? 'fa-truck-fast' : 'fa-clock'} text-white text-sm`}></i>
-                    <span className="text-xs font-black text-white uppercase tracking-wider">
-                      {isOnWay ? 'YOLDALAR' : 'BEKLEYEN'}
-                    </span>
+                {/* Status Bar - Genişletilmiş */}
+                <div className={`py-4 px-5 ${isOnWay ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-gradient-to-r from-indigo-600 to-indigo-700'} flex items-center justify-between`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl ${isOnWay ? 'bg-white/20' : 'bg-white/10'} flex items-center justify-center`}>
+                      <i className={`fas ${isOnWay ? 'fa-truck-fast' : 'fa-clock'} text-xl text-white`}></i>
+                    </div>
+                    <div>
+                      <span className="text-sm font-black text-white uppercase tracking-wider block">
+                        {isOnWay ? 'YOLDALAR' : 'BEKLEYEN SİPARİŞ'}
+                      </span>
+                      <span className="text-xs text-white/70 font-semibold">
+                        {new Date(order.createdAt).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-black text-white">{order.totalAmount}₺</span>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-2xl font-black text-white">{order.totalAmount}₺</span>
                     {order.paymentMethod && (
-                      <span className={`px-2 py-1 rounded-lg text-xs font-black uppercase ${
+                      <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase ${
                         order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-500' :
                         order.paymentMethod === PaymentMethod.POS ? 'bg-blue-500' :
                         'bg-rose-500'
-                      } text-white`}>
-                        {order.paymentMethod === PaymentMethod.CASH ? '💵' : order.paymentMethod === PaymentMethod.POS ? '💳' : '❌'}
+                      } text-white flex items-center gap-1`}>
+                        {order.paymentMethod === PaymentMethod.CASH ? '💵 Nakit' : order.paymentMethod === PaymentMethod.POS ? '💳 POS' : '❌'}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="p-5 space-y-4">
-                  {/* Adres - En önemli */}
+                <div className="p-5 space-y-5">
+                  {/* Adres - En önemli, Daha büyük */}
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
-                      <div className={`w-12 h-12 rounded-2xl ${isOnWay ? 'bg-amber-100' : 'bg-indigo-100'} flex items-center justify-center shrink-0`}>
-                        <i className={`fas fa-location-dot text-lg ${isOnWay ? 'text-amber-600' : 'text-indigo-600'}`}></i>
+                      <div className={`w-14 h-14 rounded-2xl ${isOnWay ? 'bg-amber-100' : 'bg-indigo-100'} flex items-center justify-center shrink-0`}>
+                        <i className={`fas fa-location-dot text-2xl ${isOnWay ? 'text-amber-600' : 'text-indigo-600'}`}></i>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-base font-black text-slate-900 uppercase leading-snug">
+                        <p className="text-lg font-black text-slate-900 uppercase leading-snug">
                           {order.address}
                         </p>
                         <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
                           target="_blank"
                           rel="noreferrer"
-                          className={`inline-flex items-center gap-2 mt-3 px-4 py-3 ${isOnWay ? 'bg-amber-500' : 'bg-indigo-600'} text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg min-h-[48px]`}
+                          className={`inline-flex items-center gap-3 mt-4 px-5 py-4 ${isOnWay ? 'bg-amber-500' : 'bg-indigo-600'} text-white rounded-xl font-black text-sm uppercase tracking-wider shadow-xl min-h-[52px] transition-transform active:scale-95`}
                         >
-                          <i className="fas fa-diamond-turn-right"></i> YOL TARİFİ
+                          <i className="fas fa-diamond-turn-right text-lg"></i>
+                          <span>Navigasyonu Aç</span>
                         </a>
                       </div>
                     </div>
                   </div>
 
-                  {/* Ürünler */}
+                  {/* Ürünler - Daha büyük */}
                   <div className="flex flex-wrap gap-2">
                     {order.items.map((item, idx) => (
-                      <div key={idx} className="px-3 py-2 bg-slate-100 rounded-xl flex items-center gap-2">
-                        <span className="bg-slate-900 text-white w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold">
+                      <div key={idx} className={`px-4 py-3 rounded-xl flex items-center gap-2 border-2 ${isOnWay ? 'bg-amber-50 border-amber-200' : 'bg-indigo-50 border-indigo-200'}`}>
+                        <span className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${isOnWay ? 'bg-amber-500 text-white' : 'bg-indigo-600 text-white'}`}>
                           {item.quantity}
                         </span>
-                        <span className="text-sm font-bold text-slate-700 uppercase">{item.productName}</span>
+                        <span className="text-base font-black text-slate-800 uppercase">{item.productName}</span>
                       </div>
                     ))}
                   </div>
 
-                  {/* Müşteri ve İletişim */}
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  {/* Müşteri ve İletişim - Daha büyük butonlar */}
+                  <div className="flex items-center justify-between pt-4 border-t-2 border-slate-100">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                        <i className="fas fa-user text-slate-500"></i>
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                        <i className="fas fa-user text-slate-600 text-lg"></i>
                       </div>
                       <div>
-                        <p className="text-sm font-black text-slate-900 uppercase">{order.customerName}</p>
-                        <p className="text-xs font-bold text-slate-400">
-                          {new Date(order.createdAt).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}
+                        <p className="text-base font-black text-slate-900 uppercase">{order.customerName}</p>
+                        <p className="text-sm font-bold text-slate-400">
+                          {order.phone}
                         </p>
                       </div>
                     </div>
 
-                    {/* İletişim Butonları */}
-                    <div className="flex gap-2">
+                    {/* İletişim Butonları - Daha büyük */}
+                    <div className="flex gap-3">
                       <a
                         href={`https://wa.me/${order.phone.replace(/\D/g, '')}?text=Merhaba, siparişiniz ${isOnWay ? 'yolda' : 'hazırlanıyor'}.`}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
+                        className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg active:scale-90 transition-all"
                       >
-                        <i className="fab fa-whatsapp text-lg"></i>
+                        <i className="fab fa-whatsapp text-2xl"></i>
                       </a>
-                      <a href={`tel:${order.phone}`} className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all">
-                        <i className="fas fa-phone"></i>
+                      <a
+                        href={`tel:${order.phone}`}
+                        className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 shadow-lg active:scale-90 transition-all"
+                      >
+                        <i className="fas fa-phone text-lg"></i>
                       </a>
                     </div>
                   </div>
 
-                  {/* Not */}
+                  {/* Not - Daha belirgin */}
                   {order.note && (
-                    <div className="px-4 py-3 bg-amber-50 border-2 border-amber-200 rounded-xl">
-                      <p className="text-sm font-bold text-amber-900 uppercase leading-snug">
-                        <i className="fas fa-sticky-note mr-2"></i>
-                        {order.note}
+                    <div className="px-5 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-2xl">
+                      <p className="text-sm font-black text-amber-900 uppercase leading-snug flex items-start gap-2">
+                        <i className="fas fa-sticky-note mt-1 text-amber-500"></i>
+                        <span>{order.note}</span>
                       </p>
                     </div>
                   )}
 
-                  {/* Aksiyon Butonu */}
+                  {/* Aksiyon Butonu - Daha büyük ve belirgin */}
                   <div className="pt-2">
                     {order.status === OrderStatus.PENDING ? (
                       <button
                         onClick={() => setConfirmingAction({orderId: order.id, status: OrderStatus.ON_WAY})}
-                        className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-amber-500/30 active:scale-98 transition-all"
+                        className="w-full py-5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl font-black text-base uppercase tracking-widest shadow-xl shadow-amber-500/30 active:scale-98 transition-all flex items-center justify-center gap-3"
                       >
-                        <i className="fas fa-truck-fast mr-2"></i> YOLA ÇIK
+                        <i className="fas fa-truck-fast text-xl"></i>
+                        <span>YOLA ÇIKTIM</span>
                       </button>
                     ) : (
                       <button
@@ -443,9 +473,10 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                           setSelectedPaymentMethod(PaymentMethod.CASH);
                           setSelectingPayment({orderId: order.id, status: OrderStatus.DELIVERED});
                         }}
-                        className="w-full py-5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl font-black text-base uppercase tracking-widest shadow-xl shadow-emerald-500/30 active:scale-98 transition-all"
+                        className="w-full py-6 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl shadow-emerald-500/30 active:scale-98 transition-all flex items-center justify-center gap-3"
                       >
-                        <i className="fas fa-check-circle mr-2"></i> TESLİM ETTİM
+                        <i className="fas fa-check-circle text-2xl"></i>
+                        <span>TESLİM ETTİM</span>
                       </button>
                     )}
                   </div>
@@ -455,12 +486,12 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
           })}
         </div>
       ) : (
-        <div className="py-16 text-center space-y-4">
-          <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-3xl flex items-center justify-center mx-auto">
-            <i className="fas fa-mug-hot text-4xl text-emerald-500"></i>
+        <div className="py-20 text-center space-y-5">
+          <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
+            <i className="fas fa-mug-hot text-5xl text-emerald-500"></i>
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest">İŞİN YOK</h3>
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">İŞİN YOK</h3>
             <p className="text-sm font-bold text-slate-400 uppercase">Mola verebilirsin 💪</p>
           </div>
         </div>
@@ -469,79 +500,99 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
   );
 
   const renderInventory = () => (
-    <div className="space-y-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-lg space-y-5 relative overflow-hidden">
-        <div className="text-center space-y-1 relative z-10">
-          <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">ARAÇ ENVANTERİ</h2>
-          <p className="text-[11px] font-black text-indigo-500 uppercase tracking-[0.2em]">Saha Stok Seviyesi</p>
+    <div className="space-y-5 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-2xl space-y-6 relative overflow-hidden">
+        {/* Dekoratif arka plan */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-100 to-transparent rounded-bl-full opacity-50"></div>
+
+        <div className="text-center space-y-2 relative z-10">
+          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/30">
+            <i className="fas fa-truck-loading text-2xl text-white"></i>
+          </div>
+          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">ARAÇ ENVANTERİ</h2>
+          <p className="text-xs font-bold text-indigo-500 uppercase tracking-[0.2em]">Saha Stok Seviyesi</p>
         </div>
-        <div className="space-y-3">
-          <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center justify-between">
-            <div className="space-y-3">
-              <span className="text-[11px] font-black text-indigo-400 uppercase tracking-widest block">DOLU DAMACANA</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setLocalFull(Math.max(0, localFull - 1))} className="w-10 h-10 bg-white rounded-xl text-indigo-600 font-black border border-indigo-200 shadow-sm active:scale-90">-</button>
-                <input type="number" value={localFull} onChange={(e) => setLocalFull(Math.max(0, parseInt(e.target.value) || 0))} className="w-12 h-10 bg-transparent text-center font-black text-lg outline-none" />
-                <button onClick={() => setLocalFull(localFull + 1)} className="w-10 h-10 bg-white rounded-xl text-indigo-600 font-black border border-indigo-200 shadow-sm active:scale-90">+</button>
+
+        <div className="space-y-4">
+          {/* Dolu Damacana */}
+          <div className="p-5 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl border-2 border-indigo-200 flex items-center justify-between">
+            <div className="space-y-4">
+              <span className="text-xs font-black text-indigo-600 uppercase tracking-widest block flex items-center gap-2">
+                <i className="fas fa-droplet"></i> DOLU DAMACANA
+              </span>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setLocalFull(Math.max(0, localFull - 1))} className="w-14 h-14 bg-white rounded-xl text-indigo-600 font-black border-2 border-indigo-300 shadow-md active:scale-90 text-xl">-</button>
+                <input type="number" value={localFull} onChange={(e) => setLocalFull(Math.max(0, parseInt(e.target.value) || 0))} className="w-16 h-14 bg-transparent text-center font-black text-2xl outline-none" />
+                <button onClick={() => setLocalFull(localFull + 1)} className="w-14 h-14 bg-indigo-600 rounded-xl text-white font-black shadow-lg shadow-indigo-500/30 active:scale-90 text-xl">+</button>
               </div>
             </div>
             <div className="text-right">
-               <span className="text-4xl font-black text-indigo-600 tracking-tighter">{localFull}</span>
+               <span className="text-5xl font-black text-indigo-600 tracking-tighter">{localFull}</span>
+               <p className="text-xs font-black text-indigo-400 uppercase mt-1">Adet</p>
             </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
-            <div className="space-y-3">
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest block">BOŞ İADE</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setLocalEmpty(Math.max(0, localEmpty - 1))} className="w-10 h-10 bg-white rounded-xl text-slate-600 font-black border border-slate-200 shadow-sm active:scale-90">-</button>
-                <input type="number" value={localEmpty} onChange={(e) => setLocalEmpty(Math.max(0, parseInt(e.target.value) || 0))} className="w-12 h-10 bg-transparent text-center font-black text-lg outline-none" />
-                <button onClick={() => setLocalEmpty(localEmpty + 1)} className="w-10 h-10 bg-white rounded-xl text-slate-600 font-black border border-slate-200 shadow-sm active:scale-90">+</button>
+
+          {/* Boş İade */}
+          <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-2xl border-2 border-slate-200 flex items-center justify-between">
+            <div className="space-y-4">
+              <span className="text-xs font-black text-slate-500 uppercase tracking-widest block flex items-center gap-2">
+                <i className="fas fa-box-open"></i> BOŞ İADE
+              </span>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setLocalEmpty(Math.max(0, localEmpty - 1))} className="w-14 h-14 bg-white rounded-xl text-slate-600 font-black border-2 border-slate-300 shadow-md active:scale-90 text-xl">-</button>
+                <input type="number" value={localEmpty} onChange={(e) => setLocalEmpty(Math.max(0, parseInt(e.target.value) || 0))} className="w-16 h-14 bg-transparent text-center font-black text-2xl outline-none" />
+                <button onClick={() => setLocalEmpty(localEmpty + 1)} className="w-14 h-14 bg-slate-700 rounded-xl text-white font-black shadow-lg shadow-slate-500/30 active:scale-90 text-xl">+</button>
               </div>
             </div>
             <div className="text-right">
-               <span className="text-4xl font-black text-slate-900 tracking-tighter">{localEmpty}</span>
+               <span className="text-5xl font-black text-slate-700 tracking-tighter">{localEmpty}</span>
+               <p className="text-xs font-black text-slate-400 uppercase mt-1">Adet</p>
             </div>
           </div>
         </div>
+
         <button
           onClick={handleUpdateStock}
-          className="w-full py-4 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-[0.15em] shadow-xl active:scale-98 transition-all border-b-4 border-slate-950 flex items-center justify-center gap-2"
+          className="w-full py-5 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-98 transition-all flex items-center justify-center gap-3"
         >
-          <i className="fas fa-cloud-upload-alt"></i>
-          STOKU MERKEZE BİLDİR
+          <i className="fas fa-cloud-upload-alt text-lg"></i>
+          <span>STOKU MERKEZE BİLDİR</span>
         </button>
       </div>
     </div>
   );
 
   const renderProfile = () => (
-    <div className="space-y-3 pb-32">
+    <div className="space-y-4 pb-32">
       {/* Günlük Özet Kartı */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-lg space-y-4">
+      <div className="bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-2xl space-y-5 relative overflow-hidden">
+        {/* Dekoratif arka plan */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100 to-transparent rounded-bl-full opacity-50"></div>
+
         {/* Kurye Bilgisi */}
-        <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-          <div className="w-14 h-14 rounded-xl bg-slate-900 flex items-center justify-center text-2xl font-black text-white">
+        <div className="flex items-center gap-4 pb-5 border-b-2 border-slate-100">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-2xl font-black text-white shadow-lg">
             {selectedCourier?.name.charAt(0)}
           </div>
           <div>
-            <h2 className="text-base font-black text-slate-900 uppercase">{selectedCourier?.name}</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase">{selectedCourier?.id}</p>
+            <h2 className="text-lg font-black text-slate-900 uppercase">{selectedCourier?.name}</h2>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{selectedCourier?.id}</p>
           </div>
         </div>
 
         {/* İstatistikler - 4'lü grid */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-            <p className="text-[10px] font-black text-slate-400 uppercase">ADRES</p>
-            <p className="text-2xl font-black text-slate-900">{completedToday.length}</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 rounded-2xl border-2 border-slate-200 text-center">
+            <p className="text-xs font-black text-slate-500 uppercase mb-1">ADRES</p>
+            <p className="text-3xl font-black text-slate-900">{completedToday.length}</p>
           </div>
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-            <p className="text-[10px] font-black text-slate-400 uppercase">DAMACANA</p>
-            <p className="text-2xl font-black text-indigo-600">{totalDeliveredProducts}</p>
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-2xl border-2 border-indigo-200 text-center">
+            <p className="text-xs font-black text-indigo-600 uppercase mb-1">DAMACANA</p>
+            <p className="text-3xl font-black text-indigo-700">{totalDeliveredProducts}</p>
           </div>
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-            <p className="text-[10px] font-black text-slate-400 uppercase">TOPLAM L</p>
-            <p className="text-2xl font-black text-emerald-600">
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-2xl border-2 border-emerald-200 text-center">
+            <p className="text-xs font-black text-emerald-600 uppercase mb-1">TOPLAM L</p>
+            <p className="text-3xl font-black text-emerald-700">
               {completedToday.reduce((sum, o) => {
                 const liters = o.items.reduce((itemSum, item) => {
                   const productMatch = item.productName.toLowerCase().includes('19') ? 19 : 5;
@@ -551,50 +602,57 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
               }, 0)}
             </p>
           </div>
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
-            <p className="text-[10px] font-black text-slate-400 uppercase">CİRO</p>
-            <p className="text-xl font-black text-amber-600">
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-2xl border-2 border-amber-200 text-center">
+            <p className="text-xs font-black text-amber-600 uppercase mb-1">CİRO</p>
+            <p className="text-2xl font-black text-amber-700">
               {completedToday.reduce((sum, o) => sum + o.totalAmount, 0)}₺
             </p>
           </div>
         </div>
 
         {/* Tahmini Kazanç */}
-        <div className="bg-emerald-600 p-4 rounded-xl text-white">
-          <p className="text-[10px] font-black text-emerald-200 uppercase tracking-widest mb-1">TAHMİNİ KAZANÇ</p>
-          <p className="text-3xl font-black tracking-tighter">
-            {(completedToday.reduce((sum, o) => sum + o.totalAmount, 0) * 0.15).toFixed(0)}₺
-          </p>
-          <p className="text-[10px] font-bold text-emerald-200 mt-1">%15 tahmini komisyon</p>
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-5 rounded-2xl text-white shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-black text-emerald-200 uppercase tracking-widest mb-1">TAHMİNİ KAZANÇ</p>
+              <p className="text-4xl font-black tracking-tighter">
+                {(completedToday.reduce((sum, o) => sum + o.totalAmount, 0) * 0.15).toFixed(0)}₺
+              </p>
+            </div>
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+              <i className="fas fa-coins text-2xl text-white"></i>
+            </div>
+          </div>
+          <p className="text-xs font-bold text-emerald-200 mt-2">%15 tahmini komisyon</p>
         </div>
       </div>
 
       {/* Son Teslimatlar */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-lg space-y-4">
-        <div className="flex justify-between items-center px-2">
-           <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+      <div className="bg-white rounded-3xl p-5 border-2 border-slate-100 shadow-2xl space-y-4">
+        <div className="flex justify-between items-center px-1">
+           <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
               <i className="fas fa-check-circle text-emerald-500"></i> SON TESLİMATLAR
            </h3>
-           <span className="text-[10px] font-bold text-slate-400">{completedToday.length} ADET</span>
+           <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">{completedToday.length} ADET</span>
         </div>
         <div className="space-y-3">
           {completedToday.slice().sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 10).map(order => (
-            <div key={order.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <div className="flex justify-between items-start mb-2">
+            <div key={order.id} className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-2xl border-2 border-slate-100">
+              <div className="flex justify-between items-start mb-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span className="text-xs font-black text-slate-900 uppercase truncate block">{order.customerName}</span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span className="text-sm font-black text-slate-900 uppercase truncate block">{order.customerName}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-indigo-500 uppercase">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-indigo-600 uppercase">
                       {formatDateTime(order.updatedAt)}
                     </span>
-                    <span className="text-[10px] font-black text-emerald-600 uppercase">TESLİM</span>
+                    <span className="text-xs font-black text-emerald-600 uppercase bg-emerald-50 px-2 py-0.5 rounded">TESLİM</span>
                   </div>
                 </div>
                 <div className="text-right">
-                   <p className="text-sm font-black text-slate-900">{order.totalAmount}₺</p>
+                   <p className="text-lg font-black text-slate-900">{order.totalAmount}₺</p>
                    {order.paymentMethod && (
                      <p className={`text-xs font-black uppercase mt-1 ${
                        order.paymentMethod === PaymentMethod.CASH ? 'text-emerald-600' :
@@ -608,14 +666,14 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                    )}
                 </div>
               </div>
-              <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="space-y-2 pt-3 border-t-2 border-slate-100">
                 <div className="flex items-start gap-2">
-                   <i className="fas fa-map-marker-alt text-slate-300 text-xs mt-0.5"></i>
-                   <p className="text-[10px] font-bold text-slate-600 leading-snug uppercase line-clamp-1">{order.address}</p>
+                   <i className="fas fa-map-marker-alt text-slate-300 text-sm mt-0.5"></i>
+                   <p className="text-xs font-bold text-slate-600 leading-snug uppercase line-clamp-1">{order.address}</p>
                 </div>
                 <div className="flex flex-wrap gap-1">
                    {order.items.map((item, idx) => (
-                     <div key={idx} className="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-[10px] font-black text-slate-500 uppercase flex items-center gap-1">
+                     <div key={idx} className="px-3 py-1 bg-white border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 uppercase flex items-center gap-1">
                        <span className="text-indigo-600">{item.quantity}x</span>
                        {item.productName}
                      </div>
@@ -625,7 +683,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
             </div>
           ))}
           {completedToday.length === 0 && (
-             <div className="py-8 text-center text-[11px] font-black text-slate-300 uppercase border-2 border-dashed border-slate-100 rounded-xl">
+             <div className="py-10 text-center text-sm font-black text-slate-300 uppercase border-2 border-dashed border-slate-200 rounded-2xl">
                 Henüz teslimat yapmadın
              </div>
           )}
@@ -799,33 +857,33 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       )}
 
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-8 pb-3 px-4 shadow-2xl shrink-0 z-[110]">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-8 pb-4 px-4 shadow-2xl shrink-0 z-[110]">
+        <div className="flex justify-between items-center mb-5">
           {/* Sol: Kurye bilgisi */}
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-lg font-black shadow-lg shadow-indigo-500/30">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-indigo-500/30">
               {selectedCourier?.name.charAt(0)}
             </div>
             <div>
-              <h1 className="text-base font-black uppercase tracking-tight">{selectedCourier?.name.split(' ')[0]}</h1>
-              <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Kurye Paneli</p>
+              <h1 className="text-lg font-black uppercase tracking-tight">{selectedCourier?.name.split(' ')[0]}</h1>
+              <p className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Kurye Paneli</p>
             </div>
           </div>
 
           {/* Sağ: Yenile ve kurye değiştir */}
           <div className="flex items-center gap-2">
             {/* Online Status */}
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${isOnline ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-rose-400'} ${isOnline ? 'animate-pulse' : ''}`}></span>
-              <span className="text-[9px] font-black uppercase">{isOnline ? 'Online' : 'Offline'}</span>
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl ${isOnline ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
+              <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-rose-400'} ${isOnline ? 'animate-pulse' : ''}`}></span>
+              <span className="text-[10px] font-black uppercase">{isOnline ? 'Online' : 'Offline'}</span>
             </div>
             {/* Sound Toggle Button */}
             <button
               onClick={unlockAudio}
-              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all ${isAudioUnlocked ? 'bg-emerald-500/20' : 'bg-slate-500/20'} hover:bg-emerald-500/30`}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${isAudioUnlocked ? 'bg-emerald-500/20' : 'bg-slate-500/20'} hover:bg-emerald-500/30`}
               title={isAudioUnlocked ? 'Ses aktif' : 'Sesi açmak için tıkla'}
             >
-              <i className={`fas ${isAudioUnlocked ? 'fa-volume-up' : 'fa-volume-mute'} text-xs ${isAudioUnlocked ? 'text-emerald-400' : 'text-slate-400'}`}></i>
+              <i className={`fas ${isAudioUnlocked ? 'fa-volume-up' : 'fa-volume-mute'} text-sm ${isAudioUnlocked ? 'text-emerald-400' : 'text-slate-400'}`}></i>
             </button>
             <button
               onClick={() => {
@@ -833,34 +891,36 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                 onRefresh?.();
                 setTimeout(() => setIsRefreshing(false), 1000);
               }}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isRefreshing ? 'bg-indigo-500' : 'bg-white/10 hover:bg-white/20'}`}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${isRefreshing ? 'bg-indigo-500' : 'bg-white/10 hover:bg-white/20'}`}
               disabled={isRefreshing}
             >
-              <i className={`fas fa-sync-alt text-sm ${isRefreshing ? 'animate-spin' : ''}`}></i>
+              <i className={`fas fa-sync-alt ${isRefreshing ? 'animate-spin' : ''}`}></i>
             </button>
             {/* Kurye Değiştir Butonu */}
             <button
               onClick={() => setShowCourierSelector(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all"
             >
-              <i className="fas fa-user-circle text-sm text-white/80"></i>
-              <span className="text-[11px] font-black uppercase text-white truncate max-w-[60px]">
+              <i className="fas fa-user-circle text-base text-white/80"></i>
+              <span className="text-xs font-black uppercase text-white truncate max-w-[60px]">
                 {selectedCourier?.name.split(' ')[0] || 'Kurye'}
               </span>
-              <i className="fas fa-chevron-down text-[10px] text-white/50"></i>
+              <i className="fas fa-chevron-down text-xs text-white/50"></i>
             </button>
           </div>
         </div>
 
         {/* Durum Bar */}
-        <div className="flex items-center justify-center gap-6">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${activeOrders.length === 0 ? 'bg-emerald-500/20' : 'bg-white/5'}`}>
+        <div className="flex items-center justify-center gap-4">
+          <div className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all ${activeOrders.length === 0 ? 'bg-emerald-500/20' : 'bg-white/5'} border-2 ${activeOrders.length > 0 ? 'border-white/5' : 'border-emerald-500/30'}`}>
+            <i className="fas fa-clock text-white/50 text-sm"></i>
             <span className="text-[10px] font-black uppercase text-white/60">Aktif</span>
-            <span className="text-lg font-black">{activeOrders.length}</span>
+            <span className="text-xl font-black">{activeOrders.length}</span>
           </div>
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${completedToday.length > 0 ? 'bg-emerald-500/20' : 'bg-white/5'}`}>
-            <span className="text-[10px] font-black uppercase text-white/60">Tamam</span>
-            <span className="text-lg font-black text-emerald-400">{completedToday.length}</span>
+          <div className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all ${completedToday.length > 0 ? 'bg-emerald-500/20' : 'bg-white/5'} border-2 ${completedToday.length > 0 ? 'border-emerald-500/30' : 'border-white/5'}`}>
+            <i className="fas fa-check text-emerald-400 text-sm"></i>
+            <span className="text-[10px] font-black uppercase text-emerald-400">Tamam</span>
+            <span className="text-xl font-black text-emerald-400">{completedToday.length}</span>
           </div>
         </div>
       </div>
@@ -873,35 +933,35 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-slate-900/95 backdrop-blur-xl border-t border-white/10">
-        <div className="flex justify-around items-center py-3 px-4 max-w-md mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/90 backdrop-blur-xl border-t-2 border-white/10">
+        <div className="flex justify-around items-center py-4 px-4 max-w-md mx-auto">
           <button
             onClick={() => setActiveTab('tasks')}
-            className={`flex flex-col items-center gap-1.5 py-2 px-4 rounded-xl transition-all min-h-[56px] ${activeTab === 'tasks' ? 'bg-white/10' : ''}`}
+            className={`flex flex-col items-center gap-2 py-3 px-5 rounded-2xl transition-all min-h-[64px] relative ${activeTab === 'tasks' ? 'bg-white/10' : ''}`}
           >
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-clipboard-list text-base"></i>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-white/5 text-white/50'}`}>
+              <i className="fas fa-clipboard-list text-lg"></i>
             </div>
             <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'tasks' ? 'text-white' : 'text-white/40'}`}>İşler</span>
             {activeOrders.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full text-white text-xs font-black flex items-center justify-center">{activeOrders.length}</span>
+              <span className="absolute top-1 right-1 w-6 h-6 bg-gradient-to-br from-rose-500 to-rose-600 rounded-full text-white text-xs font-black flex items-center justify-center shadow-lg shadow-rose-500/30">{activeOrders.length}</span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
-            className={`flex flex-col items-center gap-1.5 py-2 px-4 rounded-xl transition-all min-h-[56px] ${activeTab === 'inventory' ? 'bg-white/10' : ''}`}
+            className={`flex flex-col items-center gap-2 py-3 px-5 rounded-2xl transition-all min-h-[64px] ${activeTab === 'inventory' ? 'bg-white/10' : ''}`}
           >
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-boxes-stacked text-base"></i>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/5 text-white/50'}`}>
+              <i className="fas fa-boxes-stacked text-lg"></i>
             </div>
             <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'inventory' ? 'text-white' : 'text-white/40'}`}>Stok</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex flex-col items-center gap-1.5 py-2 px-4 rounded-xl transition-all min-h-[56px] ${activeTab === 'profile' ? 'bg-white/10' : ''}`}
+            className={`flex flex-col items-center gap-2 py-3 px-5 rounded-2xl transition-all min-h-[64px] ${activeTab === 'profile' ? 'bg-white/10' : ''}`}
           >
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-user text-base"></i>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30' : 'bg-white/5 text-white/50'}`}>
+              <i className="fas fa-user text-lg"></i>
             </div>
             <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'profile' ? 'text-white' : 'text-white/40'}`}>Profil</span>
           </button>
