@@ -736,7 +736,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-16 w-full scroll-smooth">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-22 w-full scroll-smooth">
         <div className="max-w-md mx-auto">
           {activeTab === 'tasks' && renderTasks()}
           {activeTab === 'inventory' && renderInventory()}
@@ -744,51 +744,50 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      {/* Bottom Navigation - Modern Minimal */}
-      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white/95 backdrop-blur border-t border-slate-200/50">
-        <div className="max-w-md mx-auto px-2">
-          <div className="flex items-center justify-between py-2">
-            {/* Sipariş Özetleri */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg">
-                <div className={"w-1.5 h-1.5 rounded-full " + (activeOrders.length > 0 ? "bg-indigo-500 animate-pulse" : "bg-slate-300")}></div>
-                <span className="text-xs font-semibold text-slate-600">{activeOrders.length}</span>
-                <i className="fas fa-clock text-[10px] text-slate-400"></i>
-              </div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg">
-                <i className="fas fa-check text-[10px] text-emerald-500"></i>
-                <span className="text-xs font-semibold text-slate-600">{completedToday.length}</span>
-              </div>
+      {/* Bottom Navigation - Clean */}
+      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white border-t border-slate-200">
+        <div className="max-w-md mx-auto">
+          {/* İstatistik Bar */}
+          <div className="flex items-center justify-around py-2.5 px-4 bg-slate-50 border-b border-slate-100">
+            <div className="text-center">
+              <p className="text-base font-bold text-indigo-600">{activeOrders.length}</p>
+              <p className="text-[10px] text-slate-500 uppercase">Bekleyen</p>
             </div>
-
-            {/* Navigation Icons */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setActiveTab('tasks')}
-                className={"p-2 rounded-lg transition-all " + (activeTab === 'tasks' ? "bg-indigo-100 text-indigo-600" : "text-slate-400 hover:bg-slate-50")}
-              >
-                <i className="fas fa-clipboard-list text-sm"></i>
-              </button>
-              <button
-                onClick={() => setActiveTab('inventory')}
-                className={"p-2 rounded-lg transition-all " + (activeTab === 'inventory' ? "bg-emerald-100 text-emerald-600" : "text-slate-400 hover:bg-slate-50")}
-              >
-                <i className="fas fa-boxes-stacked text-sm"></i>
-              </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={"p-2 rounded-lg transition-all " + (activeTab === 'profile' ? "bg-amber-100 text-amber-600" : "text-slate-400 hover:bg-slate-50")}
-              >
-                <i className="fas fa-user text-sm"></i>
-              </button>
+            <div className="text-center">
+              <p className="text-base font-bold text-emerald-600">{completedToday.length}</p>
+              <p className="text-[10px] text-slate-500 uppercase">Tamamlanan</p>
             </div>
+          </div>
 
-            {/* Ses Toggle */}
+          {/* Navigation */}
+          <div className="flex items-center justify-around py-3">
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={"flex flex-col items-center gap-1 " + (activeTab === 'tasks' ? "text-indigo-600" : "text-slate-400")}
+            >
+              <i className="fas fa-clipboard-list text-lg"></i>
+              <span className="text-[10px] font-medium">İşler</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('inventory')}
+              className={"flex flex-col items-center gap-1 " + (activeTab === 'inventory' ? "text-emerald-600" : "text-slate-400")}
+            >
+              <i className="fas fa-boxes-stacked text-lg"></i>
+              <span className="text-[10px] font-medium">Stok</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={"flex flex-col items-center gap-1 " + (activeTab === 'profile' ? "text-amber-600" : "text-slate-400")}
+            >
+              <i className="fas fa-user text-lg"></i>
+              <span className="text-[10px] font-medium">Profil</span>
+            </button>
             <button
               onClick={unlockAudio}
-              className={"p-2 rounded-lg transition-all " + (isAudioUnlocked ? "bg-emerald-100 text-emerald-600" : "text-slate-400 hover:bg-slate-50")}
+              className={"flex flex-col items-center gap-1 " + (isAudioUnlocked ? "text-emerald-600" : "text-slate-400")}
             >
-              <i className={"fas " + (isAudioUnlocked ? "fa-volume-up" : "fa-volume-mute") + " text-sm"}></i>
+              <i className={"fas " + (isAudioUnlocked ? "fa-volume-up" : "fa-volume-mute") + " text-lg"}></i>
+              <span className="text-[10px] font-medium">Ses</span>
             </button>
           </div>
         </div>
