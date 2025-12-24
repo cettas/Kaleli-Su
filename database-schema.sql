@@ -219,6 +219,7 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_phone ON whatsapp_logs(phone_number
 -- =====================================================
 -- RLS POLICIES (Tüm erişim açık)
 -- =====================================================
+-- Önce RLS'i aktif et (zaten varsa hata vermez)
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
 ALTER TABLE couriers ENABLE ROW LEVEL SECURITY;
@@ -230,15 +231,33 @@ ALTER TABLE whatsapp_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_chats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_failover_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "customers_all" ON customers FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "inventory_all" ON inventory FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "couriers_all" ON couriers FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "orders_all" ON orders FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "integrations_all" ON integrations FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "call_logs_all" ON call_logs FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "whatsapp_logs_all" ON whatsapp_logs FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "whatsapp_chats_all" ON whatsapp_chats FOR ALL USING (true);
-CREATE POLICY IF NOT EXISTS "whatsapp_failover_logs_all" ON whatsapp_failover_logs FOR ALL USING (true);
+-- Politikaları oluştur (DROP ve CREATE kullanarak)
+DROP POLICY IF EXISTS "customers_all" ON customers;
+CREATE POLICY "customers_all" ON customers FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "inventory_all" ON inventory;
+CREATE POLICY "inventory_all" ON inventory FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "couriers_all" ON couriers;
+CREATE POLICY "couriers_all" ON couriers FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "orders_all" ON orders;
+CREATE POLICY "orders_all" ON orders FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "integrations_all" ON integrations;
+CREATE POLICY "integrations_all" ON integrations FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "call_logs_all" ON call_logs;
+CREATE POLICY "call_logs_all" ON call_logs FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "whatsapp_logs_all" ON whatsapp_logs;
+CREATE POLICY "whatsapp_logs_all" ON whatsapp_logs FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "whatsapp_chats_all" ON whatsapp_chats;
+CREATE POLICY "whatsapp_chats_all" ON whatsapp_chats FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "whatsapp_failover_logs_all" ON whatsapp_failover_logs;
+CREATE POLICY "whatsapp_failover_logs_all" ON whatsapp_failover_logs FOR ALL USING (true);
 
 -- =====================================================
 -- ÖRNEK VERİ
