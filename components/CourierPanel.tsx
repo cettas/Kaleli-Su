@@ -897,7 +897,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-32 w-full scroll-smooth">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-20 w-full scroll-smooth">
         <div className="max-w-md mx-auto">
           {activeTab === 'tasks' && renderTasks()}
           {activeTab === 'inventory' && renderInventory()}
@@ -905,68 +905,42 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      {/* Bottom Navigation - Sipariş Özetli */}
-      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white border-t-2 border-slate-200 shadow-2xl">
+      {/* Bottom Navigation - Minimal */}
+      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white border-t border-slate-200">
         <div className="max-w-md mx-auto">
-          {/* Sipariş Özeti Kartı */}
-          <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 px-4 py-3">
-            <div className="flex items-center justify-between text-white">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                    <i className="fas fa-clock text-white"></i>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-white/70 uppercase tracking-wider">Aktif Sipariş</p>
-                    <p className="text-xl font-black">{activeOrders.length}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                    <i className="fas fa-check text-emerald-300"></i>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-white/70 uppercase tracking-wider">Tamamlanan</p>
-                    <p className="text-xl font-black text-emerald-300">{completedToday.length}</p>
-                  </div>
-                </div>
-              </div>
-              {activeOrders.length > 0 && (
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
-                  <i className="fas fa-bell text-white text-lg"></i>
-                </div>
-              )}
+          {/* Sipariş Özeti - Compact */}
+          <div className="flex items-center justify-around px-2 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600">
+            <div className="flex items-center gap-1.5 text-white">
+              <i className="fas fa-clock text-[10px] text-white/70"></i>
+              <span className="text-[10px] text-white/70">Aktif</span>
+              <span className="text-sm font-black">{activeOrders.length}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-white">
+              <i className="fas fa-check text-[10px] text-emerald-300"></i>
+              <span className="text-[10px] text-white/70">Tamam</span>
+              <span className="text-sm font-black text-emerald-300">{completedToday.length}</span>
             </div>
           </div>
 
-          {/* Navigation */}
-          <div className="flex justify-around items-center py-2 px-2">
+          {/* Navigation - Ultra Compact */}
+          <div className="flex justify-around items-center py-1">
             <button
               onClick={() => setActiveTab('tasks')}
-              className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'tasks' ? 'bg-indigo-50' : ''}`}
+              className={"flex flex-col items-center py-1 px-3 rounded-lg " + (activeTab === 'tasks' ? "bg-indigo-50" : "")}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
-                <i className="fas fa-clipboard-list text-sm"></i>
-              </div>
-              <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'tasks' ? 'text-indigo-700' : 'text-slate-400'}`}>İşler</span>
+              <i className={"fas fa-clipboard-list text-base " + (activeTab === 'tasks' ? "text-indigo-600" : "text-slate-400")}></i>
             </button>
             <button
               onClick={() => setActiveTab('inventory')}
-              className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'inventory' ? 'bg-emerald-50' : ''}`}
+              className={"flex flex-col items-center py-1 px-3 rounded-lg " + (activeTab === 'inventory' ? "bg-emerald-50" : "")}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
-                <i className="fas fa-boxes-stacked text-sm"></i>
-              </div>
-              <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'inventory' ? 'text-emerald-700' : 'text-slate-400'}`}>Stok</span>
+              <i className={"fas fa-boxes-stacked text-base " + (activeTab === 'inventory' ? "text-emerald-600" : "text-slate-400")}></i>
             </button>
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-amber-50' : ''}`}
+              className={"flex flex-col items-center py-1 px-3 rounded-lg " + (activeTab === 'profile' ? "bg-amber-50" : "")}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
-                <i className="fas fa-user text-sm"></i>
-              </div>
-              <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'profile' ? 'text-amber-700' : 'text-slate-400'}`}>Profil</span>
+              <i className={"fas fa-user text-base " + (activeTab === 'profile' ? "text-amber-600" : "text-slate-400")}></i>
             </button>
           </div>
         </div>
