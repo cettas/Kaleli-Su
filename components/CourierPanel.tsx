@@ -857,33 +857,23 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       )}
 
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-8 pb-4 px-4 shadow-2xl shrink-0 z-[110]">
-        <div className="flex justify-between items-center mb-5">
-          {/* Sol: Kurye bilgisi */}
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-indigo-500/30">
+      {/* Header - Küçültülmüş */}
+      <div className="bg-slate-900 text-white px-4 py-3 shadow-lg shrink-0 z-[110]">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-base font-black">
               {selectedCourier?.name.charAt(0)}
             </div>
             <div>
-              <h1 className="text-lg font-black uppercase tracking-tight">{selectedCourier?.name.split(' ')[0]}</h1>
-              <p className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Kurye Paneli</p>
+              <h1 className="text-sm font-black uppercase">{selectedCourier?.name.split(' ')[0]}</h1>
             </div>
           </div>
-
-          {/* Sağ: Yenile ve kurye değiştir */}
           <div className="flex items-center gap-2">
-            {/* Online Status */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl ${isOnline ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
-              <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-rose-400'} ${isOnline ? 'animate-pulse' : ''}`}></span>
-              <span className="text-[10px] font-black uppercase">{isOnline ? 'Online' : 'Offline'}</span>
-            </div>
-            {/* Sound Toggle Button */}
             <button
               onClick={unlockAudio}
-              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${isAudioUnlocked ? 'bg-emerald-500/20' : 'bg-slate-500/20'} hover:bg-emerald-500/30`}
-              title={isAudioUnlocked ? 'Ses aktif' : 'Sesi açmak için tıkla'}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${isAudioUnlocked ? 'bg-emerald-500/30' : 'bg-white/10'}`}
             >
-              <i className={`fas ${isAudioUnlocked ? 'fa-volume-up' : 'fa-volume-mute'} text-sm ${isAudioUnlocked ? 'text-emerald-400' : 'text-slate-400'}`}></i>
+              <i className={`fas ${isAudioUnlocked ? 'fa-volume-up' : 'fa-volume-mute'} text-xs ${isAudioUnlocked ? 'text-emerald-400' : 'text-white/60'}`}></i>
             </button>
             <button
               onClick={() => {
@@ -891,41 +881,23 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                 onRefresh?.();
                 setTimeout(() => setIsRefreshing(false), 1000);
               }}
-              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${isRefreshing ? 'bg-indigo-500' : 'bg-white/10 hover:bg-white/20'}`}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${isRefreshing ? 'bg-indigo-500' : 'bg-white/10'}`}
               disabled={isRefreshing}
             >
-              <i className={`fas fa-sync-alt ${isRefreshing ? 'animate-spin' : ''}`}></i>
+              <i className={"fas fa-sync-alt text-xs " + (isRefreshing ? "animate-spin" : "")}></i>
             </button>
-            {/* Kurye Değiştir Butonu */}
             <button
               onClick={() => setShowCourierSelector(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-lg"
             >
-              <i className="fas fa-user-circle text-base text-white/80"></i>
-              <span className="text-xs font-black uppercase text-white truncate max-w-[60px]">
-                {selectedCourier?.name.split(' ')[0] || 'Kurye'}
-              </span>
-              <i className="fas fa-chevron-down text-xs text-white/50"></i>
+              <i className="fas fa-user-circle text-xs text-white/80"></i>
+              <span className="text-[10px] font-black uppercase text-white">{selectedCourier?.name.split(' ')[0] || 'Kurye'}</span>
             </button>
-          </div>
-        </div>
-
-        {/* Durum Bar */}
-        <div className="flex items-center justify-center gap-4">
-          <div className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all ${activeOrders.length === 0 ? 'bg-emerald-500/20' : 'bg-white/5'} border-2 ${activeOrders.length > 0 ? 'border-white/5' : 'border-emerald-500/30'}`}>
-            <i className="fas fa-clock text-white/50 text-sm"></i>
-            <span className="text-[10px] font-black uppercase text-white/60">Aktif</span>
-            <span className="text-xl font-black">{activeOrders.length}</span>
-          </div>
-          <div className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all ${completedToday.length > 0 ? 'bg-emerald-500/20' : 'bg-white/5'} border-2 ${completedToday.length > 0 ? 'border-emerald-500/30' : 'border-white/5'}`}>
-            <i className="fas fa-check text-emerald-400 text-sm"></i>
-            <span className="text-[10px] font-black uppercase text-emerald-400">Tamam</span>
-            <span className="text-xl font-black text-emerald-400">{completedToday.length}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-24 w-full scroll-smooth">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-32 w-full scroll-smooth">
         <div className="max-w-md mx-auto">
           {activeTab === 'tasks' && renderTasks()}
           {activeTab === 'inventory' && renderInventory()}
@@ -933,38 +905,70 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-900/90 backdrop-blur-xl border-t-2 border-white/10">
-        <div className="flex justify-around items-center py-4 px-4 max-w-md mx-auto">
-          <button
-            onClick={() => setActiveTab('tasks')}
-            className={`flex flex-col items-center gap-2 py-3 px-5 rounded-2xl transition-all min-h-[64px] relative ${activeTab === 'tasks' ? 'bg-white/10' : ''}`}
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-clipboard-list text-lg"></i>
+      {/* Bottom Navigation - Sipariş Özetli */}
+      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white border-t-2 border-slate-200 shadow-2xl">
+        <div className="max-w-md mx-auto">
+          {/* Sipariş Özeti Kartı */}
+          <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 px-4 py-3">
+            <div className="flex items-center justify-between text-white">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <i className="fas fa-clock text-white"></i>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-white/70 uppercase tracking-wider">Aktif Sipariş</p>
+                    <p className="text-xl font-black">{activeOrders.length}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <i className="fas fa-check text-emerald-300"></i>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-white/70 uppercase tracking-wider">Tamamlanan</p>
+                    <p className="text-xl font-black text-emerald-300">{completedToday.length}</p>
+                  </div>
+                </div>
+              </div>
+              {activeOrders.length > 0 && (
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                  <i className="fas fa-bell text-white text-lg"></i>
+                </div>
+              )}
             </div>
-            <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'tasks' ? 'text-white' : 'text-white/40'}`}>İşler</span>
-            {activeOrders.length > 0 && (
-              <span className="absolute top-1 right-1 w-6 h-6 bg-gradient-to-br from-rose-500 to-rose-600 rounded-full text-white text-xs font-black flex items-center justify-center shadow-lg shadow-rose-500/30">{activeOrders.length}</span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('inventory')}
-            className={`flex flex-col items-center gap-2 py-3 px-5 rounded-2xl transition-all min-h-[64px] ${activeTab === 'inventory' ? 'bg-white/10' : ''}`}
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-boxes-stacked text-lg"></i>
-            </div>
-            <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'inventory' ? 'text-white' : 'text-white/40'}`}>Stok</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex flex-col items-center gap-2 py-3 px-5 rounded-2xl transition-all min-h-[64px] ${activeTab === 'profile' ? 'bg-white/10' : ''}`}
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-user text-lg"></i>
-            </div>
-            <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'profile' ? 'text-white' : 'text-white/40'}`}>Profil</span>
-          </button>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-around items-center py-2 px-2">
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'tasks' ? 'bg-indigo-50' : ''}`}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                <i className="fas fa-clipboard-list text-sm"></i>
+              </div>
+              <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'tasks' ? 'text-indigo-700' : 'text-slate-400'}`}>İşler</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('inventory')}
+              className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'inventory' ? 'bg-emerald-50' : ''}`}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                <i className="fas fa-boxes-stacked text-sm"></i>
+              </div>
+              <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'inventory' ? 'text-emerald-700' : 'text-slate-400'}`}>Stok</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-amber-50' : ''}`}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                <i className="fas fa-user text-sm"></i>
+              </div>
+              <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'profile' ? 'text-amber-700' : 'text-slate-400'}`}>Profil</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
