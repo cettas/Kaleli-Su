@@ -568,9 +568,406 @@ async function createOrderFromCall(call, product, quantity) {
 const whatsappSessions = new Map();
 
 /**
+ * WhatsApp butonlu menü gönder
+ * POST /api/whatsapp/send-menu
+ */
+app.post('/api/whatsapp/send-menu', async (req, res) => {
+  try {
+    const { phone_number } = req.body;
+
+    if (!phone_number) {
+      return res.status(400).json({ error: 'Telefon numarası gerekli' });
+    }
+
+    // WhatsApp config'leri al
+    const { data: config } = await supabase
+      .from('integrations')
+      .select('whatsapp_access_token, whatsapp_phone_number_id')
+      .single();
+
+    if (!config?.whatsapp_access_token || !config?.whatsapp_phone_number_id) {
+      return res.status(400).json({ error: 'WhatsApp ayarları yapılandırılmamış' });
+    }
+
+    // Interactive List Message gönder
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${config.whatsapp_phone_number_id}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.whatsapp_access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: phone_number,
+          type: 'interactive',
+          interactive: {
+            type: 'list',
+            header: {
+              type: 'text',
+              text: '💧 Kaleli Su'
+            },
+            body: {
+              text: 'Sipariş vermek için aşağıdan seçim yapabilirsiniz:'
+            },
+            footer: {
+              text: 'Kaleli Su • Hızlı Teslimat'
+            },
+            action: {
+              button: 'Sipariş Ver',
+              sections: [
+                {
+                  title: '🫗 Ürünler',
+                  rows: [
+                    {
+                      id: '19L_1',
+                      title: '19L Damacana (1 Adet)',
+                      description: '₺40 - Büyük boy damacana'
+                    },
+                    {
+                      id: '19L_2',
+                      title: '19L Damacana (2 Adet)',
+                      description: '₺80 - 2x19L damacana'
+                    },
+                    {
+                      id: '19L_3',
+                      title: '19L Damacana (3 Adet)',
+                      description: '₺120 - 3x19L damacana'
+                    },
+                    {
+                      id: '5L_1',
+                      title: '5L Pet Su (1 Adet)',
+                      description: '₺25 - Küçük boy pet su'
+                    },
+                    {
+                      id: '5L_2',
+                      title: '5L Pet Su (2 Adet)',
+                      description: '₺50 - 2x5L pet su'
+                    },
+                    {
+                      id: '5L_3',
+                      title: '5L Pet Su (3 Adet)',
+                      description: '₺75 - 3x5L pet su'
+                    }
+                  ]
+                },
+                {
+                  title: '📋 Diğer',
+                  rows: [
+                    {
+                      id: 'operator',
+                      title: '👨‍💼 Müşteri Hizmetleri',
+                      description: 'Operatörle konuşmak istiyorum'
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log(`✅ WhatsApp menü gönderildi: ${phone_number}`);
+      res.json({ success: true, message: 'Menü gönderildi' });
+    } else {
+      console.error('❌ WhatsApp API hatası:', data);
+      res.status(400).json({ success: false, error: data });
+    }
+
+  } catch (error) {
+    console.error('WhatsApp menü gönderme hatası:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * WhatsApp onay butonları gönder
+ * POST /api/whatsapp/send-confirmation
+ */
+app.post('/api/whatsapp/send-confirmation', async (req, res) => {
+  try {
+    const { phone_number, product, quantity, total_price } = req.body;
+
+    if (!phone_number || !product || !quantity) {
+      return res.status(400).json({ error: 'Eksik parametreler' });
+    }
+
+    const { data: config } = await supabase
+      .from('integrations')
+      .select('whatsapp_access_token, whatsapp_phone_number_id')
+      .single();
+
+    if (!config?.whatsapp_access_token || !config?.whatsapp_phone_number_id) {
+      return res.status(400).json({ error: 'WhatsApp ayarları yapılandırılmamış' });
+    }
+
+    const response = await fetch(
+      `https://graph.facebook.com/v18.0/${config.whatsapp_phone_number_id}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.whatsapp_access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: phone_number,
+          type: 'interactive',
+          interactive: {
+            type: 'button',
+            body: {
+              text: `✅ *Sipariş Özeti*\n\n` +
+                    `📦 Ürün: ${product}\n` +
+                    `📊 Adet: ${quantity}\n` +
+                    `💰 Toplam: ₺${total_price || (quantity * 40)}\n\n` +
+                    `Onaylıyor musunuz?`
+            },
+            action: {
+              buttons: [
+                {
+                  type: 'reply',
+                  reply: {
+                    id: `confirm_${product}_${quantity}`,
+                    title: '✅ Evet, Onayla'
+                  }
+                },
+                {
+                  type: 'reply',
+                  reply: {
+                    id: 'cancel',
+                    title: '❌ İptal'
+                  }
+                },
+                {
+                  type: 'reply',
+                  reply: {
+                    id: 'menu',
+                    title: '📋 Menü'
+                  }
+                }
+              ]
+            }
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      res.json({ success: true, message: 'Onay mesajı gönderildi' });
+    } else {
+      res.status(400).json({ success: false, error: data });
+    }
+
+  } catch (error) {
+    console.error('WhatsApp onay gönderme hatası:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * WhatsApp webhook verify endpoint
  * GET /webhook/whatsapp/verify
  */
+
+// WhatsApp Helper Functions
+async function sendWhatsAppMenu(phoneNumber, config) {
+  if (!config?.whatsapp_access_token || !config?.whatsapp_phone_number_id) {
+    console.log('WhatsApp config eksik');
+    return;
+  }
+
+  await fetch(
+    `https://graph.facebook.com/v18.0/${config.whatsapp_phone_number_id}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.whatsapp_access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: phoneNumber,
+        type: 'interactive',
+        interactive: {
+          type: 'list',
+          header: {
+            type: 'text',
+            text: '💧 Kaleli Su'
+          },
+          body: {
+            text: 'Sipariş vermek için aşağıdan seçim yapabilirsiniz:'
+          },
+          footer: {
+            text: 'Kaleli Su • Hızlı Teslimat'
+          },
+          action: {
+            button: 'Sipariş Ver',
+            sections: [
+              {
+                title: '🫗 Ürünler',
+                rows: [
+                  { id: '19L_1', title: '19L Damacana (1 Adet)', description: '₺40' },
+                  { id: '19L_2', title: '19L Damacana (2 Adet)', description: '₺80' },
+                  { id: '19L_3', title: '19L Damacana (3 Adet)', description: '₺120' },
+                  { id: '5L_1', title: '5L Pet Su (1 Adet)', description: '₺25' },
+                  { id: '5L_2', title: '5L Pet Su (2 Adet)', description: '₺50' },
+                  { id: '5L_3', title: '5L Pet Su (3 Adet)', description: '₺75' }
+                ]
+              },
+              {
+                title: '📋 Diğer',
+                rows: [
+                  { id: 'operator', title: '👨‍💼 Müşteri Hizmetleri', description: 'Operatörle konuşmak istiyorum' }
+                ]
+              }
+            ]
+          }
+        }
+      })
+    }
+  );
+}
+
+async function sendOrderConfirmation(phoneNumber, product, quantity, price, config) {
+  if (!config?.whatsapp_access_token || !config?.whatsapp_phone_number_id) return;
+
+  await fetch(
+    `https://graph.facebook.com/v18.0/${config.whatsapp_phone_number_id}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.whatsapp_access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: phoneNumber,
+        type: 'interactive',
+        interactive: {
+          type: 'button',
+          body: {
+            text: `✅ *Sipariş Özeti*\n\n📦 Ürün: ${product}\n📊 Adet: ${quantity}\n💰 Toplam: ₺${price * quantity}\n\nOnaylıyor musunuz?`
+          },
+          action: {
+            buttons: [
+              { type: 'reply', reply: { id: `confirm_${product}_${quantity}`, title: '✅ Evet, Onayla' } },
+              { type: 'reply', reply: { id: 'cancel', title: '❌ İptal' } },
+              { type: 'reply', reply: { id: 'menu', title: '📋 Menü' } }
+            ]
+          }
+        }
+      })
+    }
+  );
+}
+
+async function sendSimpleMessage(phoneNumber, text, config) {
+  if (!config?.whatsapp_access_token || !config?.whatsapp_phone_number_id) return;
+
+  await fetch(
+    `https://graph.facebook.com/v18.0/${config.whatsapp_phone_number_id}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.whatsapp_access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: phoneNumber,
+        type: 'text',
+        text: { body: text }
+      })
+    }
+  );
+}
+
+async function handleListReply(phoneNumber, reply, config) {
+  const selection = reply.id;
+  console.log(`📋 Liste seçimi: ${selection}`);
+
+  if (selection === 'operator') {
+    await sendSimpleMessage(phoneNumber, '👨‍💼 Sizi müşteri temsilcimize aktarıyorum...', config);
+    return;
+  }
+
+  // Ürün seçimi - parse et
+  const [product, qty] = selection.split('_');
+  const productName = product === '19L' ? '19L Damacana' : '5L Pet Su';
+  const quantity = parseInt(qty);
+  const price = product === '19L' ? 40 : 25;
+
+  // Onay mesajı gönder
+  await sendOrderConfirmation(phoneNumber, productName, quantity, price, config);
+}
+
+async function handleButtonReply(phoneNumber, reply, config) {
+  const replyId = reply.id;
+  console.log(`🔘 Buton tıklaması: ${replyId}`);
+
+  if (replyId === 'menu') {
+    await sendWhatsAppMenu(phoneNumber, config);
+    return;
+  }
+
+  if (replyId === 'cancel') {
+    await sendSimpleMessage(phoneNumber, '❌ Sipariş iptal edildi. Başka bir sipariş için menüyü kullanın.', config);
+    return;
+  }
+
+  if (replyId.startsWith('confirm_')) {
+    // Siparişi oluştur
+    const [, product, quantity] = replyId.split('_');
+    const price = product === '19L' ? 40 : 25;
+    const total = price * parseInt(quantity);
+
+    const cleanPhone = phoneNumber.replace(/\D/g, '').slice(-10);
+
+    // Müşteriyi bul
+    const { data: customer } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('phone', cleanPhone)
+      .maybeSingle();
+
+    if (!customer) {
+      await sendSimpleMessage(phoneNumber, '❌ Sistemde kaydınız bulunamadı. Lütfen önce ofisle iletişime geçin.', config);
+      return;
+    }
+
+    // Siparişi oluştur
+    const { error } = await supabase.from('orders').insert({
+      customer_id: customer.id,
+      customer_name: customer.name,
+      phone: cleanPhone,
+      address: customer.address,
+      items: [{
+        product_name: product + (product === '19L' ? ' Damacana' : ' Pet Su'),
+        quantity: parseInt(quantity),
+        price: price
+      }],
+      total_amount: total,
+      payment_method: 'cash',
+      status: 'Bekliyor',
+      source: 'WhatsApp',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+
+    if (!error) {
+      await sendSimpleMessage(phoneNumber, `✅ Siparişiniz alındı!\n\n${quantity} adet ${product}\nToplam: ₺${total}\n\nEn kısa sürede teslim edilir. Teşekkürler!`, config);
+    } else {
+      await sendSimpleMessage(phoneNumber, '❌ Sipariş oluşturulurken bir hata oluştu. Lütfen daha sonra tekrar deneyin.', config);
+    }
+  }
+}
 app.get('/webhook/whatsapp/verify', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -611,28 +1008,51 @@ app.post('/webhook/whatsapp/message', async (req, res) => {
 
     const phoneNumber = message.from;
     const messageText = message.text?.body || '';
+    const buttonReply = message.interactive?.button_reply;
+    const listReply = message.interactive?.list_reply;
 
-    console.log(`📨 WhatsApp mesajı: ${phoneNumber} - "${messageText}"`);
+    console.log(`📨 WhatsApp mesajı: ${phoneNumber}`);
+
+    // WhatsApp config'leri al
+    const { data: config } = await supabase
+      .from('integrations')
+      .select('whatsapp_access_token, whatsapp_phone_number_id')
+      .single();
+
+    // Buton tıklaması
+    if (buttonReply) {
+      await handleButtonReply(phoneNumber, buttonReply, config);
+      return res.status(200).send('OK');
+    }
+
+    // Liste seçimi
+    if (listReply) {
+      await handleListReply(phoneNumber, listReply, config);
+      return res.status(200).send('OK');
+    }
 
     // Oturum var mı kontrol et
     let session = whatsappSessions.get(phoneNumber);
     if (!session) {
-      // Yeni oturum başlat
+      // Yeni oturum başlat - menü gönder
+      await sendWhatsAppMenu(phoneNumber, config);
       session = {
         phoneNumber,
         messages: [],
-        state: 'greeting',
+        state: 'menu',
         createdAt: new Date()
       };
       whatsappSessions.set(phoneNumber, session);
+      return res.status(200).send('OK');
     }
 
+    // Metin mesajı işle
     session.messages.push(messageText);
 
     // Komut kontrolü
-    if (messageText.toLowerCase() === 'reset' || messageText.toLowerCase() === 'başa sar') {
-      whatsappSessions.delete(phoneNumber);
-      return res.json({ success: true, message: 'Oturum sıfırlandı' });
+    if (messageText.toLowerCase() === 'reset' || messageText.toLowerCase() === 'başa sar' || messageText.toLowerCase() === 'menu') {
+      await sendWhatsAppMenu(phoneNumber, config);
+      return res.status(200).send('OK');
     }
 
     // Müşteri sorgula
@@ -652,7 +1072,7 @@ app.post('/webhook/whatsapp/message', async (req, res) => {
     if (lowerText.includes('operatör') || lowerText.includes('yetkili') || lowerText.includes('destek')) {
       responseText = 'Sizi hemen müşteri temsilcimize aktarıyorum.';
     }
-    // Sipariş algılama
+    // Sipariş algılama (fallback - buton kullanımı önerilir)
     else {
       let product = '19L Damacana';
       let quantity = 1;
