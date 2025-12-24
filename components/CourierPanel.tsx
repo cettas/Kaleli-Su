@@ -891,7 +891,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-20 w-full scroll-smooth">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-16 w-full scroll-smooth">
         <div className="max-w-md mx-auto">
           {activeTab === 'tasks' && renderTasks()}
           {activeTab === 'inventory' && renderInventory()}
@@ -899,48 +899,51 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
         </div>
       </div>
 
-      {/* Bottom Navigation - Minimal */}
-      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white border-t border-slate-200">
-        <div className="max-w-md mx-auto">
-          {/* Sipariş Özeti - Compact */}
-          <div className="flex items-center justify-between px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600">
-            <div className="flex items-center gap-3 text-white">
-              <div className="flex items-center gap-1">
-                <i className="fas fa-clock text-[10px] text-white/70"></i>
-                <span className="text-sm font-black">{activeOrders.length}</span>
+      {/* Bottom Navigation - Modern Minimal */}
+      <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white/95 backdrop-blur border-t border-slate-200/50">
+        <div className="max-w-md mx-auto px-2">
+          <div className="flex items-center justify-between py-2">
+            {/* Sipariş Özetleri */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg">
+                <div className={"w-1.5 h-1.5 rounded-full " + (activeOrders.length > 0 ? "bg-indigo-500 animate-pulse" : "bg-slate-300")}></div>
+                <span className="text-xs font-semibold text-slate-600">{activeOrders.length}</span>
+                <i className="fas fa-clock text-[10px] text-slate-400"></i>
               </div>
-              <div className="flex items-center gap-1">
-                <i className="fas fa-check text-[10px] text-emerald-300"></i>
-                <span className="text-sm font-black text-emerald-300">{completedToday.length}</span>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg">
+                <i className="fas fa-check text-[10px] text-emerald-500"></i>
+                <span className="text-xs font-semibold text-slate-600">{completedToday.length}</span>
               </div>
             </div>
+
+            {/* Navigation Icons */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setActiveTab('tasks')}
+                className={"p-2 rounded-lg transition-all " + (activeTab === 'tasks' ? "bg-indigo-100 text-indigo-600" : "text-slate-400 hover:bg-slate-50")}
+              >
+                <i className="fas fa-clipboard-list text-sm"></i>
+              </button>
+              <button
+                onClick={() => setActiveTab('inventory')}
+                className={"p-2 rounded-lg transition-all " + (activeTab === 'inventory' ? "bg-emerald-100 text-emerald-600" : "text-slate-400 hover:bg-slate-50")}
+              >
+                <i className="fas fa-boxes-stacked text-sm"></i>
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={"p-2 rounded-lg transition-all " + (activeTab === 'profile' ? "bg-amber-100 text-amber-600" : "text-slate-400 hover:bg-slate-50")}
+              >
+                <i className="fas fa-user text-sm"></i>
+              </button>
+            </div>
+
+            {/* Ses Toggle */}
             <button
               onClick={unlockAudio}
-              className={"w-7 h-7 rounded-lg flex items-center justify-center " + (isAudioUnlocked ? "bg-emerald-400" : "bg-white/20")}
+              className={"p-2 rounded-lg transition-all " + (isAudioUnlocked ? "bg-emerald-100 text-emerald-600" : "text-slate-400 hover:bg-slate-50")}
             >
-              <i className={"fas " + (isAudioUnlocked ? "fa-volume-up" : "fa-volume-mute") + " text-xs text-white"}></i>
-            </button>
-          </div>
-
-          {/* Navigation - Ultra Compact */}
-          <div className="flex justify-around items-center py-1">
-            <button
-              onClick={() => setActiveTab('tasks')}
-              className={"flex flex-col items-center py-1 px-3 rounded-lg " + (activeTab === 'tasks' ? "bg-indigo-50" : "")}
-            >
-              <i className={"fas fa-clipboard-list text-base " + (activeTab === 'tasks' ? "text-indigo-600" : "text-slate-400")}></i>
-            </button>
-            <button
-              onClick={() => setActiveTab('inventory')}
-              className={"flex flex-col items-center py-1 px-3 rounded-lg " + (activeTab === 'inventory' ? "bg-emerald-50" : "")}
-            >
-              <i className={"fas fa-boxes-stacked text-base " + (activeTab === 'inventory' ? "text-emerald-600" : "text-slate-400")}></i>
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={"flex flex-col items-center py-1 px-3 rounded-lg " + (activeTab === 'profile' ? "bg-amber-50" : "")}
-            >
-              <i className={"fas fa-user text-base " + (activeTab === 'profile' ? "text-amber-600" : "text-slate-400")}></i>
+              <i className={"fas " + (isAudioUnlocked ? "fa-volume-up" : "fa-volume-mute") + " text-sm"}></i>
             </button>
           </div>
         </div>
