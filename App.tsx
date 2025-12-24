@@ -280,10 +280,10 @@ const App: React.FC = () => {
     }, 5000);
   };
 
-  // Yeni sipariş bildirimi (müşteri hariç tüm panellerde)
+  // Yeni sipariş bildirimi (sadece kurye panelinde)
   useEffect(() => {
-    // Sadece müşteri panelinde bildirim gösterme
-    if (currentUser?.role === 'customer') return;
+    // Sadece kurye panelinde bildirim göster
+    if (currentUser?.role !== 'Kurye') return;
 
     if (prevOrderCount.current !== null && orders.length > prevOrderCount.current) {
       const newOrder = orders[0];
