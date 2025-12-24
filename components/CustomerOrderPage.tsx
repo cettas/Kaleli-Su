@@ -488,56 +488,133 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               document.body.appendChild(modal);
               const content = modal.querySelector('#modal-content');
               content.innerHTML = `
-                <div class="space-y-3 mb-4">
-                  ${cart.map(item => `
-                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                      <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-                        <i class="fas fa-droplet text-indigo-400"></i>
-                      </div>
-                      <div class="flex-1">
-                        <p class="text-sm font-bold">${item.name}</p>
-                        <p class="text-xs text-slate-500">${item.quantity} adet × ${item.price}₺</p>
-                      </div>
-                      <div class="text-right">
-                        <p class="text-sm font-bold">${item.price * item.quantity}₺</p>
-                      </div>
+                <!-- Cart Items Section -->
+                <div class="mb-6">
+                  <div class="flex items-center gap-2 mb-3">
+                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-box text-indigo-600 text-sm"></i>
                     </div>
-                  `).join('')}
-                  <div class="flex items-center justify-between py-3 px-4 bg-slate-900 rounded-xl">
-                    <span class="text-white font-bold">Toplam</span>
-                    <span class="text-xl font-black text-white">${totalAmount}₺</span>
+                    <h3 class="text-sm font-bold text-slate-700">Sepet Ürünleri</h3>
+                  </div>
+                  <div class="space-y-2">
+                    ${cart.map(item => `
+                      <div class="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-white rounded-xl border border-slate-100">
+                        <div class="w-12 h-12 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-xl flex items-center justify-center">
+                          <i class="fas fa-droplet text-indigo-600"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-bold text-slate-900 truncate">${item.name}</p>
+                          <p class="text-xs text-slate-500">${item.quantity} adet × ${item.price}₺</p>
+                        </div>
+                        <div class="text-right">
+                          <p class="text-base font-black text-slate-900">${item.price * item.quantity}₺</p>
+                        </div>
+                      </div>
+                    `).join('')}
                   </div>
                 </div>
-                <form class="space-y-3" onsubmit="event.preventDefault(); document.querySelector('.checkout-submit').click();">
-                  <h3 class="text-sm font-bold text-slate-700">Teslimat Bilgileri</h3>
-                  <div class="grid grid-cols-2 gap-2">
-                    <input type="text" placeholder="Ad Soyad" class="mobile-input" value="${formData.name}" oninput="window.mobileForm.name = this.value">
-                    <input type="tel" placeholder="Telefon" class="mobile-input" value="${formData.phone}" oninput="window.mobileForm.phone = this.value">
+
+                <!-- Total Summary Card -->
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-4 shadow-lg mb-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Toplam Tutar</p>
+                      <p class="text-2xl font-black text-white">${totalAmount}₺</p>
+                    </div>
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                      <i class="fas fa-receipt text-xl text-white"></i>
+                    </div>
                   </div>
-                  <div class="grid grid-cols-3 gap-2">
-                    <select class="mobile-input" onchange="window.mobileForm.neighborhood = this.value">
-                      <option value="">Mahalle</option>
-                      ${KARTAL_NEIGHBORHOODS.map(n => `<option value="${n}" ${formData.neighborhood === n ? 'selected' : ''}>${n}</option>`).join('')}
-                    </select>
-                    <input type="text" placeholder="Bina No" class="mobile-input text-center" value="${formData.buildingNo}" oninput="window.mobileForm.buildingNo = this.value">
-                    <input type="text" placeholder="Daire No" class="mobile-input text-center" value="${formData.apartmentNo}" oninput="window.mobileForm.apartmentNo = this.value">
+                </div>
+
+                <!-- Form Section -->
+                <form class="space-y-4" onsubmit="event.preventDefault(); document.querySelector('.checkout-submit').click();">
+                  <!-- Delivery Header -->
+                  <div class="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-truck text-indigo-600 text-sm"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-700">Teslimat Bilgileri</h3>
                   </div>
-                  <input type="text" placeholder="Sokak / Cadde / Apartman" class="mobile-input" value="${formData.street}" oninput="window.mobileForm.street = this.value">
-                  <textarea placeholder="Not (opsiyonel)" class="mobile-input" rows="2" oninput="window.mobileForm.note = this.value">${formData.note}</textarea>
+
+                  <!-- Name & Phone -->
+                  <div class="space-y-3">
+                    <div>
+                      <label class="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1">
+                        <i class="fas fa-user text-slate-400 text-xs"></i> Ad Soyad *
+                      </label>
+                      <input type="text" placeholder="Adınız soyadınız" class="mobile-input" value="${formData.name}" oninput="window.mobileForm.name = this.value">
+                    </div>
+                    <div>
+                      <label class="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1">
+                        <i class="fas fa-phone text-slate-400 text-xs"></i> Telefon *
+                      </label>
+                      <input type="tel" placeholder="5XX XXX XX XX" class="mobile-input" value="${formData.phone}" oninput="window.mobileForm.phone = this.value">
+                    </div>
+                  </div>
+
+                  <!-- Address Row -->
                   <div>
-                    <label class="text-xs font-bold text-slate-500 mb-2 block">Ödeme Yöntemi</label>
-                    <div class="grid grid-cols-2 gap-2">
+                    <label class="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1">
+                      <i class="fas fa-map-marker-alt text-slate-400 text-xs"></i> Adres *
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                      <select class="mobile-input" onchange="window.mobileForm.neighborhood = this.value">
+                        <option value="">Mahalle</option>
+                        ${KARTAL_NEIGHBORHOODS.map(n => `<option value="${n}" ${formData.neighborhood === n ? 'selected' : ''}>${n}</option>`).join('')}
+                      </select>
+                      <input type="text" placeholder="Bina No" class="mobile-input text-center" value="${formData.buildingNo}" oninput="window.mobileForm.buildingNo = this.value">
+                      <input type="text" placeholder="Daire No" class="mobile-input text-center" value="${formData.apartmentNo}" oninput="window.mobileForm.apartmentNo = this.value">
+                    </div>
+                  </div>
+
+                  <div>
+                    <input type="text" placeholder="Sokak / Cadde / Apartman adı *" class="mobile-input" value="${formData.street}" oninput="window.mobileForm.street = this.value">
+                  </div>
+
+                  <!-- Note -->
+                  <div>
+                    <label class="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1">
+                      <i class="fas fa-sticky-note text-slate-400 text-xs"></i> Sipariş Notu
+                    </label>
+                    <textarea placeholder="Kapı zili, apartman kodu, kat bilgisi..." class="mobile-input" rows="2" oninput="window.mobileForm.note = this.value">${formData.note}</textarea>
+                  </div>
+
+                  <!-- Payment Method -->
+                  <div>
+                    <label class="text-xs font-semibold text-slate-500 mb-3 block flex items-center gap-2">
+                      <i class="fas fa-wallet text-slate-400"></i> Ödeme Yöntemi *
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
                       <button type="button" class="mobile-pay-btn ${formData.paymentMethod === 'CASH' ? 'selected' : ''}" data-method="CASH">
-                        <span class="text-xl">💵</span> Nakit
+                        <span class="text-2xl">💵</span>
+                        <span class="text-xs font-bold">Nakit</span>
                       </button>
                       <button type="button" class="mobile-pay-btn ${formData.paymentMethod === 'POS' ? 'selected' : ''}" data-method="POS">
-                        <span class="text-xl">💳</span> POS
+                        <span class="text-2xl">💳</span>
+                        <span class="text-xs font-bold">Kredi Kartı</span>
                       </button>
                     </div>
                   </div>
-                  <button type="submit" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-sm">
-                    Siparişi Onayla
+
+                  <!-- Submit Button -->
+                  <button type="submit" class="checkout-submit w-full py-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white rounded-xl font-bold text-base shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Siparişi Onayla</span>
+                    <span class="text-sm opacity-80">(${totalAmount}₺)</span>
                   </button>
+
+                  <!-- Trust Badges -->
+                  <div class="flex items-center justify-center gap-4 pt-2">
+                    <div class="flex items-center gap-1.5 text-slate-400">
+                      <i class="fas fa-shield-alt text-emerald-500 text-xs"></i>
+                      <span class="text-xs">Güvenli</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-slate-400">
+                      <i class="fas fa-truck text-blue-500 text-xs"></i>
+                      <span class="text-xs">Hızlı</span>
+                    </div>
+                  </div>
                 </form>
               `;
               modal.querySelectorAll('.mobile-input').forEach(el => {
@@ -545,16 +622,42 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               });
               modal.querySelectorAll('.mobile-pay-btn').forEach(btn => {
                 const method = btn.getAttribute('data-method');
-                btn.style.cssText = 'py-3 rounded-lg font-bold border-2 flex flex-col items-center gap-1 transition-all ' +
-                  (formData.paymentMethod === (method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS)
-                    ? 'bg-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 border-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 text-white'
-                    : 'border-slate-200');
+                const isSelected = formData.paymentMethod === (method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS);
+                const colorClass = method === 'CASH' ? 'emerald' : 'blue';
+                btn.style.cssText = `py-4 px-3 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all ${
+                  isSelected
+                    ? `bg-gradient-to-br from-${colorClass}-500 to-${colorClass}-600 border-${colorClass}-500 text-white shadow-lg shadow-${colorClass}-500/30`
+                    : 'border-slate-200 bg-white'
+                }`;
+                if (isSelected) {
+                  btn.innerHTML = `
+                    <span class="text-2xl">${method === 'CASH' ? '💵' : '💳'}</span>
+                    <span class="text-xs font-bold">${method === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
+                    <span class="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                      <i class="fas fa-check text-${colorClass}-600 text-xs"></i>
+                    </span>
+                  `;
+                  btn.style.position = 'relative';
+                }
                 btn.onclick = () => {
                   window.mobileForm.paymentMethod = method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS;
                   modal.querySelectorAll('.mobile-pay-btn').forEach(b => {
-                    b.className = 'mobile-pay-btn py-3 rounded-lg font-bold border-2 flex flex-col items-center gap-1 transition-all border-slate-200';
+                    const m = b.getAttribute('data-method');
+                    const c = m === 'CASH' ? 'emerald' : 'blue';
+                    b.style.cssText = `py-4 px-3 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all border-slate-200 bg-white`;
+                    b.style.position = 'static';
+                    b.innerHTML = `<span class="text-2xl">${m === 'CASH' ? '💵' : '💳'}</span><span class="text-xs font-bold">${m === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>`;
                   });
-                  btn.className = 'mobile-pay-btn py-3 rounded-lg font-bold border-2 flex flex-col items-center gap-1 transition-all bg-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 border-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 text-white';
+                  const newColor = method === 'CASH' ? 'emerald' : 'blue';
+                  btn.style.cssText = `py-4 px-3 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all bg-gradient-to-br from-${newColor}-500 to-${newColor}-600 border-${newColor}-500 text-white shadow-lg shadow-${newColor}-500/30`;
+                  btn.style.position = 'relative';
+                  btn.innerHTML = `
+                    <span class="text-2xl">${method === 'CASH' ? '💵' : '💳'}</span>
+                    <span class="text-xs font-bold">${method === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
+                    <span class="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                      <i class="fas fa-check text-${newColor}-600 text-xs"></i>
+                    </span>
+                  `;
                 };
               });
               modal.querySelector('form').onsubmit = (e) => {
