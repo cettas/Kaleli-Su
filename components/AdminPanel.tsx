@@ -174,7 +174,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           {!sidebarCollapsed && (
             <div className="hidden lg:block">
               <h2 className="text-sm font-black tracking-tight leading-none uppercase text-white">KALELİ SU</h2>
-              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.25em] mt-1.5">YÖNETİM PANELİ</p>
+              <p className="text-xs font-black text-indigo-400 uppercase tracking-[0.25em] mt-1.5">YÖNETİM PANELİ</p>
             </div>
           )}
         </div>
@@ -190,7 +190,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         {/* Navigasyon */}
         <nav className="flex-1 flex flex-col gap-1.5 w-full overflow-y-auto scrollbar-hide">
           {!sidebarCollapsed && (
-            <p className="hidden lg:block text-[9px] font-black text-slate-600 uppercase tracking-[0.35em] px-4 mb-2">ANA MENÜ</p>
+            <p className="hidden lg:block text-xs font-black text-slate-600 uppercase tracking-[0.35em] px-4 mb-2">ANA MENÜ</p>
           )}
           {[
             { id: 'dashboard', label: 'Dashboard', icon: 'gauge-high', short: 'DASH', badge: null },
@@ -203,7 +203,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`relative group flex items-center justify-center lg:justify-start gap-3 px-2 lg:px-4 py-3 rounded-xl transition-all duration-200 ${
+              className={`relative group flex items-center justify-center lg:justify-start gap-3 px-2 lg:px-4 py-3 rounded-xl transition-all duration-200 min-h-[48px] ${
                 activeTab === tab.id
                 ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-xl shadow-indigo-600/30'
                 : 'text-slate-400 hover:bg-white/5 hover:text-white'
@@ -217,16 +217,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <i className={`fas fa-${tab.icon} ${activeTab === tab.id ? 'text-white' : 'text-slate-400 group-hover:text-white'} text-sm`}></i>
               </div>
               {!sidebarCollapsed && (
-                <span className="hidden lg:block text-[11px] font-black uppercase tracking-wider flex-1 text-left">{tab.label}</span>
+                <span className="hidden lg:block text-xs font-black uppercase tracking-wider flex-1 text-left">{tab.label}</span>
               )}
               {tab.badge !== null && tab.badge > 0 && (
-                <span className={`hidden lg:flex ${sidebarCollapsed ? 'absolute -top-1 -right-1' : ''} w-5 h-5 bg-rose-500 rounded-full text-white text-[9px] font-black items-center justify-center`}>
+                <span className={`hidden lg:flex ${sidebarCollapsed ? 'absolute -top-1 -right-1' : ''} w-5 h-5 bg-rose-500 rounded-full text-white text-xs font-black items-center justify-center`}>
                   {tab.badge}
                 </span>
               )}
               {/* Mobile Icon Label */}
               {sidebarCollapsed && (
-                <span className="lg:hidden text-[8px] font-black uppercase">{tab.short}</span>
+                <span className="lg:hidden text-xs font-black uppercase">{tab.short}</span>
               )}
             </button>
           ))}
@@ -323,12 +323,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 items-stretch">
                 <div className="xl:col-span-2 flex flex-col md:flex-row items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                   <div className="flex flex-wrap items-center gap-2 flex-1">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-2">FİLTRELE:</span>
+                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">FİLTRELE:</span>
                     {['daily', 'weekly', 'monthly', 'all', 'custom'].map(f => (
                       <button
                         key={f}
                         onClick={() => setTimeFilter(f as TimeFilter)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+                        className={`px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border min-h-[44px] ${
                           timeFilter === f ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
                         }`}
                       >
@@ -343,31 +343,31 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="bg-transparent text-[10px] font-black text-slate-600 outline-none uppercase"
+                        className="bg-transparent text-xs font-black text-slate-600 outline-none uppercase"
                       />
                       <span className="text-slate-300 font-bold">-</span>
                       <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="bg-transparent text-[10px] font-black text-slate-600 outline-none uppercase"
+                        className="bg-transparent text-xs font-black text-slate-600 outline-none uppercase"
                       />
                     </div>
                   )}
                 </div>
                 <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-4 rounded-2xl flex justify-around items-center shadow-lg">
                   <div className="text-center">
-                    <p className="text-[8px] font-black text-amber-400 uppercase">Bekleyen</p>
+                    <p className="text-xs font-black text-amber-400 uppercase">Bekleyen</p>
                     <p className="text-xl font-black text-white">{stats.pendingCount}</p>
                   </div>
                   <div className="w-px h-8 bg-white/10"></div>
                   <div className="text-center">
-                    <p className="text-[8px] font-black text-indigo-400 uppercase">Yolda</p>
+                    <p className="text-xs font-black text-indigo-400 uppercase">Yolda</p>
                     <p className="text-xl font-black text-white">{stats.onWayCount}</p>
                   </div>
                   <div className="w-px h-8 bg-white/10"></div>
                   <div className="text-center">
-                    <p className="text-[8px] font-black text-emerald-400 uppercase">Biten</p>
+                    <p className="text-xs font-black text-emerald-400 uppercase">Biten</p>
                     <p className="text-xl font-black text-white">{stats.deliveredCount}</p>
                   </div>
                 </div>
@@ -390,9 +390,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         <i className={`fas fa-arrow-trend-up text-[10px] ${kpi.color.split(' ')[0].replace('from-', 'text-')}`}></i>
                       </div>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{kpi.label}</p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{kpi.label}</p>
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight">{kpi.value}</h3>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight mt-1">{kpi.sub}</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-tight mt-1">{kpi.sub}</p>
                   </div>
                 ))}
               </div>

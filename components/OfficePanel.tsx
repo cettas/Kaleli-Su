@@ -114,7 +114,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
       <div className="lg:hidden p-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-[60] shrink-0">
         <button
           onClick={() => setIsMobileFormOpen(true)}
-          className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-600/30 active:scale-95 transition-all"
+          className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-600/30 active:scale-95 transition-all min-h-[56px]"
         >
           <i className="fas fa-plus-circle text-lg"></i>
           YENİ SİPARİŞ GİRİŞİ
@@ -126,9 +126,9 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
         lg:static lg:block lg:w-[480px] lg:shrink-0 lg:bg-white lg:border-r lg:border-slate-200/50 lg:overflow-y-auto lg:z-10 shadow-2xl lg:shadow-none
       `}>
         <div className="lg:hidden p-5 flex justify-between items-center border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-          <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest">SİPARİŞ KAYIT</h2>
-          <button onClick={() => setIsMobileFormOpen(false)} className="w-10 h-10 rounded-xl bg-white text-rose-500 shadow-sm border border-slate-200 flex items-center justify-center hover:bg-rose-50 transition-all">
-            <i className="fas fa-times"></i>
+          <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">SİPARİŞ KAYIT</h2>
+          <button onClick={() => setIsMobileFormOpen(false)} className="w-12 h-12 rounded-xl bg-white text-rose-500 shadow-sm border border-slate-200 flex items-center justify-center hover:bg-rose-50 transition-all">
+            <i className="fas fa-times text-lg"></i>
           </button>
         </div>
 
@@ -141,7 +141,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">Hızlı Sipariş</h2>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Yeni Kayıt Oluştur</p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Yeni Kayıt Oluştur</p>
                 </div>
               </div>
               <div className="h-1 w-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
@@ -175,24 +175,24 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                   <div className="flex items-center gap-2 mt-1">
                     <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-100 rounded-lg">
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                      <span className="text-[9px] font-black text-emerald-700 uppercase tracking-wider">Canlı</span>
+                      <span className="text-xs font-black text-emerald-700 uppercase tracking-wider">Canlı</span>
                     </span>
-                    <span className="text-[10px] font-black text-slate-400">{filteredOrders.length} sipariş</span>
+                    <span className="text-xs font-black text-slate-400">{filteredOrders.length} sipariş</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="hidden md:block relative w-64">
-                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                  <kbd className="hidden sm:absolute sm:right-3 sm:top-1/2 sm:-translate-y-1/2 px-1.5 py-0.5 bg-slate-100 text-slate-400 text-[9px] font-bold rounded border border-slate-200">
+                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <kbd className="hidden sm:absolute sm:right-3 sm:top-1/2 sm:-translate-y-1/2 px-1.5 py-0.5 bg-slate-100 text-slate-400 text-xs font-bold rounded border border-slate-200">
                     ⌘K
                   </kbd>
                   <input
                     ref={searchInputRef}
                     type="text"
                     placeholder="Müşteri, tel, adres ara..."
-                    className="w-full pl-9 pr-16 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-700 focus:bg-white focus:border-indigo-500 transition-all shadow-sm"
+                    className="w-full pl-9 pr-16 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold text-slate-700 focus:bg-white focus:border-indigo-500 transition-all shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -200,12 +200,12 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
 
                 {/* Mobile Search */}
                 <div className="md:hidden relative flex-1">
-                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                   <input
                     ref={searchInputRef}
                     type="text"
                     placeholder="Ara..."
-                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-700 focus:bg-white focus:border-indigo-500 transition-all shadow-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold text-slate-700 focus:bg-white focus:border-indigo-500 transition-all shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -219,7 +219,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
               <div className="flex p-1 bg-slate-100 rounded-xl border border-slate-200/50 shrink-0">
                 <button
                   onClick={() => setActiveFilter('ALL')}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                  className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap min-h-[44px] ${
                     activeFilter === 'ALL'
                       ? 'bg-white text-indigo-600 shadow-sm'
                       : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
@@ -240,7 +240,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                     <button
                       key={status}
                       onClick={() => setActiveFilter(status)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                      className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-1.5 min-h-[44px] ${
                         isActive ? 'shadow-sm' : ''
                       } ${statusColors[status as keyof typeof statusColors] || ''}`}
                     >
@@ -249,7 +249,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                       {status === 'Teslim Edildi' && '✅'}
                       {status === 'İptal' && '❌'}
                       {status}
-                      {count > 0 && <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-white/20' : 'bg-slate-200 text-slate-600'}`}>{count}</span>}
+                      {count > 0 && <span className={`px-1.5 py-0.5 rounded-md text-xs ${isActive ? 'bg-white/20' : 'bg-slate-200 text-slate-600'}`}>{count}</span>}
                     </button>
                   );
                 })}
@@ -261,7 +261,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
               <div className="flex p-1 bg-slate-100 rounded-xl border border-slate-200/50 shrink-0">
                 <button
                   onClick={() => setSourceFilter('ALL')}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                  className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap min-h-[44px] ${
                     sourceFilter === 'ALL'
                       ? 'bg-white text-indigo-600 shadow-sm'
                       : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
@@ -276,13 +276,13 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                     <button
                       key={source}
                       onClick={() => setSourceFilter(source)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                      className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-1.5 min-h-[44px] ${
                         isActive
                           ? 'bg-white text-indigo-600 shadow-sm'
                           : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
                       }`}
                     >
-                      <i className={`fas ${style.icon} text-[8px]`}></i>
+                      <i className={`fas ${style.icon} text-xs`}></i>
                       {source === 'Web/Müşteri' ? 'WEB' : source === 'Getir' ? '🚗' : source === 'Yemeksepeti' ? '🥘' : source === 'Trendyol' ? '📦' : source}
                     </button>
                   );
@@ -294,22 +294,22 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
 
         {/* Stats Bar - Compact */}
         <div className="px-4 lg:px-6 py-3 bg-gradient-to-r from-slate-50 to-white border-b border-slate-200/50 shrink-0">
-          <div className="grid grid-cols-4 gap-3">
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 p-3 rounded-xl relative overflow-hidden">
-              <span className="text-[9px] font-black text-amber-600 uppercase block mb-1">Bekleyen</span>
-              <p className="text-xl font-black text-amber-700">{stats.pending}</p>
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 p-2 sm:p-3 rounded-xl relative overflow-hidden">
+              <span className="text-xs font-black text-amber-600 uppercase block mb-1">Bekleyen</span>
+              <p className="text-lg sm:text-xl font-black text-amber-700">{stats.pending}</p>
             </div>
-            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200 p-3 rounded-xl relative overflow-hidden">
-              <span className="text-[9px] font-black text-indigo-600 uppercase block mb-1">Yolda</span>
-              <p className="text-xl font-black text-indigo-700">{stats.onWay}</p>
+            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200 p-2 sm:p-3 rounded-xl relative overflow-hidden">
+              <span className="text-xs font-black text-indigo-600 uppercase block mb-1">Yolda</span>
+              <p className="text-lg sm:text-xl font-black text-indigo-700">{stats.onWay}</p>
             </div>
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 p-3 rounded-xl relative overflow-hidden">
-              <span className="text-[9px] font-black text-emerald-600 uppercase block mb-1">Teslim</span>
-              <p className="text-xl font-black text-emerald-700">{stats.delivered}</p>
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 p-2 sm:p-3 rounded-xl relative overflow-hidden">
+              <span className="text-xs font-black text-emerald-600 uppercase block mb-1">Teslim</span>
+              <p className="text-lg sm:text-xl font-black text-emerald-700">{stats.delivered}</p>
             </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-3 rounded-xl relative overflow-hidden">
-              <span className="text-[9px] font-black text-indigo-300 uppercase tracking-widest block mb-1">Ciro</span>
-              <p className="text-xl font-black text-white">{stats.todayRevenue}₺</p>
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-2 sm:p-3 rounded-xl relative overflow-hidden">
+              <span className="text-xs font-black text-indigo-300 uppercase tracking-widest block mb-1">Ciro</span>
+              <p className="text-lg sm:text-xl font-black text-white">{stats.todayRevenue}₺</p>
             </div>
           </div>
         </div>
@@ -375,28 +375,28 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                   >
                     {/* New Order Banner */}
                     {isNew && (
-                      <div className="bg-gradient-to-r from-indigo-500 to-purple-500 py-1.5 px-4 flex items-center justify-between">
+                      <div className="bg-gradient-to-r from-indigo-500 to-purple-500 py-2 px-4 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
-                          <span className="text-[10px] font-black text-white uppercase tracking-wider">Yeni Sipariş</span>
+                          <span className="text-xs font-black text-white uppercase tracking-wider">Yeni Sipariş</span>
                         </div>
-                        <span className="text-[9px] font-black text-white/80">Şimdi</span>
+                        <span className="text-xs font-black text-white/80">Şimdi</span>
                       </div>
                     )}
 
                     <div className="p-4">
                       {/* Top Row */}
                       <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${STATUS_COLORS[order.status]}`}>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`px-2.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider ${STATUS_COLORS[order.status]}`}>
                             {statusConfig.icon} {order.status}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ${sourceStyle.bg} ${sourceStyle.text} flex items-center gap-1`}>
-                            <i className={`fas ${sourceStyle.icon} text-[8px]`}></i>
+                          <span className={`px-2 py-1 rounded-lg text-xs font-black uppercase tracking-wider ${sourceStyle.bg} ${sourceStyle.text} flex items-center gap-1`}>
+                            <i className={`fas ${sourceStyle.icon} text-xs`}></i>
                             {order.source === 'Web/Müşteri' ? 'WEB' : order.source}
                           </span>
                           {order.paymentMethod && (
-                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${
+                            <span className={`px-2 py-1 rounded-lg text-xs font-black uppercase ${
                               order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-100 text-emerald-700' :
                               order.paymentMethod === PaymentMethod.POS ? 'bg-blue-100 text-blue-700' :
                               'bg-rose-100 text-rose-700'
@@ -415,21 +415,21 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                             <i className="fas fa-user text-slate-500 text-sm"></i>
                           </div>
                           <div>
-                            <h3 className="text-xs font-black text-slate-900 uppercase">{order.customerName}</h3>
+                            <h3 className="text-sm font-black text-slate-900 uppercase">{order.customerName}</h3>
                             <a
                               href={`tel:${order.phone}`}
-                              className="text-[11px] font-bold text-indigo-600 hover:underline flex items-center gap-1"
+                              className="text-sm font-bold text-indigo-600 hover:underline flex items-center gap-1"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <i className="fas fa-phone text-[9px]"></i>
+                              <i className="fas fa-phone text-xs"></i>
                               {order.phone}
                             </a>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="flex items-center gap-1.5 text-slate-400">
-                            <i className="far fa-clock text-[9px]"></i>
-                            <span className="text-[9px] font-bold uppercase tracking-wider">
+                            <i className="far fa-clock text-xs"></i>
+                            <span className="text-xs font-bold uppercase tracking-wider">
                               {formatDateTime(order.createdAt)}
                             </span>
                           </div>
@@ -438,20 +438,20 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
 
                       {/* Address */}
                       <div className="flex items-start gap-2 mb-3">
-                        <i className="fas fa-map-marker text-slate-400 text-xs mt-0.5"></i>
-                        <p className="text-[11px] text-slate-600 font-medium leading-snug flex-1">{order.address}</p>
+                        <i className="fas fa-map-marker text-slate-400 text-sm mt-0.5"></i>
+                        <p className="text-sm text-slate-600 font-medium leading-snug flex-1">{order.address}</p>
                       </div>
 
                       {/* Items */}
-                      <div className="flex flex-wrap gap-1.5 mb-3">
+                      <div className="flex flex-wrap gap-2 mb-3">
                         {order.items.slice(0, 4).map((item, idx) => (
-                          <div key={idx} className={`${statusConfig.bg} border border-slate-200/50 px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1.5`}>
-                            <span className="bg-white px-1.5 py-0.5 rounded-md text-indigo-600 text-[9px]">{item.quantity}x</span>
+                          <div key={idx} className={`${statusConfig.bg} border border-slate-200/50 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5`}>
+                            <span className="bg-white px-1.5 py-0.5 rounded-md text-indigo-600 text-xs">{item.quantity}x</span>
                             <span className="text-slate-700">{item.productName}</span>
                           </div>
                         ))}
                         {order.items.length > 4 && (
-                          <div className={`${statusConfig.bg} border border-slate-200/50 px-2 py-1 rounded-lg text-[10px] font-bold text-slate-500`}>
+                          <div className={`${statusConfig.bg} border border-slate-200/50 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-500`}>
                             +{order.items.length - 4}
                           </div>
                         )}
@@ -461,15 +461,15 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                       <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                         <div className="flex items-center gap-2">
                           {courier && (
-                            <div className="flex items-center gap-1.5 px-2 py-1 bg-indigo-50 rounded-lg">
-                              <i className="fas fa-motorcycle text-indigo-500 text-[10px]"></i>
-                              <span className="text-[10px] font-black text-indigo-700">{courier.name}</span>
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 rounded-lg">
+                              <i className="fas fa-motorcycle text-indigo-500 text-xs"></i>
+                              <span className="text-xs font-black text-indigo-700">{courier.name}</span>
                             </div>
                           )}
                           {order.note && (
-                            <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 rounded-lg">
-                              <i className="fas fa-sticky-note text-amber-500 text-[10px]"></i>
-                              <span className="text-[10px] font-black text-amber-700">Not</span>
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 rounded-lg">
+                              <i className="fas fa-sticky-note text-amber-500 text-xs"></i>
+                              <span className="text-xs font-black text-amber-700">Not</span>
                             </div>
                           )}
                         </div>
@@ -480,7 +480,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                             value={order.courierId || ''}
                             onChange={(e) => updateOrderCourier(order.id, e.target.value)}
                             onClick={(e) => e.stopPropagation()}
-                            className="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-black outline-none cursor-pointer hover:border-indigo-300 transition-all"
+                            className="px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black outline-none cursor-pointer hover:border-indigo-300 transition-all min-h-[44px]"
                           >
                             <option value="">Kurye Yok</option>
                             {couriers.map(c => (
@@ -500,7 +500,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                                       e.stopPropagation();
                                       updateOrderStatus(order.id, OrderStatus.ON_WAY);
                                     }}
-                                    className="px-2 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-[10px] font-black transition-all"
+                                    className="px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-xs font-black transition-all min-h-[44px] min-w-[44px]"
                                     title="Yolda"
                                   >
                                     🚚
@@ -512,7 +512,7 @@ const OfficePanel: React.FC<OfficePanelProps> = ({ orders, customers, couriers, 
                                       e.stopPropagation();
                                       updateOrderStatus(order.id, OrderStatus.DELIVERED);
                                     }}
-                                    className="px-2 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-[10px] font-black transition-all"
+                                    className="px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-xs font-black transition-all min-h-[44px] min-w-[44px]"
                                     title="Teslim Edildi"
                                   >
                                     ✅

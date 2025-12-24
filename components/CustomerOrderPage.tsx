@@ -253,7 +253,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               </div>
               <div>
                 <h1 className="text-lg font-black text-slate-900 tracking-tight uppercase leading-none">TAZE SU</h1>
-                <p className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">Kapınıza Gelsin</p>
+                <p className="text-xs font-black text-indigo-500 uppercase tracking-[0.2em]">Kapınıza Gelsin</p>
               </div>
             </div>
 
@@ -261,7 +261,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
             <div className="hidden lg:flex items-center gap-2">
               <button
                 onClick={() => setActiveCategory('all')}
-                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${activeCategory === 'all' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-[10px] font-black uppercase tracking-wider transition-all ${activeCategory === 'all' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
               >
                 Tümü
               </button>
@@ -269,7 +269,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-2 ${activeCategory === cat.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                  className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-2 ${activeCategory === cat.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                 >
                   <i className={`fas fa-${cat.icon}`}></i>
                   {cat.label}
@@ -303,12 +303,12 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               <button
                 onClick={() => setStep('checkout')}
                 disabled={cart.length === 0}
-                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all ${cart.length > 0 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-300'}`}
+                className={`relative flex items-center gap-2 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${cart.length > 0 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-300'}`}
               >
                 <i className="fas fa-shopping-bag"></i>
                 <span>{totalAmount}₺</span>
                 {cart.length > 0 && (
-                  <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 rounded-full text-white text-[9px] font-black flex items-center justify-center border-2 border-white ${cartBounce ? 'animate-bounce' : ''}`}>
+                  <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 rounded-full text-white text-xs font-black flex items-center justify-center border-2 border-white ${cartBounce ? 'animate-bounce' : ''}`}>
                     {totalItemsCount}
                   </span>
                 )}
@@ -320,7 +320,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
           <div className="lg:hidden flex items-center gap-2 mt-4 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all ${activeCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
+              className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${activeCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
             >
               Tümü
             </button>
@@ -328,7 +328,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeCategory === cat.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeCategory === cat.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
               >
                 <i className={`fas fa-${cat.icon}`}></i>
                 {cat.label}
@@ -452,7 +452,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               </div>
               <div>
                 <h2 className="text-base font-black text-slate-900 tracking-tight uppercase leading-none">ÖDEME</h2>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mt-0.5">Siparişinizi tamamlayın</p>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-wider mt-0.5">Siparişinizi tamamlayın</p>
               </div>
             </div>
             <button
@@ -468,8 +468,8 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
             {/* Cart Items */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sepetiniz</h3>
-                <span className="text-xs font-black text-indigo-600">{totalItemsCount} Ürün</span>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Sepetiniz</h3>
+                <span className="text-sm font-black text-indigo-600">{totalItemsCount} Ürün</span>
               </div>
 
               {cart.length === 0 ? (
@@ -497,14 +497,14 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-black text-slate-900 uppercase truncate">{item.name}</p>
-                          <p className="text-[10px] text-slate-500">{item.quantity} adet</p>
+                          <p className="text-sm font-black text-slate-900 uppercase truncate">{item.name}</p>
+                          <p className="text-xs text-slate-500">{item.quantity} adet</p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-black text-slate-900">{item.price * item.quantity}₺</p>
                           <button
                             onClick={() => removeFromCart(item.id)}
-                            className="text-[9px] font-black text-rose-500 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="text-xs font-black text-rose-500 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             Kaldır
                           </button>
@@ -520,11 +520,11 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-5 mt-4 shadow-xl">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Toplam Tutar</div>
+                      <div className="text-xs font-black text-slate-400 uppercase tracking-wider">Toplam Tutar</div>
                       <div className="text-2xl font-black text-white mt-1">{totalAmount}₺</div>
                     </div>
                     {formData.paymentMethod && (
-                      <div className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase ${
+                      <div className={`px-3 py-2 rounded-xl text-xs font-black uppercase ${
                         formData.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
                         formData.paymentMethod === PaymentMethod.POS ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
                         'bg-rose-500/20 text-rose-400 border border-rose-500/30'
@@ -545,7 +545,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <i className="fas fa-user-circle text-indigo-500"></i>
-                  <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-wider">İletişim Bilgileri</h3>
+                  <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">İletişim Bilgileri</h3>
                 </div>
 
                 {/* Name Input */}
@@ -553,7 +553,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <input
                     type="text"
                     placeholder="ADINIZ SOYADINIZ"
-                    className={`w-full px-4 py-3 pr-10 rounded-xl text-xs font-bold uppercase border-2 outline-none transition-all ${
+                    className={`w-full px-4 py-3.5 pr-10 rounded-xl text-sm font-bold uppercase border-2 outline-none transition-all ${
                       getFieldError('name')
                         ? 'bg-rose-50 border-rose-300 text-rose-700 placeholder-rose-400'
                         : isFieldValid('name')
@@ -565,17 +565,17 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                     onBlur={() => handleFieldBlur('name')}
                   />
                   {isFieldValid('name') && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-xs">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-sm">
                       <i className="fas fa-check-circle"></i>
                     </span>
                   )}
                   {getFieldError('name') && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 text-xs">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 text-sm">
                       <i className="fas fa-exclamation-circle"></i>
                     </span>
                   )}
                   {getFieldError('name') && (
-                    <p className="text-[9px] font-black text-rose-500 uppercase mt-1">{getFieldError('name')}</p>
+                    <p className="text-xs font-black text-rose-500 uppercase mt-1">{getFieldError('name')}</p>
                   )}
                 </div>
 
@@ -584,7 +584,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <input
                     type="tel"
                     placeholder="TELEFON NUMARASI"
-                    className={`w-full px-4 py-3 pr-10 rounded-xl text-xs font-bold border-2 outline-none transition-all ${
+                    className={`w-full px-4 py-3.5 pr-10 rounded-xl text-sm font-bold border-2 outline-none transition-all ${
                       getFieldError('phone')
                         ? 'bg-rose-50 border-rose-300 text-rose-700 placeholder-rose-400'
                         : isFieldValid('phone')
@@ -596,17 +596,17 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                     onBlur={() => handleFieldBlur('phone')}
                   />
                   {isFieldValid('phone') && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-xs">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-sm">
                       <i className="fas fa-check-circle"></i>
                     </span>
                   )}
                   {getFieldError('phone') && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 text-xs">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 text-sm">
                       <i className="fas fa-exclamation-circle"></i>
                     </span>
                   )}
                   {getFieldError('phone') && (
-                    <p className="text-[9px] font-black text-rose-500 uppercase mt-1">{getFieldError('phone')}</p>
+                    <p className="text-xs font-black text-rose-500 uppercase mt-1">{getFieldError('phone')}</p>
                   )}
                 </div>
               </div>
@@ -616,21 +616,21 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <i className="fas fa-map-marker-alt text-indigo-500"></i>
-                    <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Teslimat Adresi</h3>
+                    <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider">Teslimat Adresi</h3>
                   </div>
-                  <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg text-[9px] font-black uppercase">KARTAL</span>
+                  <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg text-xs font-black uppercase">KARTAL</span>
                 </div>
 
                 {/* Favorite Neighborhoods */}
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Favori Mahalleler</label>
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Favori Mahalleler</label>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {FAVORITE_NEIGHBORHOODS.slice(0, 8).map(fav => (
                       <button
                         key={fav}
                         type="button"
                         onClick={() => setFormData({...formData, neighborhood: fav})}
-                        className={`py-2 px-1 rounded-lg text-[9px] font-black uppercase tracking-tight border transition-all ${
+                        className={`py-3 px-2 rounded-xl text-xs font-black uppercase tracking-tight border transition-all min-h-[48px] ${
                           formData.neighborhood === fav
                             ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
                             : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50'
@@ -645,7 +645,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 {/* All Neighborhoods Select */}
                 <div className="relative">
                   <select
-                    className={`w-full px-4 py-3 rounded-xl text-[10px] font-bold uppercase border-2 outline-none appearance-none transition-all cursor-pointer ${
+                    className={`w-full px-4 py-3.5 rounded-xl text-sm font-bold uppercase border-2 outline-none appearance-none transition-all cursor-pointer ${
                       getFieldError('neighborhood')
                         ? 'bg-rose-50 border-rose-300 text-rose-700'
                         : formData.neighborhood
@@ -660,10 +660,10 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                     {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                    <i className="fas fa-chevron-down text-xs"></i>
+                    <i className="fas fa-chevron-down text-sm"></i>
                   </span>
                   {getFieldError('neighborhood') && (
-                    <p className="text-[9px] font-black text-rose-500 uppercase mt-1">{getFieldError('neighborhood')}</p>
+                    <p className="text-xs font-black text-rose-500 uppercase mt-1">{getFieldError('neighborhood')}</p>
                   )}
                 </div>
 
@@ -672,7 +672,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <input
                     type="text"
                     placeholder="SOKAK / CADDE / APARTMAN ADI"
-                    className={`w-full px-4 py-3 pr-10 rounded-xl text-[10px] font-bold uppercase border-2 outline-none transition-all ${
+                    className={`w-full px-4 py-3.5 pr-10 rounded-xl text-sm font-bold uppercase border-2 outline-none transition-all ${
                       getFieldError('street')
                         ? 'bg-rose-50 border-rose-300 text-rose-700'
                         : isFieldValid('street')
@@ -684,28 +684,28 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                     onBlur={() => handleFieldBlur('street')}
                   />
                   {isFieldValid('street') && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-xs">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-sm">
                       <i className="fas fa-check-circle"></i>
                     </span>
                   )}
                   {getFieldError('street') && (
-                    <p className="text-[9px] font-black text-rose-500 uppercase mt-1">{getFieldError('street')}</p>
+                    <p className="text-xs font-black text-rose-500 uppercase mt-1">{getFieldError('street')}</p>
                   )}
                 </div>
 
                 {/* Building and Apartment */}
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
                     placeholder="BİNA NO"
-                    className="w-full px-4 py-3 rounded-xl text-xs font-bold text-center border-2 border-slate-200 bg-slate-50 outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl text-sm font-bold text-center border-2 border-slate-200 bg-slate-50 outline-none focus:border-indigo-400 focus:bg-white transition-all"
                     value={formData.buildingNo}
                     onChange={e => setFormData({...formData, buildingNo: e.target.value})}
                   />
                   <input
                     type="text"
                     placeholder="DAİRE NO"
-                    className="w-full px-4 py-3 rounded-xl text-xs font-bold text-center border-2 border-slate-200 bg-slate-50 outline-none focus:border-indigo-400 focus:bg-white transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl text-sm font-bold text-center border-2 border-slate-200 bg-slate-50 outline-none focus:border-indigo-400 focus:bg-white transition-all"
                     value={formData.apartmentNo}
                     onChange={e => setFormData({...formData, apartmentNo: e.target.value})}
                   />
@@ -715,7 +715,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 <div className="relative">
                   <textarea
                     placeholder="Sipariş notunuz (opsiyonel)..."
-                    className="w-full px-4 py-3 rounded-xl text-[10px] font-bold border-2 border-slate-200 bg-slate-50 outline-none focus:border-indigo-400 focus:bg-white transition-all resize-none h-20"
+                    className="w-full px-4 py-3 rounded-xl text-sm font-bold border-2 border-slate-200 bg-slate-50 outline-none focus:border-indigo-400 focus:bg-white transition-all resize-none h-24"
                     value={formData.note}
                     onChange={e => setFormData({...formData, note: e.target.value})}
                   ></textarea>
@@ -723,30 +723,30 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               </div>
 
               {/* Payment Method */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
                     <i className="fas fa-wallet"></i>
                     Ödeme Yöntemi
                   </label>
                   {getFieldError('paymentMethod') && (
-                    <span className="text-[9px] font-black text-rose-500 uppercase">{getFieldError('paymentMethod')}</span>
+                    <span className="text-xs font-black text-rose-500 uppercase">{getFieldError('paymentMethod')}</span>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => {
                       setFormData({...formData, paymentMethod: PaymentMethod.CASH});
                       handleFieldBlur('paymentMethod');
                     }}
-                    className={`py-4 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
+                    className={`py-4 px-3 rounded-xl text-sm font-black uppercase border-2 transition-all flex flex-col items-center gap-1.5 min-h-[60px] ${
                       formData.paymentMethod === PaymentMethod.CASH
                         ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg'
                         : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-emerald-400 hover:bg-emerald-50'
                     }`}
                   >
-                    <span className="text-lg">💵</span>
+                    <span className="text-xl">💵</span>
                     <span>Nakit</span>
                   </button>
                   <button
@@ -755,13 +755,13 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                       setFormData({...formData, paymentMethod: PaymentMethod.POS});
                       handleFieldBlur('paymentMethod');
                     }}
-                    className={`py-4 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
+                    className={`py-4 px-3 rounded-xl text-sm font-black uppercase border-2 transition-all flex flex-col items-center gap-1.5 min-h-[60px] ${
                       formData.paymentMethod === PaymentMethod.POS
                         ? 'bg-blue-600 border-blue-600 text-white shadow-lg'
                         : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-400 hover:bg-blue-50'
                     }`}
                   >
-                    <span className="text-lg">💳</span>
+                    <span className="text-xl">💳</span>
                     <span>Kredi Kartı / POS</span>
                   </button>
                 </div>
@@ -771,7 +771,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               <button
                 type="submit"
                 disabled={cart.length === 0 || isSubmitting}
-                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-wider shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 min-h-[56px]"
               >
                 {isSubmitting ? (
                   <>

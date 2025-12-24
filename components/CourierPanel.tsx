@@ -335,14 +335,14 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                 <div className={`py-2 px-4 ${isOnWay ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-indigo-500 to-indigo-600'} flex items-center justify-between`}>
                   <div className="flex items-center gap-2">
                     <i className={`fas ${isOnWay ? 'fa-truck-fast' : 'fa-clock'} text-white text-sm`}></i>
-                    <span className="text-[10px] font-black text-white uppercase tracking-wider">
+                    <span className="text-xs font-black text-white uppercase tracking-wider">
                       {isOnWay ? 'YOLDALAR' : 'BEKLEYEN'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-black text-white">{order.totalAmount}₺</span>
                     {order.paymentMethod && (
-                      <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${
+                      <span className={`px-2 py-1 rounded-lg text-xs font-black uppercase ${
                         order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-500' :
                         order.paymentMethod === PaymentMethod.POS ? 'bg-blue-500' :
                         'bg-rose-500'
@@ -368,7 +368,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
                           target="_blank"
                           rel="noreferrer"
-                          className={`inline-flex items-center gap-2 mt-3 px-4 py-2.5 ${isOnWay ? 'bg-amber-500' : 'bg-indigo-600'} text-white rounded-xl font-black text-[11px] uppercase tracking-wider shadow-lg`}
+                          className={`inline-flex items-center gap-2 mt-3 px-4 py-3 ${isOnWay ? 'bg-amber-500' : 'bg-indigo-600'} text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg min-h-[48px]`}
                         >
                           <i className="fas fa-diamond-turn-right"></i> YOL TARİFİ
                         </a>
@@ -396,7 +396,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                       </div>
                       <div>
                         <p className="text-sm font-black text-slate-900 uppercase">{order.customerName}</p>
-                        <p className="text-[10px] font-bold text-slate-400">
+                        <p className="text-xs font-bold text-slate-400">
                           {new Date(order.createdAt).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}
                         </p>
                       </div>
@@ -408,11 +408,11 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                         href={`https://wa.me/${order.phone.replace(/\D/g, '')}?text=Merhaba, siparişiniz ${isOnWay ? 'yolda' : 'hazırlanıyor'}.`}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-11 h-11 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
+                        className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
                       >
                         <i className="fab fa-whatsapp text-lg"></i>
                       </a>
-                      <a href={`tel:${order.phone}`} className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all">
+                      <a href={`tel:${order.phone}`} className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-all">
                         <i className="fas fa-phone"></i>
                       </a>
                     </div>
@@ -421,7 +421,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                   {/* Not */}
                   {order.note && (
                     <div className="px-4 py-3 bg-amber-50 border-2 border-amber-200 rounded-xl">
-                      <p className="text-[11px] font-bold text-amber-900 uppercase leading-snug">
+                      <p className="text-sm font-bold text-amber-900 uppercase leading-snug">
                         <i className="fas fa-sticky-note mr-2"></i>
                         {order.note}
                       </p>
@@ -874,36 +874,36 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-[120] bg-slate-900/95 backdrop-blur-xl border-t border-white/10">
-        <div className="flex justify-around items-center py-2 px-4 max-w-md mx-auto">
+        <div className="flex justify-around items-center py-3 px-4 max-w-md mx-auto">
           <button
             onClick={() => setActiveTab('tasks')}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${activeTab === 'tasks' ? 'bg-white/10' : ''}`}
+            className={`flex flex-col items-center gap-1.5 py-2 px-4 rounded-xl transition-all min-h-[56px] ${activeTab === 'tasks' ? 'bg-white/10' : ''}`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-clipboard-list text-sm"></i>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${activeTab === 'tasks' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-white/5 text-white/50'}`}>
+              <i className="fas fa-clipboard-list text-base"></i>
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'tasks' ? 'text-white' : 'text-white/40'}`}>İşler</span>
+            <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'tasks' ? 'text-white' : 'text-white/40'}`}>İşler</span>
             {activeOrders.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full text-white text-[9px] font-black flex items-center justify-center">{activeOrders.length}</span>
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full text-white text-xs font-black flex items-center justify-center">{activeOrders.length}</span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${activeTab === 'inventory' ? 'bg-white/10' : ''}`}
+            className={`flex flex-col items-center gap-1.5 py-2 px-4 rounded-xl transition-all min-h-[56px] ${activeTab === 'inventory' ? 'bg-white/10' : ''}`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-boxes-stacked text-sm"></i>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${activeTab === 'inventory' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/5 text-white/50'}`}>
+              <i className="fas fa-boxes-stacked text-base"></i>
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'inventory' ? 'text-white' : 'text-white/40'}`}>Stok</span>
+            <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'inventory' ? 'text-white' : 'text-white/40'}`}>Stok</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-white/10' : ''}`}
+            className={`flex flex-col items-center gap-1.5 py-2 px-4 rounded-xl transition-all min-h-[56px] ${activeTab === 'profile' ? 'bg-white/10' : ''}`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30' : 'bg-white/5 text-white/50'}`}>
-              <i className="fas fa-user text-sm"></i>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${activeTab === 'profile' ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30' : 'bg-white/5 text-white/50'}`}>
+              <i className="fas fa-user text-base"></i>
             </div>
-            <span className={`text-[10px] font-black uppercase tracking-wider ${activeTab === 'profile' ? 'text-white' : 'text-white/40'}`}>Profil</span>
+            <span className={`text-xs font-black uppercase tracking-wider ${activeTab === 'profile' ? 'text-white' : 'text-white/40'}`}>Profil</span>
           </button>
         </div>
       </div>
