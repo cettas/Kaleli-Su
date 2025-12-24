@@ -35,6 +35,7 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
   const [confirmingAction, setConfirmingAction] = useState<{orderId: string, status: OrderStatus} | null>(null);
   const [selectingPayment, setSelectingPayment] = useState<{orderId: string, status: OrderStatus} | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
+  const [showCourierSelector, setShowCourierSelector] = useState(false);
   const selectedCourier = useMemo(() => couriers.find(c => c.id === courierId), [couriers, courierId]);
 
   // Orders prop değiştiğinde local state'i güncelle
@@ -635,6 +636,58 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
 
   return (
     <div className="fixed inset-0 bg-[#f1f5f9] w-full h-full flex flex-col overflow-hidden">
+      {/* Kurye Seçim Modalı */}
+      {showCourierSelector && (
+        <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-t-3xl p-6 space-y-4 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 max-h-[70vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black text-slate-900 uppercase">Kurye Seç</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hesap değiştir</p>
+              </div>
+              <button
+                onClick={() => setShowCourierSelector(false)}
+                className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-200"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              {couriers.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    onCourierChange(c.id);
+                    setShowCourierSelector(false);
+                  }}
+                  className={`w-full p-4 rounded-2xl flex items-center gap-4 transition-all ${
+                    c.id === courierId
+                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                      : 'bg-slate-50 hover:bg-slate-100 border-2 border-slate-100'
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black ${
+                    c.id === courierId ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-600'
+                  }`}>
+                    {c.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className={`text-sm font-black ${c.id === courierId ? 'text-white' : 'text-slate-900'}`}>{c.name}</p>
+                    <p className={`text-[10px] ${c.id === courierId ? 'text-white/70' : 'text-slate-400'}`}>
+                      {c.status === 'active' ? '✓ Aktif' : c.status === 'busy' ? '⏳ Meşgul' : '✗ Pasif'}
+                    </p>
+                  </div>
+                  {c.id === courierId && (
+                    <i className="fas fa-check-circle text-white text-xl"></i>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Onay Modalı */}
       {confirmingAction && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -785,16 +838,17 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
             >
               <i className={`fas fa-sync-alt text-sm ${isRefreshing ? 'animate-spin' : ''}`}></i>
             </button>
-            <div className="relative">
-              <select
-                value={courierId}
-                onChange={(e) => onCourierChange(e.target.value)}
-                className="bg-white/10 border border-white/20 rounded-xl text-[11px] font-black uppercase outline-none px-3 py-2 appearance-none pr-7 text-white w-20"
-              >
-                {couriers.map(c => <option key={c.id} value={c.id} className="bg-slate-900">{c.name.split(' ')[0]}</option>)}
-              </select>
-              <i className="fas fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none text-white/50"></i>
-            </div>
+            {/* Kurye Değiştir Butonu */}
+            <button
+              onClick={() => setShowCourierSelector(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all"
+            >
+              <i className="fas fa-user-circle text-sm text-white/80"></i>
+              <span className="text-[11px] font-black uppercase text-white truncate max-w-[60px]">
+                {selectedCourier?.name.split(' ')[0] || 'Kurye'}
+              </span>
+              <i className="fas fa-chevron-down text-[10px] text-white/50"></i>
+            </button>
           </div>
         </div>
 
