@@ -53,54 +53,14 @@ CREATE TABLE IF NOT EXISTS inventory (
 -- =====================================================
 -- KATEGORİLER TABLOSU
 -- =====================================================
--- Eğer categories tablosu varsa yapısını kontrol et, yoksa oluştur
--- NOT: Mevcut tablo yapısını koruyarak ilerliyoruz
+-- Categories tablosu zaten var, sadece veri ekleme
 
--- Önce mevcut tabloyu kontrol et
+-- Kategorileri mevcut tabloya ekle (tablo varsa)
 DO $$
 BEGIN
+  -- Tablo var mı kontrol et
   IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'categories') THEN
-    -- Tablo var, sütunları kontrol et ve eksikleri ekle
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'id') THEN
-      ALTER TABLE categories ADD COLUMN id TEXT PRIMARY KEY DEFAULT gen_random_uuid();
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'name') THEN
-      ALTER TABLE categories ADD COLUMN name TEXT;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'icon') THEN
-      ALTER TABLE categories ADD COLUMN icon TEXT;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'color') THEN
-      ALTER TABLE categories ADD COLUMN color TEXT;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'display_order') THEN
-      ALTER TABLE categories ADD COLUMN display_order INTEGER DEFAULT 0;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema_columns WHERE table_name = 'categories' AND column_name = 'is_active') THEN
-      ALTER TABLE categories ADD COLUMN is_active BOOLEAN DEFAULT true;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'created_at') THEN
-      ALTER TABLE categories ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW();
-    END IF;
-  ELSE
-    -- Tablo yok, oluştur
-    CREATE TABLE categories (
-      id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-      name TEXT NOT NULL UNIQUE,
-      icon TEXT,
-      color TEXT,
-      display_order INTEGER DEFAULT 0,
-      is_active BOOLEAN DEFAULT true,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-  END IF;
-END $$;
-
--- Kategoriler varsa ekle, yoksa geç
-DO $$
-BEGIN
-  -- Tablonun yapısını kontrol et ve veri ekle
-  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'name') THEN
+    -- Tablo var, veri ekle
     INSERT INTO categories (name, icon, color, display_order)
     VALUES
       ('19L', 'fa-droplet', '#3b82f6', 1),
