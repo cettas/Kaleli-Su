@@ -61,7 +61,6 @@ const IntegrationsManagement: React.FC = () => {
   });
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
 
   // Çağrı logları için state
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
@@ -161,25 +160,40 @@ const IntegrationsManagement: React.FC = () => {
     }
   };
 
-  const testConnection = async (service: 'trendyol') => {
-    setTestStatus('testing');
+  const [testStatus, setTestStatus] = useState<Record<string, 'idle' | 'testing' | 'success' | 'error'>>({});
+
+  const testConnection = async (service: 'trendyol' | 'netgsm' | 'whatsapp') => {
+    setTestStatus(prev => ({ ...prev, [service]: 'testing' }));
     try {
-      const response = await fetch('/api/test-integration', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/test/${service}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ service, settings })
+        body: JSON.stringify({
+          api_key: service === 'trendyol' ? settings.trendyol_api_key :
+                   service === 'netgsm' ? settings.netgsm_api_key : '',
+          api_secret: service === 'trendyol' ? settings.trendyol_api_secret : '',
+          supplier_id: service === 'trendyol' ? settings.trendyol_supplier_id : '',
+          access_token: service === 'whatsapp' ? settings.whatsapp_access_token : '',
+          phone_number_id: service === 'whatsapp' ? settings.whatsapp_phone_number_id : ''
+        })
       });
 
-      if (response.ok) {
-        setTestStatus('success');
-        setTimeout(() => setTestStatus('idle'), 3000);
+      const data = await response.json();
+
+      if (data.success) {
+        setTestStatus(prev => ({ ...prev, [service]: 'success' }));
+        setTimeout(() => setTestStatus(prev => ({ ...prev, [service]: 'idle' })), 3000);
       } else {
-        throw new Error('Bağlantı başarısız');
+        setTestStatus(prev => ({ ...prev, [service]: 'error' }));
+        setTimeout(() => setTestStatus(prev => ({ ...prev, [service]: 'idle' })), 3000);
+        alert(data.error || 'Bağlantı başarısız');
       }
     } catch (error) {
       console.error('Test hatası:', error);
-      setTestStatus('error');
-      setTimeout(() => setTestStatus('idle'), 3000);
+      setTestStatus(prev => ({ ...prev, [service]: 'error' }));
+      setTimeout(() => setTestStatus(prev => ({ ...prev, [service]: 'idle' })), 3000);
+      alert('API sunucusuna bağlanılamadı. Sunucunun çalıştığından emin olun (npm run api)');
     }
   };
 
@@ -398,7 +412,17 @@ const IntegrationsManagement: React.FC = () => {
                       {settings.trendyol_enabled ? 'Aktif' : 'Pasif'}
                     </span>
                   </div>
-                  {settings.trendyol_enabled && (
+                  {testStatus.trendyol === 'success' && (
+                    <span className="text-[10px] font-black text-emerald-600 uppercase px-3 py-1 bg-emerald-50 rounded-full flex items-center gap-1">
+                      <i className="fas fa-check-circle"></i> Bağlantı Başarılı
+                    </span>
+                  )}
+                  {testStatus.trendyol === 'error' && (
+                    <span className="text-[10px] font-black text-rose-600 uppercase px-3 py-1 bg-rose-50 rounded-full flex items-center gap-1">
+                      <i className="fas fa-times-circle"></i> Bağlantı Hatası
+                    </span>
+                  )}
+                  {settings.trendyol_enabled && testStatus.trendyol !== 'error' && (
                     <span className="text-[10px] font-black text-emerald-600 uppercase px-3 py-1 bg-emerald-50 rounded-full">
                       <i className="fas fa-sync-alt mr-1"></i> Otomatik Çekme Aktif
                     </span>
@@ -406,11 +430,11 @@ const IntegrationsManagement: React.FC = () => {
                 </div>
                 <button
                   onClick={() => testConnection('trendyol')}
-                  disabled={testStatus === 'testing' || !settings.trendyol_api_key}
+                  disabled={testStatus.trendyol === 'testing' || !settings.trendyol_api_key}
                   className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
-                  <i className="fas fa-plug"></i>
-                  {testStatus === 'testing' ? 'Test Ediliyor...' : 'Bağlantıyı Test Et'}
+                  <i className={`fas ${testStatus.trendyol === 'testing' ? 'fa-spinner fa-spin' : 'fa-plug'}`}></i>
+                  {testStatus.trendyol === 'testing' ? 'Test Ediliyor...' : 'Bağlantıyı Test Et'}
                 </button>
               </div>
             </div>
@@ -871,6 +895,29 @@ const IntegrationsManagement: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div className="flex items-center gap-4">
+                      {testStatus.netgsm === 'success' && (
+                        <span className="text-[10px] font-black text-emerald-600 uppercase px-3 py-1 bg-emerald-50 rounded-full flex items-center gap-1">
+                          <i className="fas fa-check-circle"></i> Bağlantı Başarılı
+                        </span>
+                      )}
+                      {testStatus.netgsm === 'error' && (
+                        <span className="text-[10px] font-black text-rose-600 uppercase px-3 py-1 bg-rose-50 rounded-full flex items-center gap-1">
+                          <i className="fas fa-times-circle"></i> Bağlantı Hatası
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => testConnection('netgsm')}
+                      disabled={testStatus.netgsm === 'testing'}
+                      className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                      <i className={`fas ${testStatus.netgsm === 'testing' ? 'fa-spinner fa-spin' : 'fa-plug'}`}></i>
+                      {testStatus.netgsm === 'testing' ? 'Test Ediliyor...' : 'Bağlantıyı Test Et'}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1074,6 +1121,29 @@ const IntegrationsManagement: React.FC = () => {
                         <span>Kısa ve net mesajlar</span>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div className="flex items-center gap-4">
+                      {testStatus.whatsapp === 'success' && (
+                        <span className="text-[10px] font-black text-emerald-600 uppercase px-3 py-1 bg-emerald-50 rounded-full flex items-center gap-1">
+                          <i className="fas fa-check-circle"></i> Bağlantı Başarılı
+                        </span>
+                      )}
+                      {testStatus.whatsapp === 'error' && (
+                        <span className="text-[10px] font-black text-rose-600 uppercase px-3 py-1 bg-rose-50 rounded-full flex items-center gap-1">
+                          <i className="fas fa-times-circle"></i> Bağlantı Hatası
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => testConnection('whatsapp')}
+                      disabled={testStatus.whatsapp === 'testing'}
+                      className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                      <i className={`fas ${testStatus.whatsapp === 'testing' ? 'fa-spinner fa-spin' : 'fa-plug'}`}></i>
+                      {testStatus.whatsapp === 'testing' ? 'Test Ediliyor...' : 'Bağlantıyı Test Et'}
+                    </button>
                   </div>
                 </div>
               ) : (

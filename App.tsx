@@ -559,14 +559,15 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 relative overflow-hidden">
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-sm px-4 flex flex-col gap-3 pointer-events-none">
+      {/* Toast Notifications - Enhanced */}
+      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[1080] w-full max-w-sm px-4 flex flex-col gap-3 pointer-events-none">
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className="bg-[#0f172a] text-white p-5 rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.3)] border border-white/10 flex items-center gap-5 animate-in slide-in-from-top-full duration-500 pointer-events-auto"
+            className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.3)] border border-white/10 flex items-center gap-5 animate-in slide-in-from-top-full duration-500 pointer-events-auto hover-lift"
           >
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-indigo-500'}`}>
-              <i className={`fas ${toast.type === 'success' ? 'fa-bell animate-bounce' : 'fa-info-circle'}`}></i>
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl shrink-0 ${toast.type === 'success' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30' : 'bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/30'}`}>
+              <i className={`fas ${toast.type === 'success' ? 'fa-check animate-scale-in' : 'fa-bell animate-pulse'}`}></i>
             </div>
             <div className="min-w-0">
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 leading-none mb-1">{toast.title}</h4>
@@ -577,50 +578,115 @@ const App: React.FC = () => {
       </div>
 
       <Routes>
-        {/* Home - Role Selection */}
+        {/* Home - Role Selection - Enhanced Modern Design */}
         <Route path="/" element={
           !currentUser ? (
-            <div className="h-screen bg-slate-900 flex items-center justify-center p-6 overflow-y-auto">
-              <div className="w-full max-w-md space-y-8 text-center py-10">
-                <div className="space-y-4">
-                  <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white text-4xl mx-auto shadow-2xl shadow-indigo-500/20">
-                    <i className="fas fa-droplet"></i>
+            <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex items-center justify-center p-6 overflow-y-auto relative">
+              {/* Animated Background Elements */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-float" />
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-3xl" />
+              </div>
+
+              <div className="w-full max-w-lg space-y-10 text-center py-10 relative z-10 animate-scale-in">
+                {/* Logo & Branding */}
+                <div className="space-y-6">
+                  <div className="relative inline-flex">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[3rem] blur-xl opacity-50 animate-glow" />
+                    <div className="relative w-24 h-24 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-[2.5rem] flex items-center justify-center text-white text-5xl shadow-2xl shadow-indigo-500/30 border border-white/10">
+                      <i className="fas fa-droplet animate-float"></i>
+                    </div>
                   </div>
-                  <h1 className="text-3xl font-black text-white tracking-tighter uppercase">SUDAGITIM <span className="text-indigo-500">PRO</span></h1>
-                  <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Lütfen çalışma alanını seç</p>
+                  <div>
+                    <h1 className="text-4xl font-black text-white tracking-tighter uppercase">
+                      SUDAĞITIM <span className="gradient-text">PRO</span>
+                    </h1>
+                    <p className="text-slate-400 font-bold text-sm uppercase tracking-[0.3em] mt-3">
+                      Modern Su Teslimat Sistemi
+                    </p>
+                  </div>
                 </div>
+
+                {/* Role Selection Cards */}
                 <div className="grid grid-cols-1 gap-4">
-                  <button onClick={() => window.location.href = '/musteri'} className="bg-indigo-600 p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-500 transition-all duration-300 shadow-xl shadow-indigo-600/20">
-                    <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-2xl text-white group-hover:scale-110 transition-transform"><i className="fas fa-shopping-basket"></i></div>
-                    <div className="text-left">
-                      <p className="font-black text-white uppercase text-sm">HIZLI SİPARİŞ VER</p>
-                      <p className="text-[10px] font-bold text-white/60">Giriş Yapmadan Su İste</p>
+                  {/* Customer - Quick Order */}
+                  <button
+                    onClick={() => window.location.href = '/musteri'}
+                    className="group relative bg-gradient-to-r from-indigo-600 to-indigo-500 p-6 rounded-[2rem] flex items-center gap-6 transition-all duration-300 shadow-xl shadow-indigo-600/30 hover:shadow-2xl hover:shadow-indigo-600/50 hover:-translate-y-1 active:scale-[0.98] overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-2xl text-white group-hover:scale-110 transition-transform duration-300 backdrop-blur-sm">
+                      <i className="fas fa-cart-shopping"></i>
+                    </div>
+                    <div className="relative text-left flex-1">
+                      <p className="font-black text-white uppercase text-sm tracking-wide">HIZLI SİPARİŞ</p>
+                      <p className="text-[10px] font-bold text-white/70">Giriş Yapmadan Su İste</p>
+                    </div>
+                    <div className="relative text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all">
+                      <i className="fas fa-arrow-right"></i>
                     </div>
                   </button>
 
-                  <div className="h-px bg-slate-800 my-2"></div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4" />
 
-                  <button onClick={() => window.location.href = '/ofis'} className="bg-white p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-600 transition-all duration-300">
-                    <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-slate-600 group-hover:bg-white/20 group-hover:text-white"><i className="fas fa-desktop"></i></div>
-                    <div className="text-left">
-                      <p className="font-black text-slate-900 uppercase text-sm group-hover:text-white">OFİS PERSONELİ</p>
-                      <p className="text-[10px] font-bold text-slate-400 group-hover:text-white/60">Sipariş Kaydı ve Planlama</p>
+                  {/* Office Panel */}
+                  <button
+                    onClick={() => window.location.href = '/ofis'}
+                    className="group bg-white/5 backdrop-blur-sm p-6 rounded-[2rem] flex items-center gap-6 transition-all duration-300 border border-white/10 hover:bg-white hover:-translate-y-1 active:scale-[0.98] overflow-hidden"
+                  >
+                    <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-indigo-600 group-hover:scale-110 transition-transform duration-300">
+                      <i className="fas fa-desktop"></i>
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="font-black text-slate-200 uppercase text-sm group-hover:text-slate-900 tracking-wide">OFİS PERSONELİ</p>
+                      <p className="text-[10px] font-bold text-slate-500 group-hover:text-slate-400">Sipariş Kaydı ve Planlama</p>
+                    </div>
+                    <div className="text-slate-500 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all">
+                      <i className="fas fa-arrow-right"></i>
                     </div>
                   </button>
-                  <button onClick={() => window.location.href = '/kurye'} className="bg-white p-6 rounded-3xl flex items-center gap-6 group hover:bg-indigo-600 transition-all duration-300">
-                    <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-slate-600 group-hover:bg-white/20 group-hover:text-white"><i className="fas fa-motorcycle"></i></div>
-                    <div className="text-left">
-                      <p className="font-black text-slate-900 uppercase text-sm group-hover:text-white">KURYE PANELİ</p>
-                      <p className="text-[10px] font-bold text-slate-400 group-hover:text-white/60">Teslimat ve Saha İşlemleri</p>
+
+                  {/* Courier Panel */}
+                  <button
+                    onClick={() => window.location.href = '/kurye'}
+                    className="group bg-white/5 backdrop-blur-sm p-6 rounded-[2rem] flex items-center gap-6 transition-all duration-300 border border-white/10 hover:bg-white hover:-translate-y-1 active:scale-[0.98] overflow-hidden"
+                  >
+                    <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl text-indigo-600 group-hover:scale-110 transition-transform duration-300">
+                      <i className="fas fa-motorcycle"></i>
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="font-black text-slate-200 uppercase text-sm group-hover:text-slate-900 tracking-wide">KURYE PANELİ</p>
+                      <p className="text-[10px] font-bold text-slate-500 group-hover:text-slate-400">Teslimat ve Saha İşlemleri</p>
+                    </div>
+                    <div className="text-slate-500 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all">
+                      <i className="fas fa-arrow-right"></i>
                     </div>
                   </button>
-                  <button onClick={() => window.location.href = '/admin'} className="bg-slate-800 p-6 rounded-3xl flex items-center gap-6 group hover:bg-slate-700 transition-all duration-300 border border-slate-700">
-                    <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center text-2xl text-indigo-400"><i className="fas fa-user-shield"></i></div>
-                    <div className="text-left">
-                      <p className="font-black text-white uppercase text-sm">ADMİN PANELİ</p>
+
+                  {/* Admin Panel */}
+                  <button
+                    onClick={() => window.location.href = '/admin'}
+                    className="group bg-slate-800/50 backdrop-blur-sm p-6 rounded-[2rem] flex items-center gap-6 transition-all duration-300 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600 hover:-translate-y-1 active:scale-[0.98] overflow-hidden"
+                  >
+                    <div className="w-16 h-16 bg-slate-700/50 rounded-2xl flex items-center justify-center text-2xl text-indigo-400 group-hover:scale-110 transition-transform duration-300">
+                      <i className="fas fa-user-shield"></i>
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="font-black text-slate-300 uppercase text-sm tracking-wide">ADMİN PANELİ</p>
                       <p className="text-[10px] font-bold text-slate-500">Tam Yetkili Yönetim</p>
                     </div>
+                    <div className="text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all">
+                      <i className="fas fa-arrow-right"></i>
+                    </div>
                   </button>
+                </div>
+
+                {/* Footer */}
+                <div className="pt-6">
+                  <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">
+                    v2.0 • Modern Arayüz
+                  </p>
                 </div>
               </div>
             </div>
@@ -632,27 +698,31 @@ const App: React.FC = () => {
         {/* Customer Page - No Login Required */}
         <Route path="/musteri" element={
           <>
-            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+            <header className="h-16 px-6 flex items-center justify-between border-b border-slate-200/80 bg-white/80 backdrop-blur-xl sticky top-0 z-[100] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
                     <i className="fas fa-droplet text-sm"></i>
                   </div>
-                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
-                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
-                  </h1>
+                  <div>
+                    <h1 className="text-sm font-black tracking-tight text-slate-900 leading-tight">
+                      SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                    </h1>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Müşteri Paneli</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
-                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">MÜŞTERİ</span>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-full border border-indigo-100">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">MÜŞTERİ</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => window.location.href = '/'}
-                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                  className="flex items-center gap-2 text-[11px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-wider px-4 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200 group"
                 >
-                  ÇIKIŞ YAP
+                  <i className="fas fa-home group-hover:-translate-x-0.5 transition-transform"></i>
+                  <span>Ana Sayfa</span>
                 </button>
               </div>
             </header>
@@ -668,28 +738,37 @@ const App: React.FC = () => {
         {/* Office Page - Login Required */}
         <Route path="/ofis" element={
           <ProtectedRoute requiredRole="Ofis Personeli">
-            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+            <header className="h-16 px-6 flex items-center justify-between border-b border-slate-200/80 bg-white/80 backdrop-blur-xl sticky top-0 z-[100] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
                     <i className="fas fa-droplet text-sm"></i>
                   </div>
-                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
-                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
-                  </h1>
+                  <div>
+                    <h1 className="text-sm font-black tracking-tight text-slate-900 leading-tight">
+                      SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                    </h1>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Ofis Paneli</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
-                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">OFİS</span>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-full border border-indigo-100">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">OFİS</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-slate-600">{currentUser?.name}</span>
+                <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl">
+                  <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center text-white text-xs">
+                    {currentUser?.name?.charAt(0) || 'O'}
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-700">{currentUser?.name}</span>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                  className="flex items-center gap-2 text-[11px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-wider px-4 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200 group"
                 >
-                  ÇIKIŞ
+                  <i className="fas fa-right-from-bracket group-hover:-translate-x-0.5 transition-transform"></i>
+                  <span className="hidden sm:inline">Çıkış</span>
                 </button>
               </div>
             </header>
@@ -708,28 +787,37 @@ const App: React.FC = () => {
         {/* Courier Page - Login Required */}
         <Route path="/kurye" element={
           <ProtectedRoute requiredRole="Kurye">
-            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+            <header className="h-16 px-6 flex items-center justify-between border-b border-slate-200/80 bg-white/80 backdrop-blur-xl sticky top-0 z-[100] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
                     <i className="fas fa-droplet text-sm"></i>
                   </div>
-                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
-                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
-                  </h1>
+                  <div>
+                    <h1 className="text-sm font-black tracking-tight text-slate-900 leading-tight">
+                      SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                    </h1>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Kurye Paneli</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
-                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">KURYE</span>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-full border border-indigo-100">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">KURYE</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-slate-600">{currentUser?.name}</span>
+                <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl">
+                  <div className="w-7 h-7 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center text-white text-xs">
+                    {currentUser?.name?.charAt(0) || 'K'}
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-700">{currentUser?.name}</span>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                  className="flex items-center gap-2 text-[11px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-wider px-4 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200 group"
                 >
-                  ÇIKIŞ
+                  <i className="fas fa-right-from-bracket group-hover:-translate-x-0.5 transition-transform"></i>
+                  <span className="hidden sm:inline">Çıkış</span>
                 </button>
               </div>
             </header>
@@ -748,28 +836,37 @@ const App: React.FC = () => {
         {/* Admin Page - Login Required */}
         <Route path="/admin" element={
           <ProtectedRoute requiredRole="Admin">
-            <header className="h-14 px-6 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-[100]">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+            <header className="h-16 px-6 flex items-center justify-between border-b border-slate-200/80 bg-white/80 backdrop-blur-xl sticky top-0 z-[100] shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
                     <i className="fas fa-droplet text-sm"></i>
                   </div>
-                  <h1 className="text-sm font-bold tracking-tight text-slate-900 hidden sm:block">
-                    SUDAĞITIM<span className="text-indigo-600">PRO</span>
-                  </h1>
+                  <div>
+                    <h1 className="text-sm font-black tracking-tight text-slate-900 leading-tight">
+                      SUDAĞITIM<span className="text-indigo-600">PRO</span>
+                    </h1>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Yönetim Paneli</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ROL:</span>
-                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">ADMİN</span>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-rose-50 to-pink-50 px-4 py-2 rounded-full border border-rose-100">
+                  <i className="fas fa-shield-halved text-rose-500 text-[10px]"></i>
+                  <span className="text-[10px] font-black text-rose-600 uppercase tracking-wider">ADMİN</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-slate-600">{currentUser?.name}</span>
+                <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl">
+                  <div className="w-7 h-7 bg-gradient-to-br from-rose-500 to-pink-500 rounded-lg flex items-center justify-center text-white text-xs">
+                    {currentUser?.name?.charAt(0) || 'A'}
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-700">{currentUser?.name}</span>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest px-3 py-1.5 border border-slate-200 rounded-lg transition-all"
+                  className="flex items-center gap-2 text-[11px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-wider px-4 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200 group"
                 >
-                  ÇIKIŞ
+                  <i className="fas fa-right-from-bracket group-hover:-translate-x-0.5 transition-transform"></i>
+                  <span className="hidden sm:inline">Çıkış</span>
                 </button>
               </div>
             </header>
