@@ -305,167 +305,112 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
   };
 
   const renderTasks = () => (
-    <div className="space-y-4 pb-28">
-      {/* Ses Test Butonu - Daha Modern */}
-      <div className={`p-5 rounded-3xl shadow-xl border-2 transition-all ${
-        isAudioUnlocked
-          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400'
-          : 'bg-gradient-to-br from-slate-800 to-slate-900 border-rose-500'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isAudioUnlocked ? 'bg-white/20' : 'bg-rose-500/20'}`}>
-              <i className={`fas ${isAudioUnlocked ? 'fa-volume-high' : 'fa-volume-xmark'} text-2xl text-white`}></i>
-            </div>
-            <div className="text-left">
-              <p className={`text-xs font-black uppercase tracking-widest ${isAudioUnlocked ? 'text-white/80' : 'text-rose-300'}`}>BİLDİRİMLER</p>
-              <p className={`text-base font-black uppercase ${isAudioUnlocked ? 'text-white' : 'text-rose-400'}`}>
-                {isAudioUnlocked ? 'AKTİF' : 'KAPALI'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={unlockAudio}
-            className={`px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
-              isAudioUnlocked
-                ? 'bg-white/20 text-white'
-                : 'bg-rose-500 text-white'
-            }`}
-          >
-            {isAudioUnlocked ? 'AKTİF' : 'AÇ'}
-          </button>
-        </div>
-      </div>
-
+    <div className="space-y-3 pb-20">
       {activeOrders.length > 0 ? (
-        <div className="space-y-5">
+        <div className="space-y-3">
           {activeOrders.map((order, index) => {
             const isOnWay = order.status === OrderStatus.ON_WAY;
             return (
               <div
                 key={order.id}
-                className={`bg-white rounded-3xl shadow-2xl overflow-hidden border-2 transition-all duration-300 animate-in slide-in-from-bottom-4 ${
-                  isOnWay ? 'border-amber-400 ring-4 ring-amber-100' : 'border-indigo-400'
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
+                className={"bg-white rounded-2xl shadow-lg overflow-hidden border transition-all " + (isOnWay ? "border-amber-400" : "border-indigo-200")}
               >
-                {/* Status Bar - Genişletilmiş */}
-                <div className={`py-4 px-5 ${isOnWay ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-gradient-to-r from-indigo-600 to-indigo-700'} flex items-center justify-between`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-xl ${isOnWay ? 'bg-white/20' : 'bg-white/10'} flex items-center justify-center`}>
-                      <i className={`fas ${isOnWay ? 'fa-truck-fast' : 'fa-clock'} text-xl text-white`}></i>
-                    </div>
-                    <div>
-                      <span className="text-sm font-black text-white uppercase tracking-wider block">
-                        {isOnWay ? 'YOLDALAR' : 'BEKLEYEN SİPARİŞ'}
-                      </span>
-                      <span className="text-xs text-white/70 font-semibold">
-                        {new Date(order.createdAt).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className="text-2xl font-black text-white">{order.totalAmount}₺</span>
+                {/* Header - Compact */}
+                <div className={"flex items-center justify-between px-4 py-2.5 " + (isOnWay ? "bg-amber-50" : "bg-indigo-50")}>
+                  <div className="flex items-center gap-2">
+                    <i className={"fas " + (isOnWay ? "fa-truck-fast" : "fa-clock") + " text-sm " + (isOnWay ? "text-amber-600" : "text-indigo-600")}></i>
+                    <span className="text-xs font-bold uppercase text-slate-600">
+                      {new Date(order.createdAt).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}
+                    </span>
                     {order.paymentMethod && (
-                      <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase ${
-                        order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-500' :
-                        order.paymentMethod === PaymentMethod.POS ? 'bg-blue-500' :
-                        'bg-rose-500'
-                      } text-white flex items-center gap-1`}>
-                        {order.paymentMethod === PaymentMethod.CASH ? '💵 Nakit' : order.paymentMethod === PaymentMethod.POS ? '💳 POS' : '❌'}
+                      <span className={"px-2 py-0.5 rounded text-[10px] font-bold uppercase " + (
+                        order.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-100 text-emerald-700' :
+                        order.paymentMethod === PaymentMethod.POS ? 'bg-blue-100 text-blue-700' :
+                        'bg-rose-100 text-rose-700'
+                      )}>
+                        {order.paymentMethod === PaymentMethod.CASH ? 'Nakit' : order.paymentMethod === PaymentMethod.POS ? 'POS' : '❌'}
                       </span>
                     )}
                   </div>
+                  <span className="text-lg font-bold text-slate-900">{order.totalAmount}₺</span>
                 </div>
 
-                <div className="p-5 space-y-5">
-                  {/* Adres - En önemli, Daha büyük */}
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-14 h-14 rounded-2xl ${isOnWay ? 'bg-amber-100' : 'bg-indigo-100'} flex items-center justify-center shrink-0`}>
-                        <i className={`fas fa-location-dot text-2xl ${isOnWay ? 'text-amber-600' : 'text-indigo-600'}`}></i>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-lg font-black text-slate-900 uppercase leading-snug">
-                          {order.address}
-                        </p>
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`inline-flex items-center gap-3 mt-4 px-5 py-4 ${isOnWay ? 'bg-amber-500' : 'bg-indigo-600'} text-white rounded-xl font-black text-sm uppercase tracking-wider shadow-xl min-h-[52px] transition-transform active:scale-95`}
-                        >
-                          <i className="fas fa-diamond-turn-right text-lg"></i>
-                          <span>Navigasyonu Aç</span>
-                        </a>
-                      </div>
+                <div className="p-4 space-y-3">
+                  {/* Adres */}
+                  <div className="flex items-start gap-3">
+                    <div className={"w-9 h-9 rounded-lg flex items-center justify-center shrink-0 " + (isOnWay ? "bg-amber-100" : "bg-indigo-100")}>
+                      <i className={"fas fa-location-dot text-sm " + (isOnWay ? "text-amber-600" : "text-indigo-600")}></i>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 uppercase leading-snug">{order.address}</p>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={"inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 text-white text-xs font-semibold rounded-lg " + (isOnWay ? "bg-amber-500" : "bg-indigo-600")}
+                      >
+                        <i className="fas fa-diamond-turn-right text-xs"></i>
+                        <span>Navigasyon</span>
+                      </a>
                     </div>
                   </div>
 
-                  {/* Ürünler - Daha büyük */}
-                  <div className="flex flex-wrap gap-2">
+                  {/* Ürünler */}
+                  <div className="flex flex-wrap gap-1.5">
                     {order.items.map((item, idx) => (
-                      <div key={idx} className={`px-4 py-3 rounded-xl flex items-center gap-2 border-2 ${isOnWay ? 'bg-amber-50 border-amber-200' : 'bg-indigo-50 border-indigo-200'}`}>
-                        <span className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold ${isOnWay ? 'bg-amber-500 text-white' : 'bg-indigo-600 text-white'}`}>
+                      <div key={idx} className={"px-2 py-1 rounded-md flex items-center gap-1.5 text-xs font-semibold " + (isOnWay ? "bg-amber-50 text-amber-800" : "bg-indigo-50 text-indigo-800")}>
+                        <span className={"w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold " + (isOnWay ? "bg-amber-500 text-white" : "bg-indigo-600 text-white")}>
                           {item.quantity}
                         </span>
-                        <span className="text-base font-black text-slate-800 uppercase">{item.productName}</span>
+                        <span>{item.productName}</span>
                       </div>
                     ))}
                   </div>
 
-                  {/* Müşteri ve İletişim - Daha büyük butonlar */}
-                  <div className="flex items-center justify-between pt-4 border-t-2 border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                        <i className="fas fa-user text-slate-600 text-lg"></i>
+                  {/* Müşteri ve Aksiyonlar */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                        <i className="fas fa-user text-xs text-slate-500"></i>
                       </div>
                       <div>
-                        <p className="text-base font-black text-slate-900 uppercase">{order.customerName}</p>
-                        <p className="text-sm font-bold text-slate-400">
-                          {order.phone}
-                        </p>
+                        <p className="text-xs font-bold text-slate-900 uppercase">{order.customerName}</p>
+                        <p className="text-[10px] text-slate-400">{order.phone}</p>
                       </div>
                     </div>
 
-                    {/* İletişim Butonları - Daha büyük */}
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       <a
-                        href={`https://wa.me/${order.phone.replace(/\D/g, '')}?text=Merhaba, siparişiniz ${isOnWay ? 'yolda' : 'hazırlanıyor'}.`}
+                        href={`https://wa.me/${order.phone.replace(/\D/g, '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg active:scale-90 transition-all"
+                        className="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center text-white"
                       >
-                        <i className="fab fa-whatsapp text-2xl"></i>
+                        <i className="fab fa-whatsapp text-base"></i>
                       </a>
-                      <a
-                        href={`tel:${order.phone}`}
-                        className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 shadow-lg active:scale-90 transition-all"
-                      >
-                        <i className="fas fa-phone text-lg"></i>
+                      <a href={`tel:${order.phone}`} className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
+                        <i className="fas fa-phone text-sm"></i>
                       </a>
                     </div>
                   </div>
 
-                  {/* Not - Daha belirgin */}
+                  {/* Not */}
                   {order.note && (
-                    <div className="px-5 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-2xl">
-                      <p className="text-sm font-black text-amber-900 uppercase leading-snug flex items-start gap-2">
-                        <i className="fas fa-sticky-note mt-1 text-amber-500"></i>
-                        <span>{order.note}</span>
-                      </p>
+                    <div className={"px-3 py-2 rounded-lg text-xs font-semibold " + (isOnWay ? "bg-amber-50 text-amber-800" : "bg-indigo-50 text-indigo-800")}>
+                      <i className="fas fa-sticky-note mr-1"></i>
+                      {order.note}
                     </div>
                   )}
 
-                  {/* Aksiyon Butonu - Daha büyük ve belirgin */}
-                  <div className="pt-2">
+                  {/* Aksiyon Butonu */}
+                  <div className="pt-1">
                     {order.status === OrderStatus.PENDING ? (
                       <button
                         onClick={() => setConfirmingAction({orderId: order.id, status: OrderStatus.ON_WAY})}
-                        className="w-full py-5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl font-black text-base uppercase tracking-widest shadow-xl shadow-amber-500/30 active:scale-98 transition-all flex items-center justify-center gap-3"
+                        className="w-full py-2.5 bg-amber-500 text-white rounded-xl font-bold text-sm uppercase tracking-wide active:scale-98 transition-all flex items-center justify-center gap-2"
                       >
-                        <i className="fas fa-truck-fast text-xl"></i>
-                        <span>YOLA ÇIKTIM</span>
+                        <i className="fas fa-truck-fast text-sm"></i>
+                        <span>Yola Çıktım</span>
                       </button>
                     ) : (
                       <button
@@ -473,10 +418,10 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                           setSelectedPaymentMethod(PaymentMethod.CASH);
                           setSelectingPayment({orderId: order.id, status: OrderStatus.DELIVERED});
                         }}
-                        className="w-full py-6 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl font-black text-lg uppercase tracking-widest shadow-xl shadow-emerald-500/30 active:scale-98 transition-all flex items-center justify-center gap-3"
+                        className="w-full py-2.5 bg-emerald-500 text-white rounded-xl font-bold text-sm uppercase tracking-wide active:scale-98 transition-all flex items-center justify-center gap-2"
                       >
-                        <i className="fas fa-check-circle text-2xl"></i>
-                        <span>TESLİM ETTİM</span>
+                        <i className="fas fa-check text-sm"></i>
+                        <span>Teslim Ettim</span>
                       </button>
                     )}
                   </div>
@@ -486,113 +431,71 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
           })}
         </div>
       ) : (
-        <div className="py-20 text-center space-y-5">
-          <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
-            <i className="fas fa-mug-hot text-5xl text-emerald-500"></i>
+        <div className="py-16 text-center">
+          <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <i className="fas fa-mug-hot text-2xl text-slate-400"></i>
           </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest">İŞİN YOK</h3>
-            <p className="text-sm font-bold text-slate-400 uppercase">Mola verebilirsin 💪</p>
-          </div>
+          <p className="text-sm font-bold text-slate-400">İşin yok</p>
         </div>
       )}
     </div>
   );
 
   const renderInventory = () => (
-    <div className="space-y-5 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-2xl space-y-6 relative overflow-hidden">
-        {/* Dekoratif arka plan */}
-        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-100 to-transparent rounded-bl-full opacity-50"></div>
-
-        <div className="text-center space-y-2 relative z-10">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/30">
-            <i className="fas fa-truck-loading text-2xl text-white"></i>
+    <div className="space-y-3 pb-20">
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-lg space-y-4">
+        {/* Dolu Damacana */}
+        <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl">
+          <div className="flex items-center gap-2">
+            <i className="fas fa-droplet text-indigo-500 text-sm"></i>
+            <span className="text-xs font-bold text-indigo-700 uppercase">Dolu Damacana</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">ARAÇ ENVANTERİ</h2>
-          <p className="text-xs font-bold text-indigo-500 uppercase tracking-[0.2em]">Saha Stok Seviyesi</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setLocalFull(Math.max(0, localFull - 1))} className="w-9 h-9 bg-white rounded-lg text-indigo-600 font-bold border border-indigo-200 text-base">-</button>
+            <span className="w-10 text-center text-lg font-bold text-indigo-700">{localFull}</span>
+            <button onClick={() => setLocalFull(localFull + 1)} className="w-9 h-9 bg-indigo-600 rounded-lg text-white font-bold text-base">+</button>
+          </div>
         </div>
 
-        <div className="space-y-4">
-          {/* Dolu Damacana */}
-          <div className="p-5 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl border-2 border-indigo-200 flex items-center justify-between">
-            <div className="space-y-4">
-              <span className="text-xs font-black text-indigo-600 uppercase tracking-widest block flex items-center gap-2">
-                <i className="fas fa-droplet"></i> DOLU DAMACANA
-              </span>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setLocalFull(Math.max(0, localFull - 1))} className="w-14 h-14 bg-white rounded-xl text-indigo-600 font-black border-2 border-indigo-300 shadow-md active:scale-90 text-xl">-</button>
-                <input type="number" value={localFull} onChange={(e) => setLocalFull(Math.max(0, parseInt(e.target.value) || 0))} className="w-16 h-14 bg-transparent text-center font-black text-2xl outline-none" />
-                <button onClick={() => setLocalFull(localFull + 1)} className="w-14 h-14 bg-indigo-600 rounded-xl text-white font-black shadow-lg shadow-indigo-500/30 active:scale-90 text-xl">+</button>
-              </div>
-            </div>
-            <div className="text-right">
-               <span className="text-5xl font-black text-indigo-600 tracking-tighter">{localFull}</span>
-               <p className="text-xs font-black text-indigo-400 uppercase mt-1">Adet</p>
-            </div>
+        {/* Boş İade */}
+        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+          <div className="flex items-center gap-2">
+            <i className="fas fa-box-open text-slate-500 text-sm"></i>
+            <span className="text-xs font-bold text-slate-700 uppercase">Boş İade</span>
           </div>
-
-          {/* Boş İade */}
-          <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-2xl border-2 border-slate-200 flex items-center justify-between">
-            <div className="space-y-4">
-              <span className="text-xs font-black text-slate-500 uppercase tracking-widest block flex items-center gap-2">
-                <i className="fas fa-box-open"></i> BOŞ İADE
-              </span>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setLocalEmpty(Math.max(0, localEmpty - 1))} className="w-14 h-14 bg-white rounded-xl text-slate-600 font-black border-2 border-slate-300 shadow-md active:scale-90 text-xl">-</button>
-                <input type="number" value={localEmpty} onChange={(e) => setLocalEmpty(Math.max(0, parseInt(e.target.value) || 0))} className="w-16 h-14 bg-transparent text-center font-black text-2xl outline-none" />
-                <button onClick={() => setLocalEmpty(localEmpty + 1)} className="w-14 h-14 bg-slate-700 rounded-xl text-white font-black shadow-lg shadow-slate-500/30 active:scale-90 text-xl">+</button>
-              </div>
-            </div>
-            <div className="text-right">
-               <span className="text-5xl font-black text-slate-700 tracking-tighter">{localEmpty}</span>
-               <p className="text-xs font-black text-slate-400 uppercase mt-1">Adet</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setLocalEmpty(Math.max(0, localEmpty - 1))} className="w-9 h-9 bg-white rounded-lg text-slate-600 font-bold border border-slate-200 text-base">-</button>
+            <span className="w-10 text-center text-lg font-bold text-slate-700">{localEmpty}</span>
+            <button onClick={() => setLocalEmpty(localEmpty + 1)} className="w-9 h-9 bg-slate-700 rounded-lg text-white font-bold text-base">+</button>
           </div>
         </div>
 
         <button
           onClick={handleUpdateStock}
-          className="w-full py-5 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-98 transition-all flex items-center justify-center gap-3"
+          className="w-full py-2.5 bg-slate-800 text-white rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2"
         >
-          <i className="fas fa-cloud-upload-alt text-lg"></i>
-          <span>STOKU MERKEZE BİLDİR</span>
+          <i className="fas fa-check text-sm"></i>
+          <span>Kaydet</span>
         </button>
       </div>
     </div>
   );
 
   const renderProfile = () => (
-    <div className="space-y-4 pb-32">
-      {/* Günlük Özet Kartı */}
-      <div className="bg-white rounded-3xl p-6 border-2 border-slate-100 shadow-2xl space-y-5 relative overflow-hidden">
-        {/* Dekoratif arka plan */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100 to-transparent rounded-bl-full opacity-50"></div>
-
-        {/* Kurye Bilgisi */}
-        <div className="flex items-center gap-4 pb-5 border-b-2 border-slate-100">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-2xl font-black text-white shadow-lg">
-            {selectedCourier?.name.charAt(0)}
+    <div className="space-y-3 pb-20">
+      {/* İstatistikler */}
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-lg">
+        <div className="grid grid-cols-4 gap-2 text-center">
+          <div>
+            <p className="text-lg font-bold text-slate-900">{completedToday.length}</p>
+            <p className="text-[10px] text-slate-500 uppercase">Adres</p>
           </div>
           <div>
-            <h2 className="text-lg font-black text-slate-900 uppercase">{selectedCourier?.name}</h2>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{selectedCourier?.id}</p>
+            <p className="text-lg font-bold text-indigo-600">{totalDeliveredProducts}</p>
+            <p className="text-[10px] text-slate-500 uppercase">Damacana</p>
           </div>
-        </div>
-
-        {/* İstatistikler - 4'lü grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 rounded-2xl border-2 border-slate-200 text-center">
-            <p className="text-xs font-black text-slate-500 uppercase mb-1">ADRES</p>
-            <p className="text-3xl font-black text-slate-900">{completedToday.length}</p>
-          </div>
-          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-2xl border-2 border-indigo-200 text-center">
-            <p className="text-xs font-black text-indigo-600 uppercase mb-1">DAMACANA</p>
-            <p className="text-3xl font-black text-indigo-700">{totalDeliveredProducts}</p>
-          </div>
-          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-2xl border-2 border-emerald-200 text-center">
-            <p className="text-xs font-black text-emerald-600 uppercase mb-1">TOPLAM L</p>
-            <p className="text-3xl font-black text-emerald-700">
+          <div>
+            <p className="text-lg font-bold text-emerald-600">
               {completedToday.reduce((sum, o) => {
                 const liters = o.items.reduce((itemSum, item) => {
                   const productMatch = item.productName.toLowerCase().includes('19') ? 19 : 5;
@@ -601,94 +504,36 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
                 return sum + liters;
               }, 0)}
             </p>
+            <p className="text-[10px] text-slate-500 uppercase">Litre</p>
           </div>
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-2xl border-2 border-amber-200 text-center">
-            <p className="text-xs font-black text-amber-600 uppercase mb-1">CİRO</p>
-            <p className="text-2xl font-black text-amber-700">
+          <div>
+            <p className="text-lg font-bold text-amber-600">
               {completedToday.reduce((sum, o) => sum + o.totalAmount, 0)}₺
             </p>
+            <p className="text-[10px] text-slate-500 uppercase">Ciro</p>
           </div>
-        </div>
-
-        {/* Tahmini Kazanç */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-5 rounded-2xl text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-black text-emerald-200 uppercase tracking-widest mb-1">TAHMİNİ KAZANÇ</p>
-              <p className="text-4xl font-black tracking-tighter">
-                {(completedToday.reduce((sum, o) => sum + o.totalAmount, 0) * 0.15).toFixed(0)}₺
-              </p>
-            </div>
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
-              <i className="fas fa-coins text-2xl text-white"></i>
-            </div>
-          </div>
-          <p className="text-xs font-bold text-emerald-200 mt-2">%15 tahmini komisyon</p>
         </div>
       </div>
 
       {/* Son Teslimatlar */}
-      <div className="bg-white rounded-3xl p-5 border-2 border-slate-100 shadow-2xl space-y-4">
-        <div className="flex justify-between items-center px-1">
-           <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-              <i className="fas fa-check-circle text-emerald-500"></i> SON TESLİMATLAR
-           </h3>
-           <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">{completedToday.length} ADET</span>
-        </div>
-        <div className="space-y-3">
-          {completedToday.slice().sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 10).map(order => (
-            <div key={order.id} className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-2xl border-2 border-slate-100">
-              <div className="flex justify-between items-start mb-3">
+      {completedToday.length > 0 && (
+        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-lg">
+          <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Son Teslimatlar</h3>
+          <div className="space-y-2">
+            {completedToday.slice().sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 5).map(order => (
+              <div key={order.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span className="text-sm font-black text-slate-900 uppercase truncate block">{order.customerName}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-indigo-600 uppercase">
-                      {formatDateTime(order.updatedAt)}
-                    </span>
-                    <span className="text-xs font-black text-emerald-600 uppercase bg-emerald-50 px-2 py-0.5 rounded">TESLİM</span>
-                  </div>
+                  <p className="text-xs font-semibold text-slate-900 uppercase truncate">{order.customerName}</p>
+                  <p className="text-[10px] text-slate-400">{formatDateTime(order.updatedAt)}</p>
                 </div>
                 <div className="text-right">
-                   <p className="text-lg font-black text-slate-900">{order.totalAmount}₺</p>
-                   {order.paymentMethod && (
-                     <p className={`text-xs font-black uppercase mt-1 ${
-                       order.paymentMethod === PaymentMethod.CASH ? 'text-emerald-600' :
-                       order.paymentMethod === PaymentMethod.POS ? 'text-blue-600' :
-                       'text-rose-600'
-                     }`}>
-                       {order.paymentMethod === PaymentMethod.CASH ? '💵 NAKİT' :
-                        order.paymentMethod === PaymentMethod.POS ? '💳 POS' :
-                        '❌ ALINMADI'}
-                     </p>
-                   )}
+                  <p className="text-sm font-bold text-slate-900">{order.totalAmount}₺</p>
                 </div>
               </div>
-              <div className="space-y-2 pt-3 border-t-2 border-slate-100">
-                <div className="flex items-start gap-2">
-                   <i className="fas fa-map-marker-alt text-slate-300 text-sm mt-0.5"></i>
-                   <p className="text-xs font-bold text-slate-600 leading-snug uppercase line-clamp-1">{order.address}</p>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                   {order.items.map((item, idx) => (
-                     <div key={idx} className="px-3 py-1 bg-white border-2 border-slate-200 rounded-xl text-xs font-black text-slate-600 uppercase flex items-center gap-1">
-                       <span className="text-indigo-600">{item.quantity}x</span>
-                       {item.productName}
-                     </div>
-                   ))}
-                </div>
-              </div>
-            </div>
-          ))}
-          {completedToday.length === 0 && (
-             <div className="py-10 text-center text-sm font-black text-slate-300 uppercase border-2 border-dashed border-slate-200 rounded-2xl">
-                Henüz teslimat yapmadın
-             </div>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 
