@@ -12,6 +12,7 @@ interface CourierPanelProps {
   couriers: Courier[];
   onUpdateCourier?: (updated: Courier) => void;
   onRefresh?: () => void;
+  onLogout?: () => void;
 }
 
 type CourierTab = 'tasks' | 'inventory' | 'profile';
@@ -26,7 +27,7 @@ const FALLBACK_SOUNDS = [
   'https://assets.mixkit.co/active_storage/sfx/2/2-preview.mp3'
 ];
 
-const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, courierId, onCourierChange, couriers, onUpdateCourier, onRefresh }) => {
+const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, courierId, onCourierChange, couriers, onUpdateCourier, onRefresh, onLogout }) => {
   const [activeTab, setActiveTab] = useState<CourierTab>('tasks');
   const [localOrders, setLocalOrders] = useState<Order[]>(orders);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
@@ -756,6 +757,13 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
             >
               <i className="fas fa-user-circle text-xs text-white/80"></i>
               <span className="text-[10px] font-black uppercase text-white">{selectedCourier?.name.split(' ')[0] || 'Kurye'}</span>
+            </button>
+            <button
+              onClick={onLogout}
+              className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
+              title="Çıkış Yap"
+            >
+              <i className="fas fa-sign-out-alt text-xs"></i>
             </button>
           </div>
         </div>

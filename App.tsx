@@ -770,6 +770,7 @@ const App: React.FC = () => {
               couriers={couriers}
               onUpdateCourier={onUpdateCourier}
               onRefresh={() => loadData(true)}
+              onLogout={handleLogout}
             />
           </ProtectedRoute>
         } />
