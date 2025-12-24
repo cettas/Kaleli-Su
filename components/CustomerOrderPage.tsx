@@ -737,7 +737,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <button
                     type="button"
                     onClick={() => {
-                      setFormData({...formData, paymentMethod: formData.paymentMethod === PaymentMethod.CASH ? undefined : PaymentMethod.CASH});
+                      setFormData({...formData, paymentMethod: PaymentMethod.CASH});
                       handleFieldBlur('paymentMethod');
                     }}
                     className={`py-3 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
@@ -752,7 +752,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <button
                     type="button"
                     onClick={() => {
-                      setFormData({...formData, paymentMethod: formData.paymentMethod === PaymentMethod.POS ? undefined : PaymentMethod.POS});
+                      setFormData({...formData, paymentMethod: PaymentMethod.POS});
                       handleFieldBlur('paymentMethod');
                     }}
                     className={`py-3 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
@@ -767,7 +767,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   <button
                     type="button"
                     onClick={() => {
-                      setFormData({...formData, paymentMethod: formData.paymentMethod === PaymentMethod.NOT_COLLECTED ? undefined : PaymentMethod.NOT_COLLECTED});
+                      setFormData({...formData, paymentMethod: PaymentMethod.NOT_COLLECTED});
                       handleFieldBlur('paymentMethod');
                     }}
                     className={`py-3 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
