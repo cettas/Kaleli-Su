@@ -229,149 +229,233 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
       </div>
 
       {/* Checkout Sidebar - Desktop only */}
-      <div className="hidden lg:block lg:w-[420px] bg-white border-l border-slate-200 flex flex-col order-2">
+      <div className="hidden lg:block lg:w-[420px] bg-gradient-to-b from-slate-50 to-white border-l border-slate-200 flex flex-col order-2">
         {/* Desktop Header */}
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-bold text-slate-900">Sipariş Özeti</h2>
-          <p className="text-sm text-slate-500">Sepetinizde {totalItemsCount} ürün var</p>
+        <div className="p-6 border-b border-slate-200 bg-white">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+              <i className="fas fa-shopping-cart text-indigo-600"></i>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Sipariş Özeti</h2>
+              <p className="text-sm text-slate-500">{totalItemsCount} ürün seçtiniz</p>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Cart Items */}
           {cart.length === 0 ? (
-            <div className="text-center py-12 bg-slate-50 rounded-2xl">
-              <i className="fas fa-shopping-basket text-4xl text-slate-300 mb-3"></i>
-              <p className="text-slate-500">Sepetiniz boş</p>
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-shopping-basket text-3xl text-slate-400"></i>
+              </div>
+              <h3 className="text-lg font-bold text-slate-700 mb-1">Sepetiniz Boş</h3>
+              <p className="text-sm text-slate-500">Ürün eklemek için kataloga göz atın</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {cart.map(item => (
-                <div key={item.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                  <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                    <i className="fas fa-droplet text-indigo-400 text-lg"></i>
+            <>
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                  <i className="fas fa-box text-indigo-500"></i>
+                  Sepet Ürünleri
+                </h3>
+                <div className="space-y-3">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex items-center gap-3 p-3 bg-gradient-to-r from-slate-50 to-white rounded-xl border border-slate-100 group hover:border-indigo-200 transition-colors">
+                      <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-xl flex items-center justify-center">
+                        <i className="fas fa-droplet text-indigo-600 text-lg"></i>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 truncate">{item.name}</p>
+                        <p className="text-xs text-slate-500">{item.quantity} adet × {item.price}₺</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-base font-black text-slate-900">{item.price * item.quantity}₺</p>
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-xs text-rose-500 hover:text-rose-700 font-medium flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <i className="fas fa-trash-alt"></i>
+                          Sil
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Total Summary */}
+              <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-5 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Toplam Tutar</p>
+                    <p className="text-3xl font-black text-white">{totalAmount}₺</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-900 truncate">{item.name}</p>
-                    <p className="text-xs text-slate-500">{item.quantity} adet × {item.price}₺</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-slate-900">{item.price * item.quantity}₺</p>
-                    <button onClick={() => removeFromCart(item.id)} className="text-xs text-rose-500 hover:underline">
-                      <i className="fas fa-trash mr-1"></i>Sil
-                    </button>
+                  <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+                    <i className="fas fa-receipt text-2xl text-white"></i>
                   </div>
                 </div>
-              ))}
-              <div className="flex items-center justify-between py-4 px-4 bg-slate-900 rounded-xl">
-                <span className="text-white font-bold">Toplam Tutar</span>
-                <span className="text-2xl font-black text-white">{totalAmount}₺</span>
               </div>
-            </div>
+            </>
           )}
 
           {/* Form */}
-          <form onSubmit={handleCompleteOrder} className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Teslimat Bilgileri</h3>
+          <form onSubmit={handleCompleteOrder} className="space-y-5">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <i className="fas fa-truck text-indigo-600 text-sm"></i>
+              </div>
+              <h3 className="text-sm font-bold text-slate-700">Teslimat Bilgileri</h3>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
-                placeholder="Ad Soyad"
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
-                value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
-              />
-              <input
-                type="tel"
-                placeholder="Telefon"
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
-                value={formData.phone}
-                onChange={e => setFormData({...formData, phone: e.target.value})}
-              />
+              <div>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Ad Soyad *</label>
+                <input
+                  type="text"
+                  placeholder="Adınız"
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Telefon *</label>
+                <input
+                  type="tel"
+                  placeholder="5XX XXX XX XX"
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  value={formData.phone}
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <select
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold bg-white focus:border-indigo-500 focus:outline-none"
-                value={formData.neighborhood}
-                onChange={e => setFormData({...formData, neighborhood: e.target.value})}
-              >
-                <option value="">Mahalle</option>
-                {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
-              </select>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Mahalle *</label>
+                <select
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all appearance-none cursor-pointer"
+                  value={formData.neighborhood}
+                  onChange={e => setFormData({...formData, neighborhood: e.target.value})}
+                >
+                  <option value="">Seçiniz</option>
+                  {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Bina</label>
+                <input
+                  type="text"
+                  placeholder="No"
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  value={formData.buildingNo}
+                  onChange={e => setFormData({...formData, buildingNo: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Daire</label>
+                <input
+                  type="text"
+                  placeholder="No"
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  value={formData.apartmentNo}
+                  onChange={e => setFormData({...formData, apartmentNo: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Adres (Sokak/Cadde/Apartman) *</label>
               <input
                 type="text"
-                placeholder="Bina No"
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:outline-none"
-                value={formData.buildingNo}
-                onChange={e => setFormData({...formData, buildingNo: e.target.value})}
-              />
-              <input
-                type="text"
-                placeholder="Daire No"
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:outline-none"
-                value={formData.apartmentNo}
-                onChange={e => setFormData({...formData, apartmentNo: e.target.value})}
+                placeholder="Örn: Atatürk Cad. No:5 Apartman:Ahmet"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                value={formData.street}
+                onChange={e => setFormData({...formData, street: e.target.value})}
               />
             </div>
 
-            <input
-              type="text"
-              placeholder="Sokak / Cadde / Apartman Adı"
-              className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
-              value={formData.street}
-              onChange={e => setFormData({...formData, street: e.target.value})}
-            />
-
-            <textarea
-              placeholder="Not (opsiyonel)"
-              className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm resize-none focus:border-indigo-500 focus:outline-none"
-              rows={2}
-              value={formData.note}
-              onChange={e => setFormData({...formData, note: e.target.value})}
-            ></textarea>
+            <div>
+              <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Sipariş Notu</label>
+              <textarea
+                placeholder="Kapı zili, apartman kodu vb..."
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                rows={2}
+                value={formData.note}
+                onChange={e => setFormData({...formData, note: e.target.value})}
+              ></textarea>
+            </div>
 
             {/* Payment */}
             <div>
-              <label className="text-xs font-bold text-slate-500 mb-2 block">Ödeme Yöntemi</label>
+              <label className="text-xs font-semibold text-slate-500 mb-3 block flex items-center gap-2">
+                <i className="fas fa-wallet text-slate-400"></i>
+                Ödeme Yöntemi *
+              </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setFormData({...formData, paymentMethod: PaymentMethod.CASH})}
-                  className={`py-4 rounded-xl font-bold border-2 flex flex-col items-center gap-1 transition-all ${formData.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'border-slate-200 hover:border-emerald-400'}`}
+                  className={`relative py-4 px-4 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all ${formData.paymentMethod === PaymentMethod.CASH ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50'}`}
                 >
-                  <span className="text-2xl">💵</span>
-                  Nakit
+                  <span className="text-3xl">💵</span>
+                  <span className="text-sm">Nakit</span>
+                  {formData.paymentMethod === PaymentMethod.CASH && (
+                    <span className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                      <i className="fas fa-check text-emerald-600 text-xs"></i>
+                    </span>
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormData({...formData, paymentMethod: PaymentMethod.POS})}
-                  className={`py-4 rounded-xl font-bold border-2 flex flex-col items-center gap-1 transition-all ${formData.paymentMethod === PaymentMethod.POS ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'border-slate-200 hover:border-blue-400'}`}
+                  className={`relative py-4 px-4 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all ${formData.paymentMethod === PaymentMethod.POS ? 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/30' : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50'}`}
                 >
-                  <span className="text-2xl">💳</span>
-                  Kredi Kartı / POS
+                  <span className="text-3xl">💳</span>
+                  <span className="text-sm">Kredi Kartı / POS</span>
+                  {formData.paymentMethod === PaymentMethod.POS && (
+                    <span className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                      <i className="fas fa-check text-blue-600 text-xs"></i>
+                    </span>
+                  )}
                 </button>
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={cart.length === 0 || isSubmitting}
-              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-indigo-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30"
+              className="w-full py-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white rounded-xl font-bold text-base hover:from-indigo-700 hover:via-indigo-800 hover:to-purple-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
             >
               {isSubmitting ? (
-                <span className="flex items-center justify-center gap-2">
-                  <i className="fas fa-spinner fa-spin"></i>
-                  İşleniyor...
-                </span>
+                <>
+                  <i className="fas fa-circle-notch fa-spin text-lg"></i>
+                  <span>Sipariş İşleniyor...</span>
+                </>
               ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <i className="fas fa-check"></i>
-                  Siparişi Onayla
-                </span>
+                <>
+                  <i className="fas fa-check-circle text-lg"></i>
+                  <span>Siparişi Onayla</span>
+                  <span className="text-sm opacity-80">({totalAmount}₺)</span>
+                </>
               )}
             </button>
+
+            {/* Trust Badges */}
+            <div className="flex items-center justify-center gap-4 pt-4">
+              <div className="flex items-center gap-2 text-slate-400">
+                <i className="fas fa-shield-alt text-emerald-500"></i>
+                <span className="text-xs">Güvenli Ödeme</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <i className="fas fa-truck text-blue-500"></i>
+                <span className="text-xs">Hızlı Teslimat</span>
+              </div>
+            </div>
           </form>
         </div>
       </div>
