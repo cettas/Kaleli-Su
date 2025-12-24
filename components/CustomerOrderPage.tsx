@@ -27,7 +27,6 @@ interface CartItem {
 const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, categories, addOrder, couriers }) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [showCheckout, setShowCheckout] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -110,32 +109,58 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
     addOrder(order, customerDetails);
     setIsSubmitting(false);
     setCart([]);
-    setShowCheckout(false);
     setFormData({ name: '', phone: '', neighborhood: '', street: '', buildingNo: '', apartmentNo: '', note: '', paymentMethod: undefined });
     alert('Siparişiniz alındı! En kısa sürede teslim edilecektir.');
   };
 
   return (
-    <div className="h-full flex flex-col lg:flex-row bg-slate-100">
+    <div className="h-full flex flex-col lg:flex-row">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col bg-slate-100 min-h-0">
         {/* Header */}
-        <header className="bg-white px-4 lg:px-6 py-3 lg:py-4 shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <i className="fas fa-droplet text-white text-sm lg:text-base"></i>
+        <header className="bg-white px-4 lg:px-8 py-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <i className="fas fa-droplet text-white"></i>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900">KALELİ SU</h1>
+                <p className="text-xs text-indigo-600 font-semibold">Kapınıza Gelsin</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg lg:text-xl font-bold text-slate-900">KALELİ SU</h1>
-              <p className="text-[10px] lg:text-xs text-indigo-600 font-semibold">Kapınıza Gelsin</p>
+
+            {/* Desktop Categories */}
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                onClick={() => setActiveCategory('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeCategory === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              >
+                Tümü
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors ${activeCategory === cat.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                >
+                  <i className={`fas fa-${cat.icon}`}></i>
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="text-right">
+              <div className="text-xs text-slate-500">Toplam</div>
+              <div className="text-xl font-black text-slate-900">{totalAmount}₺</div>
             </div>
           </div>
 
-          {/* Desktop Categories */}
-          <div className="hidden lg:flex items-center gap-2">
+          {/* Mobile Categories */}
+          <div className="lg:hidden flex gap-2 mt-4 overflow-x-auto pb-2">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold ${activeCategory === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${activeCategory === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
             >
               Tümü
             </button>
@@ -143,53 +168,17 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 ${activeCategory === cat.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap flex items-center gap-2 transition-colors ${activeCategory === cat.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
               >
                 <i className={`fas fa-${cat.icon}`}></i>
                 {cat.label}
               </button>
             ))}
           </div>
-
-          {/* Cart Button */}
-          <button
-            onClick={() => setShowCheckout(true)}
-            className="relative bg-indigo-600 text-white px-4 lg:px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-indigo-700 transition-colors"
-          >
-            <i className="fas fa-shopping-bag lg:hidden"></i>
-            <i className="fas fa-arrow-right hidden lg:inline"></i>
-            <span className="hidden lg:inline">Ödemeye Geç</span>
-            <span>{totalAmount}₺</span>
-            {cart.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full text-white text-xs flex items-center justify-center">
-                {totalItemsCount}
-              </span>
-            )}
-          </button>
         </header>
 
-        {/* Mobile Categories */}
-        <div className="lg:hidden bg-white px-4 py-2 flex gap-2 overflow-x-auto border-b">
-          <button
-            onClick={() => setActiveCategory('all')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap ${activeCategory === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-          >
-            Tümü
-          </button>
-          {categories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap flex items-center gap-1.5 ${activeCategory === cat.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-            >
-              <i className={`fas fa-${cat.icon} text-xs`}></i>
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
         {/* Products Grid */}
-        <div className="flex-1 overflow-y-auto p-3 lg:p-6 pb-24 lg:pb-6">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8">
           <div className="max-w-6xl mx-auto">
             {activeProducts.length === 0 ? (
               <div className="text-center py-20">
@@ -197,34 +186,34 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 <p className="text-slate-500">Ürün bulunamadı</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {activeProducts.map(item => {
                   const inCart = cart.find(i => i.id === item.id);
                   const category = categories.find(c => c.id === item.category);
                   return (
-                    <div key={item.id} className="bg-white rounded-xl lg:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                      <div className="aspect-square bg-slate-50 flex items-center justify-center p-3 lg:p-4 relative">
+                    <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                      <div className="aspect-square bg-slate-50 flex items-center justify-center p-4 relative">
                         {item.imageUrl ? (
                           <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
                         ) : (
-                          <i className={`fas fa-${category?.icon || 'droplet'} text-4xl lg:text-5xl text-indigo-200`}></i>
+                          <i className={`fas fa-${category?.icon || 'droplet'} text-5xl text-indigo-200`}></i>
                         )}
-                        <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-lg shadow">
-                          <span className="text-sm lg:text-base font-bold">{item.salePrice}₺</span>
+                        <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-lg shadow text-sm font-bold">
+                          {item.salePrice}₺
                         </div>
                       </div>
-                      <div className="p-3 lg:p-4">
-                        <h3 className="text-xs lg:text-sm font-bold text-slate-900 mb-2 lg:mb-3 leading-tight line-clamp-2">{item.name}</h3>
+                      <div className="p-4">
+                        <h3 className="text-sm font-bold text-slate-900 mb-3 leading-tight">{item.name}</h3>
                         {inCart ? (
                           <div className="flex items-center gap-2 bg-slate-900 rounded-xl p-1">
-                            <button onClick={() => updateCart(item, -1)} className="w-8 h-8 lg:w-9 lg:h-9 bg-white/10 text-white rounded-lg font-bold text-sm">-</button>
-                            <span className="text-white font-bold flex-1 text-center text-sm">{inCart.quantity}</span>
-                            <button onClick={() => updateCart(item, 1)} className="w-8 h-8 lg:w-9 lg:h-9 bg-indigo-500 text-white rounded-lg font-bold text-sm">+</button>
+                            <button onClick={() => updateCart(item, -1)} className="w-9 h-9 bg-white/10 text-white rounded-lg font-bold">-</button>
+                            <span className="text-white font-bold flex-1 text-center">{inCart.quantity}</span>
+                            <button onClick={() => updateCart(item, 1)} className="w-9 h-9 bg-indigo-500 text-white rounded-lg font-bold">+</button>
                           </div>
                         ) : (
                           <button
                             onClick={() => updateCart(item, 1)}
-                            className="w-full py-2.5 lg:py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs lg:text-sm hover:bg-indigo-700 transition-colors"
+                            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors"
                           >
                             + Ekle
                           </button>
@@ -240,161 +229,160 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
       </div>
 
       {/* Checkout Sidebar */}
-      {showCheckout && (
-        <div className="fixed inset-0 z-50 flex" onClick={() => setShowCheckout(false)}>
-          <div className="absolute inset-0 bg-black/50 lg:hidden"></div>
-          <div
-            className="relative w-full lg:w-[400px] lg:static lg:bg-transparent lg:shadow-none h-full flex flex-col bg-white lg:ml-4 animate-in slide-in-from-bottom-4 lg:slide-in-from-none duration-300"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b lg:hidden">
-              <h2 className="text-lg font-bold">Sipariş Özeti</h2>
-              <button onClick={() => setShowCheckout(false)} className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-                <i className="fas fa-times"></i>
-              </button>
+      <div className="w-full lg:w-[420px] bg-white border-l border-slate-200 flex flex-col shadow-xl lg:shadow-none">
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-bold">Sepet ({totalItemsCount})</h2>
+          {cart.length > 0 && (
+            <div className="text-xl font-black text-indigo-600">{totalAmount}₺</div>
+          )}
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:block p-6 border-b">
+          <h2 className="text-lg font-bold text-slate-900">Sipariş Özeti</h2>
+          <p className="text-sm text-slate-500">Sepetinizde {totalItemsCount} ürün var</p>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+          {/* Cart Items */}
+          {cart.length === 0 ? (
+            <div className="text-center py-12 bg-slate-50 rounded-2xl">
+              <i className="fas fa-shopping-basket text-4xl text-slate-300 mb-3"></i>
+              <p className="text-slate-500">Sepetiniz boş</p>
             </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 lg:p-5 space-y-4">
-              {/* Cart Items */}
-              <div className="bg-white lg:bg-slate-50 rounded-2xl p-4">
-                <h3 className="text-sm font-bold text-slate-700 mb-3">Sepet ({totalItemsCount} ürün)</h3>
-                {cart.length === 0 ? (
-                  <p className="text-slate-500 text-sm">Sepetiniz boş</p>
-                ) : (
-                  <>
-                    {cart.map(item => (
-                      <div key={item.id} className="flex items-center gap-3 py-2 border-b last:border-0">
-                        <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
-                          <i className="fas fa-droplet text-indigo-400"></i>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-bold">{item.name}</p>
-                          <p className="text-xs text-slate-500">{item.quantity} adet</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold">{item.price * item.quantity}₺</p>
-                          <button onClick={() => removeFromCart(item.id)} className="text-xs text-rose-500 hover:underline">Sil</button>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="flex justify-between items-center py-3 bg-slate-900 text-white rounded-xl px-4 mt-3">
-                      <span className="font-bold">Toplam</span>
-                      <span className="text-xl font-black">{totalAmount}₺</span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Form */}
-              <form onSubmit={handleCompleteOrder} className="space-y-3 lg:space-y-4">
-                <h3 className="text-sm font-bold text-slate-700">Teslimat Bilgileri</h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Adınız Soyadınız"
-                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Telefon Numaranız"
-                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
-                    value={formData.phone}
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <select
-                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold bg-white focus:border-indigo-500 focus:outline-none"
-                    value={formData.neighborhood}
-                    onChange={e => setFormData({...formData, neighborhood: e.target.value})}
-                  >
-                    <option value="">Mahalle Seçin</option>
-                    {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Bina No"
-                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:outline-none"
-                    value={formData.buildingNo}
-                    onChange={e => setFormData({...formData, buildingNo: e.target.value})}
-                  />
-                </div>
-
-                <input
-                  type="text"
-                  placeholder="Sokak / Cadde / Apartman Adı"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
-                  value={formData.street}
-                  onChange={e => setFormData({...formData, street: e.target.value})}
-                />
-
-                <input
-                  type="text"
-                  placeholder="Daire No"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:outline-none"
-                  value={formData.apartmentNo}
-                  onChange={e => setFormData({...formData, apartmentNo: e.target.value})}
-                />
-
-                <textarea
-                  placeholder="Sipariş Notu (opsiyonel)"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm resize-none focus:border-indigo-500 focus:outline-none"
-                  rows={2}
-                  value={formData.note}
-                  onChange={e => setFormData({...formData, note: e.target.value})}
-                ></textarea>
-
-                {/* Payment Method */}
-                <div>
-                  <label className="text-xs font-bold text-slate-500 mb-2 block">Ödeme Yöntemi</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, paymentMethod: PaymentMethod.CASH})}
-                      className={`py-4 rounded-xl font-bold border-2 flex flex-col items-center gap-1 transition-colors ${formData.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-200 hover:border-emerald-400'}`}
-                    >
-                      <span className="text-xl">💵</span>
-                      Nakit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, paymentMethod: PaymentMethod.POS})}
-                      className={`py-4 rounded-xl font-bold border-2 flex flex-col items-center gap-1 transition-colors ${formData.paymentMethod === PaymentMethod.POS ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-200 hover:border-blue-400'}`}
-                    >
-                      <span className="text-xl">💳</span>
-                      POS
+          ) : (
+            <div className="space-y-3">
+              {cart.map(item => (
+                <div key={item.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                  <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                    <i className="fas fa-droplet text-indigo-400 text-lg"></i>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-900 truncate">{item.name}</p>
+                    <p className="text-xs text-slate-500">{item.quantity} adet × {item.price}₺</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-slate-900">{item.price * item.quantity}₺</p>
+                    <button onClick={() => removeFromCart(item.id)} className="text-xs text-rose-500 hover:underline">
+                      <i className="fas fa-trash mr-1"></i>Sil
                     </button>
                   </div>
                 </div>
+              ))}
+              <div className="flex items-center justify-between py-4 px-4 bg-slate-900 rounded-xl">
+                <span className="text-white font-bold">Toplam Tutar</span>
+                <span className="text-2xl font-black text-white">{totalAmount}₺</span>
+              </div>
+            </div>
+          )}
 
-                <button
-                  type="submit"
-                  disabled={cart.length === 0 || isSubmitting}
-                  className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'İşleniyor...' : 'Siparişi Onayla'}
-                </button>
-              </form>
+          {/* Form */}
+          <form onSubmit={handleCompleteOrder} className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Teslimat Bilgileri</h3>
+
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Ad Soyad"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
+              />
+              <input
+                type="tel"
+                placeholder="Telefon"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
+                value={formData.phone}
+                onChange={e => setFormData({...formData, phone: e.target.value})}
+              />
             </div>
 
-            {/* Desktop Close Button */}
-            <div className="hidden lg:block p-4">
-              <button
-                onClick={() => setShowCheckout(false)}
-                className="w-full py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-colors"
+            <div className="grid grid-cols-3 gap-3">
+              <select
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold bg-white focus:border-indigo-500 focus:outline-none"
+                value={formData.neighborhood}
+                onChange={e => setFormData({...formData, neighborhood: e.target.value})}
               >
-                Sepeti Kapat
-              </button>
+                <option value="">Mahalle</option>
+                {KARTAL_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+              <input
+                type="text"
+                placeholder="Bina No"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:outline-none"
+                value={formData.buildingNo}
+                onChange={e => setFormData({...formData, buildingNo: e.target.value})}
+              />
+              <input
+                type="text"
+                placeholder="Daire No"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:outline-none"
+                value={formData.apartmentNo}
+                onChange={e => setFormData({...formData, apartmentNo: e.target.value})}
+              />
             </div>
-          </div>
+
+            <input
+              type="text"
+              placeholder="Sokak / Cadde / Apartman Adı"
+              className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:outline-none"
+              value={formData.street}
+              onChange={e => setFormData({...formData, street: e.target.value})}
+            />
+
+            <textarea
+              placeholder="Not (opsiyonel)"
+              className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm resize-none focus:border-indigo-500 focus:outline-none"
+              rows={2}
+              value={formData.note}
+              onChange={e => setFormData({...formData, note: e.target.value})}
+            ></textarea>
+
+            {/* Payment */}
+            <div>
+              <label className="text-xs font-bold text-slate-500 mb-2 block">Ödeme Yöntemi</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, paymentMethod: PaymentMethod.CASH})}
+                  className={`py-4 rounded-xl font-bold border-2 flex flex-col items-center gap-1 transition-all ${formData.paymentMethod === PaymentMethod.CASH ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'border-slate-200 hover:border-emerald-400'}`}
+                >
+                  <span className="text-2xl">💵</span>
+                  Nakit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, paymentMethod: PaymentMethod.POS})}
+                  className={`py-4 rounded-xl font-bold border-2 flex flex-col items-center gap-1 transition-all ${formData.paymentMethod === PaymentMethod.POS ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'border-slate-200 hover:border-blue-400'}`}
+                >
+                  <span className="text-2xl">💳</span>
+                  Kredi Kartı / POS
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={cart.length === 0 || isSubmitting}
+              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-indigo-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <i className="fas fa-spinner fa-spin"></i>
+                  İşleniyor...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <i className="fas fa-check"></i>
+                  Siparişi Onayla
+                </span>
+              )}
+            </button>
+          </form>
         </div>
-      )}
+      </div>
     </div>
   );
 };
