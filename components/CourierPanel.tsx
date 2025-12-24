@@ -519,15 +519,40 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
       {completedToday.length > 0 && (
         <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-lg">
           <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Son Teslimatlar</h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {completedToday.slice().sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 5).map(order => (
-              <div key={order.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-slate-900 uppercase truncate">{order.customerName}</p>
-                  <p className="text-[10px] text-slate-400">{formatDateTime(order.updatedAt)}</p>
+              <div key={order.id} className="p-3 bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-100">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                      <i className="fas fa-check text-white text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 uppercase">{order.customerName}</p>
+                      <p className="text-[10px] text-slate-400">{formatDateTime(order.updatedAt)}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-bold text-emerald-600">{order.totalAmount}₺</p>
+                    <p className={"text-[10px] font-bold uppercase " + (
+                      order.paymentMethod === PaymentMethod.CASH ? 'text-emerald-600' :
+                      order.paymentMethod === PaymentMethod.POS ? 'text-blue-600' :
+                      'text-rose-600'
+                    )}>
+                      {order.paymentMethod === PaymentMethod.CASH ? '💵 Nakit' : order.paymentMethod === PaymentMethod.POS ? '💳 POS' : '❌'}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900">{order.totalAmount}₺</p>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <i className="fas fa-map-marker-alt text-slate-300 text-xs"></i>
+                  <p className="text-xs text-slate-600 uppercase truncate">{order.address}</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {order.items.map((item, idx) => (
+                    <span key={idx} className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md text-[10px] font-bold uppercase">
+                      {item.quantity}x {item.productName}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}
