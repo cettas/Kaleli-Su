@@ -116,7 +116,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
   return (
     <div className="h-full flex flex-col lg:flex-row">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-slate-100 min-h-0">
+      <div className="flex-1 flex flex-col bg-slate-100 min-h-0 order-2 lg:order-1">
         {/* Header */}
         <header className="bg-white px-4 lg:px-8 py-4 shadow-sm">
           <div className="flex items-center justify-between">
@@ -228,24 +228,16 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
         </div>
       </div>
 
-      {/* Checkout Sidebar */}
-      <div className="w-full lg:w-[420px] bg-white border-l border-slate-200 flex flex-col shadow-xl lg:shadow-none">
-        {/* Mobile Header */}
-        <div className="lg:hidden flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold">Sepet ({totalItemsCount})</h2>
-          {cart.length > 0 && (
-            <div className="text-xl font-black text-indigo-600">{totalAmount}₺</div>
-          )}
-        </div>
-
+      {/* Checkout Sidebar - Desktop only */}
+      <div className="hidden lg:block lg:w-[420px] bg-white border-l border-slate-200 flex flex-col order-2">
         {/* Desktop Header */}
-        <div className="hidden lg:block p-6 border-b">
+        <div className="p-6 border-b">
           <h2 className="text-lg font-bold text-slate-900">Sipariş Özeti</h2>
           <p className="text-sm text-slate-500">Sepetinizde {totalItemsCount} ürün var</p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Cart Items */}
           {cart.length === 0 ? (
             <div className="text-center py-12 bg-slate-50 rounded-2xl">
@@ -382,6 +374,135 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
             </button>
           </form>
         </div>
+      </div>
+
+      {/* Mobile Checkout Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-40 order-3">
+        {cart.length === 0 ? (
+          <div className="text-center text-slate-500 text-sm">
+            Sepetiniz boş
+          </div>
+        ) : (
+          <button
+            onClick={() => {
+              const modal = document.createElement('div');
+              modal.className = 'fixed inset-0 z-50 flex';
+              modal.innerHTML = `
+                <div class="absolute inset-0 bg-black/50" onclick="this.closest('.fixed').remove()"></div>
+                <div class="relative w-full h-full bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom-4">
+                  <div class="flex items-center justify-between p-4 border-b">
+                    <h2 class="text-lg font-bold">Sipariş Özeti</h2>
+                    <button onclick="this.closest('.fixed').remove()" class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="flex-1 overflow-y-auto p-4 space-y-4" id="modal-content">
+                    <!-- Form will be rendered here -->
+                  </div>
+                </div>
+              `;
+              document.body.appendChild(modal);
+              const content = modal.querySelector('#modal-content');
+              content.innerHTML = `
+                <div class="space-y-3 mb-4">
+                  ${cart.map(item => `
+                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                      <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                        <i class="fas fa-droplet text-indigo-400"></i>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm font-bold">${item.name}</p>
+                        <p class="text-xs text-slate-500">${item.quantity} adet × ${item.price}₺</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-sm font-bold">${item.price * item.quantity}₺</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                  <div class="flex items-center justify-between py-3 px-4 bg-slate-900 rounded-xl">
+                    <span class="text-white font-bold">Toplam</span>
+                    <span class="text-xl font-black text-white">${totalAmount}₺</span>
+                  </div>
+                </div>
+                <form class="space-y-3" onsubmit="event.preventDefault(); document.querySelector('.checkout-submit').click();">
+                  <h3 class="text-sm font-bold text-slate-700">Teslimat Bilgileri</h3>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input type="text" placeholder="Ad Soyad" class="mobile-input" value="${formData.name}" oninput="window.mobileForm.name = this.value">
+                    <input type="tel" placeholder="Telefon" class="mobile-input" value="${formData.phone}" oninput="window.mobileForm.phone = this.value">
+                  </div>
+                  <div class="grid grid-cols-3 gap-2">
+                    <select class="mobile-input" onchange="window.mobileForm.neighborhood = this.value">
+                      <option value="">Mahalle</option>
+                      ${KARTAL_NEIGHBORHOODS.map(n => `<option value="${n}" ${formData.neighborhood === n ? 'selected' : ''}>${n}</option>`).join('')}
+                    </select>
+                    <input type="text" placeholder="Bina No" class="mobile-input text-center" value="${formData.buildingNo}" oninput="window.mobileForm.buildingNo = this.value">
+                    <input type="text" placeholder="Daire No" class="mobile-input text-center" value="${formData.apartmentNo}" oninput="window.mobileForm.apartmentNo = this.value">
+                  </div>
+                  <input type="text" placeholder="Sokak / Cadde / Apartman" class="mobile-input" value="${formData.street}" oninput="window.mobileForm.street = this.value">
+                  <textarea placeholder="Not (opsiyonel)" class="mobile-input" rows="2" oninput="window.mobileForm.note = this.value">${formData.note}</textarea>
+                  <div>
+                    <label class="text-xs font-bold text-slate-500 mb-2 block">Ödeme Yöntemi</label>
+                    <div class="grid grid-cols-2 gap-2">
+                      <button type="button" class="mobile-pay-btn ${formData.paymentMethod === 'CASH' ? 'selected' : ''}" data-method="CASH">
+                        <span class="text-xl">💵</span> Nakit
+                      </button>
+                      <button type="button" class="mobile-pay-btn ${formData.paymentMethod === 'POS' ? 'selected' : ''}" data-method="POS">
+                        <span class="text-xl">💳</span> POS
+                      </button>
+                    </div>
+                  </div>
+                  <button type="submit" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-sm">
+                    Siparişi Onayla
+                  </button>
+                </form>
+              `;
+              modal.querySelectorAll('.mobile-input').forEach(el => {
+                el.style.cssText = 'width: 100%; px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-indigo-500 focus:outline-none';
+              });
+              modal.querySelectorAll('.mobile-pay-btn').forEach(btn => {
+                const method = btn.getAttribute('data-method');
+                btn.style.cssText = 'py-3 rounded-lg font-bold border-2 flex flex-col items-center gap-1 transition-all ' +
+                  (formData.paymentMethod === (method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS)
+                    ? 'bg-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 border-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 text-white'
+                    : 'border-slate-200');
+                btn.onclick = () => {
+                  window.mobileForm.paymentMethod = method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS;
+                  modal.querySelectorAll('.mobile-pay-btn').forEach(b => {
+                    b.className = 'mobile-pay-btn py-3 rounded-lg font-bold border-2 flex flex-col items-center gap-1 transition-all border-slate-200';
+                  });
+                  btn.className = 'mobile-pay-btn py-3 rounded-lg font-bold border-2 flex flex-col items-center gap-1 transition-all bg-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 border-' + (method === 'CASH' ? 'emerald' : 'blue') + '-600 text-white';
+                };
+              });
+              modal.querySelector('form').onsubmit = (e) => {
+                e.preventDefault();
+                const form = window.mobileForm;
+                if (!form.name || !form.phone || !form.neighborhood || !form.street || !form.paymentMethod) {
+                  alert('Lütfen tüm zorunlu alanları doldurun.');
+                  return;
+                }
+                setFormData(form);
+                modal.querySelector('form')?.dispatchEvent(new Event('submit', { bubbles: true }));
+                modal.remove();
+              };
+              window.mobileForm = { ...formData };
+            }}
+            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-sm flex items-center justify-between px-6 hover:bg-indigo-700 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <i className="fas fa-shopping-bag"></i>
+              </div>
+              <div className="text-left">
+                <div className="text-xs opacity-80">{totalItemsCount} ürün</div>
+                <div className="font-black">{totalAmount}₺</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              Siparişi Tamamla
+              <i className="fas fa-arrow-right"></i>
+            </div>
+          </button>
+        )}
       </div>
     </div>
   );
