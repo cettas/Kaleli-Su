@@ -870,18 +870,12 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={unlockAudio}
-              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${isAudioUnlocked ? 'bg-emerald-500/30' : 'bg-white/10'}`}
-            >
-              <i className={`fas ${isAudioUnlocked ? 'fa-volume-up' : 'fa-volume-mute'} text-xs ${isAudioUnlocked ? 'text-emerald-400' : 'text-white/60'}`}></i>
-            </button>
-            <button
               onClick={() => {
                 setIsRefreshing(true);
                 onRefresh?.();
                 setTimeout(() => setIsRefreshing(false), 1000);
               }}
-              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${isRefreshing ? 'bg-indigo-500' : 'bg-white/10'}`}
+              className={"w-9 h-9 rounded-lg flex items-center justify-center transition-all " + (isRefreshing ? "bg-indigo-500" : "bg-white/10")}
               disabled={isRefreshing}
             >
               <i className={"fas fa-sync-alt text-xs " + (isRefreshing ? "animate-spin" : "")}></i>
@@ -909,17 +903,23 @@ const CourierPanel: React.FC<CourierPanelProps> = ({ orders, updateOrderStatus, 
       <div className="fixed bottom-0 left-0 right-0 z-[120] bg-white border-t border-slate-200">
         <div className="max-w-md mx-auto">
           {/* Sipariş Özeti - Compact */}
-          <div className="flex items-center justify-around px-2 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600">
-            <div className="flex items-center gap-1.5 text-white">
-              <i className="fas fa-clock text-[10px] text-white/70"></i>
-              <span className="text-[10px] text-white/70">Aktif</span>
-              <span className="text-sm font-black">{activeOrders.length}</span>
+          <div className="flex items-center justify-between px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600">
+            <div className="flex items-center gap-3 text-white">
+              <div className="flex items-center gap-1">
+                <i className="fas fa-clock text-[10px] text-white/70"></i>
+                <span className="text-sm font-black">{activeOrders.length}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <i className="fas fa-check text-[10px] text-emerald-300"></i>
+                <span className="text-sm font-black text-emerald-300">{completedToday.length}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-white">
-              <i className="fas fa-check text-[10px] text-emerald-300"></i>
-              <span className="text-[10px] text-white/70">Tamam</span>
-              <span className="text-sm font-black text-emerald-300">{completedToday.length}</span>
-            </div>
+            <button
+              onClick={unlockAudio}
+              className={"w-7 h-7 rounded-lg flex items-center justify-center " + (isAudioUnlocked ? "bg-emerald-400" : "bg-white/20")}
+            >
+              <i className={"fas " + (isAudioUnlocked ? "fa-volume-up" : "fa-volume-mute") + " text-xs text-white"}></i>
+            </button>
           </div>
 
           {/* Navigation - Ultra Compact */}
