@@ -280,8 +280,11 @@ const App: React.FC = () => {
     }, 5000);
   };
 
-  // Yeni sipariş bildirimi (sadece kuryeye atananlar için)
+  // Yeni sipariş bildirimi (sadece ofis ve admin panelinde)
   useEffect(() => {
+    // Müşteri panelinde bildirim gösterme
+    if (currentUser?.role === 'customer') return;
+
     if (prevOrderCount.current !== null && orders.length > prevOrderCount.current) {
       const newOrder = orders[0];
       // Sadece kuryeye atanmış siparişler için bildirim ver
@@ -294,7 +297,7 @@ const App: React.FC = () => {
       }
     }
     prevOrderCount.current = orders.length;
-  }, [orders]);
+  }, [orders, currentUser]);
 
   useEffect(() => {
     if (currentUser) {
