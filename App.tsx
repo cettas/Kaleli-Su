@@ -701,34 +701,6 @@ const App: React.FC = () => {
         {/* Customer Page - No Login Required */}
         <Route path="/musteri" element={
           <>
-            <header className="h-16 px-6 flex items-center justify-between border-b border-slate-200/80 bg-white/80 backdrop-blur-xl sticky top-0 z-[100] shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
-                    <i className="fas fa-droplet text-sm"></i>
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-black tracking-tight text-slate-900 leading-tight">
-                      SUDAĞITIM<span className="text-indigo-600">PRO</span>
-                    </h1>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Müşteri Paneli</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-full border border-indigo-100">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">MÜŞTERİ</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => window.location.href = '/'}
-                  className="flex items-center gap-2 text-[11px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-wider px-4 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200 group"
-                >
-                  <i className="fas fa-home group-hover:-translate-x-0.5 transition-transform"></i>
-                  <span>Ana Sayfa</span>
-                </button>
-              </div>
-            </header>
             <CustomerOrderPage
               inventory={inventory}
               categories={categories}
@@ -790,40 +762,6 @@ const App: React.FC = () => {
         {/* Courier Page - Login Required */}
         <Route path="/kurye" element={
           <ProtectedRoute requiredRole="Kurye">
-            <header className="h-16 px-6 flex items-center justify-between border-b border-slate-200/80 bg-white/80 backdrop-blur-xl sticky top-0 z-[100] shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
-                    <i className="fas fa-droplet text-sm"></i>
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-black tracking-tight text-slate-900 leading-tight">
-                      SUDAĞITIM<span className="text-indigo-600">PRO</span>
-                    </h1>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Kurye Paneli</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-full border border-indigo-100">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">KURYE</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl">
-                  <div className="w-7 h-7 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center text-white text-xs">
-                    {currentUser?.name?.charAt(0) || 'K'}
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-700">{currentUser?.name}</span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 text-[11px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-wider px-4 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50 transition-all duration-200 group"
-                >
-                  <i className="fas fa-right-from-bracket group-hover:-translate-x-0.5 transition-transform"></i>
-                  <span className="hidden sm:inline">Çıkış</span>
-                </button>
-              </div>
-            </header>
             <CourierPanel
               orders={orders.filter(o => o.courierId === selectedCourierId)}
               updateOrderStatus={updateOrderStatus}
