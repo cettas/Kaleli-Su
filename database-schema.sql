@@ -1,16 +1,18 @@
 -- =====================================================
 -- KALELİ SU - SUPABASE DATABASE SCHEMA
 -- =====================================================
--- Bu script'i Supabase SQL Editor'da çalıştırın
--- Sadece TABLO OLUŞTURMA, mevcut tablolara dokunmaz
+-- Bu script sadece EKSİK tabloları oluşturur
+-- Mevcut tablolara dokunmaz
 
 -- =====================================================
--- MÜŞTERİLER TABLOSU
+-- 1. EKSİK TABLOLARI OLUŞTUR
 -- =====================================================
+
+-- Customers tablosu
 CREATE TABLE IF NOT EXISTS customers (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  phone TEXT NOT NULL UNIQUE,
+  phone TEXT NOT NULL,
   email TEXT,
   district TEXT,
   neighborhood TEXT,
@@ -26,62 +28,16 @@ CREATE TABLE IF NOT EXISTS customers (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =====================================================
--- ÜRÜNLER / ENVANTER TABLOSU
--- =====================================================
-CREATE TABLE IF NOT EXISTS inventory (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  sale_price NUMERIC NOT NULL DEFAULT 0,
-  cost_price NUMERIC DEFAULT 0,
-  stock_quantity INTEGER DEFAULT 0,
-  unit TEXT DEFAULT 'adet',
-  barcode TEXT,
-  image_url TEXT,
-  is_active BOOLEAN DEFAULT true,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- =====================================================
--- KATEGORİLER TABLOSU (Mevcut tabloya dokunma)
--- =====================================================
--- NOT: Categories tablosu zaten var, manuel yönetin
-
--- =====================================================
--- KURYELER TABLOSU
--- =====================================================
-CREATE TABLE IF NOT EXISTS couriers (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  phone TEXT NOT NULL UNIQUE,
-  status TEXT DEFAULT 'active',
-  vehicle_type TEXT,
-  vehicle_plate TEXT,
-  current_location TEXT,
-  service_region TEXT[],
-  total_orders INTEGER DEFAULT 0,
-  total_deliveries INTEGER DEFAULT 0,
-  rating NUMERIC DEFAULT 5,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- =====================================================
--- SİPARİŞLER TABLOSU
--- =====================================================
+-- Orders tablosu
 CREATE TABLE IF NOT EXISTS orders (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   customer_id TEXT,
   customer_name TEXT NOT NULL,
   phone TEXT NOT NULL,
   address TEXT NOT NULL,
   district TEXT,
   neighborhood TEXT,
-  items JSONB NOT NULL DEFAULT '[]',
+  items JSONB DEFAULT '[]',
   total_amount NUMERIC DEFAULT 0,
   status TEXT DEFAULT 'Bekliyor',
   courier_id TEXT,
@@ -98,9 +54,24 @@ CREATE TABLE IF NOT EXISTS orders (
   assigned_at TIMESTAMPTZ
 );
 
--- =====================================================
--- ENTEGRASYON AYARLARI TABLOSU
--- =====================================================
+-- Inventory tablosu
+CREATE TABLE IF NOT EXISTS inventory (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  sale_price NUMERIC DEFAULT 0,
+  cost_price NUMERIC DEFAULT 0,
+  stock_quantity INTEGER DEFAULT 0,
+  unit TEXT DEFAULT 'adet',
+  barcode TEXT,
+  image_url TEXT,
+  is_active BOOLEAN DEFAULT true,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Integrations tablosu
 CREATE TABLE IF NOT EXISTS integrations (
   id INTEGER PRIMARY KEY DEFAULT 1,
   trendyol_api_key TEXT,
@@ -131,11 +102,9 @@ CREATE TABLE IF NOT EXISTS integrations (
 INSERT INTO integrations (id) VALUES (1)
 ON CONFLICT (id) DO NOTHING;
 
--- =====================================================
--- ÇAĞRI LOGS
--- =====================================================
+-- Çağrı logları
 CREATE TABLE IF NOT EXISTS call_logs (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   caller_id TEXT NOT NULL,
   customer_name TEXT,
   customer_found BOOLEAN DEFAULT false,
@@ -147,11 +116,8 @@ CREATE TABLE IF NOT EXISTS call_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =====================================================
--- ÇAĞRI FAILOVER LOGS
--- =====================================================
 CREATE TABLE IF NOT EXISTS call_failover_logs (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   call_id TEXT,
   caller_id TEXT NOT NULL,
   reason_type TEXT,
@@ -162,11 +128,9 @@ CREATE TABLE IF NOT EXISTS call_failover_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =====================================================
--- WHATSAPP LOGS
--- =====================================================
+-- WhatsApp logları
 CREATE TABLE IF NOT EXISTS whatsapp_logs (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   phone_number TEXT NOT NULL,
   message TEXT NOT NULL,
   response TEXT,
@@ -175,11 +139,8 @@ CREATE TABLE IF NOT EXISTS whatsapp_logs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =====================================================
--- WHATSAPP CHATS
--- =====================================================
 CREATE TABLE IF NOT EXISTS whatsapp_chats (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   phone_number TEXT NOT NULL,
   customer_name TEXT,
   customer_found BOOLEAN DEFAULT false,
@@ -189,11 +150,8 @@ CREATE TABLE IF NOT EXISTS whatsapp_chats (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- =====================================================
--- WHATSAPP FAILOVER LOGS
--- =====================================================
 CREATE TABLE IF NOT EXISTS whatsapp_failover_logs (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   phone_number TEXT NOT NULL,
   reason_type TEXT,
   stage TEXT,
@@ -204,7 +162,7 @@ CREATE TABLE IF NOT EXISTS whatsapp_failover_logs (
 );
 
 -- =====================================================
--- INDEX'LER
+-- 2. INDEX'LER
 -- =====================================================
 CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
 CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
@@ -212,18 +170,15 @@ CREATE INDEX IF NOT EXISTS idx_orders_courier ON orders(courier_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_inventory_category ON inventory(category);
-CREATE INDEX IF NOT EXISTS idx_couriers_status ON couriers(status);
 CREATE INDEX IF NOT EXISTS idx_call_logs_caller ON call_logs(caller_id);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_phone ON whatsapp_logs(phone_number);
 
 -- =====================================================
--- RLS POLICIES (Tüm erişim açık)
+-- 3. RLS POLICIES (Tüm erişim açık)
 -- =====================================================
--- Önce RLS'i aktif et (zaten varsa hata vermez)
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
-ALTER TABLE couriers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE call_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE call_failover_logs ENABLE ROW LEVEL SECURITY;
@@ -231,18 +186,14 @@ ALTER TABLE whatsapp_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_chats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_failover_logs ENABLE ROW LEVEL SECURITY;
 
--- Politikaları oluştur (DROP ve CREATE kullanarak)
 DROP POLICY IF EXISTS "customers_all" ON customers;
 CREATE POLICY "customers_all" ON customers FOR ALL USING (true);
 
-DROP POLICY IF EXISTS "inventory_all" ON inventory;
-CREATE POLICY "inventory_all" ON inventory FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "couriers_all" ON couriers;
-CREATE POLICY "couriers_all" ON couriers FOR ALL USING (true);
-
 DROP POLICY IF EXISTS "orders_all" ON orders;
 CREATE POLICY "orders_all" ON orders FOR ALL USING (true);
+
+DROP POLICY IF EXISTS "inventory_all" ON inventory;
+CREATE POLICY "inventory_all" ON inventory FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "integrations_all" ON integrations;
 CREATE POLICY "integrations_all" ON integrations FOR ALL USING (true);
@@ -258,17 +209,3 @@ CREATE POLICY "whatsapp_chats_all" ON whatsapp_chats FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "whatsapp_failover_logs_all" ON whatsapp_failover_logs;
 CREATE POLICY "whatsapp_failover_logs_all" ON whatsapp_failover_logs FOR ALL USING (true);
-
--- =====================================================
--- ÖRNEK VERİ
--- =====================================================
-INSERT INTO couriers (name, phone, status, vehicle_type, vehicle_plate) VALUES
-  ('Ahmet Yılmaz', '+905551111111', 'active', 'Motosiklet', '34 ABC 123'),
-  ('Mehmet Demir', '+905552222222', 'active', 'Motosiklet', '34 DEF 456'),
-  ('Ali Veli', '+905553333333', 'inactive', 'Van', '34 GHI 789')
-ON CONFLICT (phone) DO NOTHING;
-
-INSERT INTO inventory (name, category, sale_price, cost_price, stock_quantity) VALUES
-  ('19L Damacana', '19L', 40, 25, 100),
-  ('5L Pet Su', '5L', 25, 15, 150)
-ON CONFLICT DO NOTHING;
