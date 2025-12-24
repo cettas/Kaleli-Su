@@ -53,21 +53,8 @@ CREATE TABLE IF NOT EXISTS inventory (
 -- =====================================================
 -- KATEGORİLER TABLOSU
 -- =====================================================
--- Categories tablosu zaten var, sadece veri ekleme
-
--- Kategorileri mevcut tabloya ekle (tablo varsa)
-DO $$
-BEGIN
-  -- Tablo var mı kontrol et
-  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'categories') THEN
-    -- Tablo var, veri ekle
-    INSERT INTO categories (name, icon, color, display_order)
-    VALUES
-      ('19L', 'fa-droplet', '#3b82f6', 1),
-      ('5L', 'fa-bottle-water', '#06b6d4', 2)
-    ON CONFLICT DO NOTHING;
-  END IF;
-END $$;
+-- NOT: Categories tablosu zaten mevcut, bu script'te değişiklik yapmıyoruz
+-- Veri eklemesi için lütfen tablo yapısını kontrol edin
 
 -- =====================================================
 -- KURYELER TABLOSU
