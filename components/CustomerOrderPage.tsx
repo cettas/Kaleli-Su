@@ -312,21 +312,25 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Ad Soyad *</label>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1.5">
+                  <i className="fas fa-user text-indigo-500"></i> Ad Soyad *
+                </label>
                 <input
                   type="text"
-                  placeholder="Adınız"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  placeholder="Adınız soyadınız"
+                  className="w-full px-4 py-3 border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white rounded-xl text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all shadow-sm"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Telefon *</label>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1.5">
+                  <i className="fas fa-phone text-indigo-500"></i> Telefon *
+                </label>
                 <input
                   type="tel"
                   placeholder="5XX XXX XX XX"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white rounded-xl text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all shadow-sm"
                   value={formData.phone}
                   onChange={e => setFormData({...formData, phone: e.target.value})}
                 />
@@ -335,9 +339,11 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Mahalle *</label>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1.5">
+                  <i className="fas fa-map-marker-alt text-indigo-500"></i> Mahalle *
+                </label>
                 <select
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white rounded-xl text-sm font-bold text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all appearance-none cursor-pointer shadow-sm"
                   value={formData.neighborhood}
                   onChange={e => setFormData({...formData, neighborhood: e.target.value})}
                 >
@@ -346,21 +352,25 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Bina</label>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1.5">
+                  <i className="fas fa-building text-indigo-500"></i> Bina
+                </label>
                 <input
                   type="text"
                   placeholder="No"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white rounded-xl text-sm font-bold text-slate-800 text-center placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all shadow-sm"
                   value={formData.buildingNo}
                   onChange={e => setFormData({...formData, buildingNo: e.target.value})}
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Daire</label>
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1.5">
+                  <i className="fas fa-door-open text-indigo-500"></i> Daire
+                </label>
                 <input
                   type="text"
                   placeholder="No"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold text-center focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white rounded-xl text-sm font-bold text-slate-800 text-center placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all shadow-sm"
                   value={formData.apartmentNo}
                   onChange={e => setFormData({...formData, apartmentNo: e.target.value})}
                 />
@@ -368,21 +378,25 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Adres (Sokak/Cadde/Apartman) *</label>
+              <label className="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1.5">
+                <i className="fas fa-road text-indigo-500"></i> Sokak/Cadde/Apartman *
+              </label>
               <input
                 type="text"
                 placeholder="Örn: Atatürk Cad. No:5 Apartman:Ahmet"
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                className="w-full px-4 py-3 border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white rounded-xl text-sm font-bold text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all shadow-sm"
                 value={formData.street}
                 onChange={e => setFormData({...formData, street: e.target.value})}
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Sipariş Notu</label>
+              <label className="text-xs font-semibold text-slate-500 mb-1.5 block flex items-center gap-1.5">
+                <i className="fas fa-sticky-note text-indigo-500"></i> Sipariş Notu
+              </label>
               <textarea
-                placeholder="Kapı zili, apartman kodu vb..."
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                placeholder="Kapı zili, apartman kodu, kat bilgisi vb..."
+                className="w-full px-4 py-3 border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white rounded-xl text-sm font-bold text-slate-800 placeholder:text-slate-400 resize-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all shadow-sm"
                 rows={2}
                 value={formData.note}
                 onChange={e => setFormData({...formData, note: e.target.value})}
@@ -618,7 +632,15 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 </form>
               `;
               modal.querySelectorAll('.mobile-input').forEach(el => {
-                el.style.cssText = 'width: 100%; px-3 py-2.5 border-2 border-slate-200 rounded-lg text-sm font-bold focus:border-indigo-500 focus:outline-none';
+                el.style.cssText = 'width: 100%; padding: 12px 14px; border: 2px solid rgb(199 210 254); background: linear-gradient(to bottom right, rgb(238 242 255), white); border-radius: 12px; font-size: 14px; font-weight: 700; color: rgb(30 41 59); box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); outline: none;';
+                el.addEventListener('focus', () => {
+                  el.style.borderColor = 'rgb(99 102 241)';
+                  el.style.boxShadow = '0 0 0 3px rgb(199 210 254 / 0.5)';
+                });
+                el.addEventListener('blur', () => {
+                  el.style.borderColor = 'rgb(199 210 254)';
+                  el.style.boxShadow = '0 1px 2px rgb(0 0 0 / 0.05)';
+                });
               });
               modal.querySelectorAll('.mobile-pay-btn').forEach(btn => {
                 const method = btn.getAttribute('data-method');
