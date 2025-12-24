@@ -733,14 +733,14 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                     <span className="text-[9px] font-black text-rose-500 uppercase">{getFieldError('paymentMethod')}</span>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => {
                       setFormData({...formData, paymentMethod: PaymentMethod.CASH});
                       handleFieldBlur('paymentMethod');
                     }}
-                    className={`py-3 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
+                    className={`py-4 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
                       formData.paymentMethod === PaymentMethod.CASH
                         ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg'
                         : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-emerald-400 hover:bg-emerald-50'
@@ -755,29 +755,14 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                       setFormData({...formData, paymentMethod: PaymentMethod.POS});
                       handleFieldBlur('paymentMethod');
                     }}
-                    className={`py-3 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
+                    className={`py-4 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
                       formData.paymentMethod === PaymentMethod.POS
                         ? 'bg-blue-600 border-blue-600 text-white shadow-lg'
                         : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-400 hover:bg-blue-50'
                     }`}
                   >
                     <span className="text-lg">💳</span>
-                    <span>POS</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormData({...formData, paymentMethod: PaymentMethod.NOT_COLLECTED});
-                      handleFieldBlur('paymentMethod');
-                    }}
-                    className={`py-3 px-2 rounded-xl text-[10px] font-black uppercase border-2 transition-all flex flex-col items-center gap-1 ${
-                      formData.paymentMethod === PaymentMethod.NOT_COLLECTED
-                        ? 'bg-rose-600 border-rose-600 text-white shadow-lg'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-rose-400 hover:bg-rose-50'
-                    }`}
-                  >
-                    <span className="text-lg">❌</span>
-                    <span>Alınmadı</span>
+                    <span>Kredi Kartı / POS</span>
                   </button>
                 </div>
               </div>
