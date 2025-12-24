@@ -243,17 +243,17 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
 
   return (
     <div className="h-full flex flex-col bg-slate-50 overflow-hidden lg:flex-row">
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Sticky Header with Cart */}
-        <header className="sticky top-0 z-50 px-4 lg:px-8 py-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shrink-0">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <i className="fas fa-droplet text-white text-sm"></i>
+        <header className="sticky top-0 z-50 px-3 sm:px-4 lg:px-8 py-3 sm:py-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shrink-0">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i className="fas fa-droplet text-white text-xs sm:text-sm"></i>
               </div>
               <div>
-                <h1 className="text-lg font-black text-slate-900 tracking-tight uppercase leading-none">TAZE SU</h1>
-                <p className="text-xs font-black text-indigo-500 uppercase tracking-[0.2em]">Kapınıza Gelsin</p>
+                <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight uppercase leading-none">TAZE SU</h1>
+                <p className="text-[10px] sm:text-xs font-black text-indigo-500 uppercase tracking-[0.2em]">Kapınıza Gelsin</p>
               </div>
             </div>
 
@@ -303,12 +303,12 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               <button
                 onClick={() => setStep('checkout')}
                 disabled={cart.length === 0}
-                className={`relative flex items-center gap-2 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${cart.length > 0 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-300'}`}
+                className={`relative flex items-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${cart.length > 0 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-300'}`}
               >
-                <i className="fas fa-shopping-bag"></i>
-                <span>{totalAmount}₺</span>
+                <i className="fas fa-shopping-bag text-sm"></i>
+                <span className="text-sm">{totalAmount}₺</span>
                 {cart.length > 0 && (
-                  <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 rounded-full text-white text-xs font-black flex items-center justify-center border-2 border-white ${cartBounce ? 'animate-bounce' : ''}`}>
+                  <span className={`absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full text-white text-xs font-black flex items-center justify-center border-2 border-white ${cartBounce ? 'animate-bounce' : ''}`}>
                     {totalItemsCount}
                   </span>
                 )}
@@ -317,10 +317,10 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
           </div>
 
           {/* Mobile Categories */}
-          <div className="lg:hidden flex items-center gap-2 mt-4 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4">
+          <div className="lg:hidden flex items-center gap-2 mt-3 overflow-x-auto scrollbar-hide pb-1 -mx-3 px-3">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${activeCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
+              className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${activeCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
             >
               Tümü
             </button>
@@ -328,9 +328,9 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${activeCategory === cat.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
+                className={`px-3 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-1.5 ${activeCategory === cat.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500'}`}
               >
-                <i className={`fas fa-${cat.icon}`}></i>
+                <i className={`fas fa-${cat.icon} text-xs`}></i>
                 {cat.label}
               </button>
             ))}
@@ -338,7 +338,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
         </header>
 
         {/* Products Grid */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth pb-32 lg:pb-8">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8 scroll-smooth pb-32 lg:pb-8">
           <div className="max-w-7xl mx-auto">
             {/* Empty State */}
             {activeProducts.length === 0 ? (
@@ -350,54 +350,54 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                 <p className="text-sm text-slate-500">Bu kategoride ürün bulunmuyor.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {activeProducts.map(item => {
                   const inCart = cart.find(i => i.id === item.id);
                   const category = categories.find(c => c.id === item.category);
                   return (
                     <div
                       key={item.id}
-                      className="group bg-white rounded-3xl border border-slate-100 flex flex-col shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300 overflow-hidden"
+                      className="group bg-white rounded-2xl sm:rounded-3xl border border-slate-100 flex flex-col shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300 overflow-hidden"
                     >
                       {/* Product Image */}
-                      <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 relative flex items-center justify-center overflow-hidden p-6">
+                      <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 relative flex items-center justify-center overflow-hidden p-4 sm:p-6">
                         {item.imageUrl ? (
                           <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                         ) : (
-                          <i className={`fas fa-${category?.icon || 'droplet'} text-6xl text-indigo-200`}></i>
+                          <i className={`fas fa-${category?.icon || 'droplet'} text-4xl sm:text-6xl text-indigo-200`}></i>
                         )}
                         {/* Price Badge */}
-                        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-md">
-                          <span className="text-sm font-black text-slate-900">{item.salePrice}₺</span>
+                        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white/95 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl shadow-md">
+                          <span className="text-xs sm:text-sm font-black text-slate-900">{item.salePrice}₺</span>
                         </div>
                         {/* Category Badge */}
                         {category && (
-                          <div className="absolute top-3 left-3 bg-indigo-100/90 backdrop-blur-sm px-2.5 py-1 rounded-lg">
+                          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-indigo-100/90 backdrop-blur-sm px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg">
                             <i className={`fas fa-${category.icon} text-indigo-600 text-xs`}></i>
                           </div>
                         )}
                       </div>
 
                       {/* Product Info */}
-                      <div className="p-4 lg:p-5 flex flex-col flex-1">
-                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight mb-4 leading-tight flex-1">
+                      <div className="p-3 sm:p-4 lg:p-5 flex flex-col flex-1">
+                        <h3 className="text-xs sm:text-xs font-black text-slate-900 uppercase tracking-tight mb-3 sm:mb-4 leading-tight flex-1">
                           {item.name}
                         </h3>
 
                         {/* Add to Cart / Quantity Control */}
                         <div className="flex items-center gap-2">
                           {inCart ? (
-                            <div className="flex items-center gap-1 bg-slate-900 rounded-2xl p-1 w-full">
+                            <div className="flex items-center gap-1 bg-slate-900 rounded-xl sm:rounded-2xl p-1 w-full">
                               <button
                                 onClick={() => updateCart(item, -1)}
-                                className="w-9 h-9 rounded-xl bg-white/10 text-white font-black hover:bg-white/20 transition-all flex items-center justify-center"
+                                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white/10 text-white font-black hover:bg-white/20 transition-all flex items-center justify-center"
                               >
                                 <i className="fas fa-minus text-xs"></i>
                               </button>
                               <span className="text-sm font-black text-white flex-1 text-center">{inCart.quantity}</span>
                               <button
                                 onClick={() => updateCart(item, 1)}
-                                className="w-9 h-9 rounded-xl bg-indigo-500 text-white font-black transition-all flex items-center justify-center"
+                                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-indigo-500 text-white font-black transition-all flex items-center justify-center"
                               >
                                 <i className="fas fa-plus text-xs"></i>
                               </button>
@@ -405,10 +405,11 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                           ) : (
                             <button
                               onClick={() => updateCart(item, 1)}
-                              className="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-wider shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                              className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl sm:rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
                             >
-                              <i className="fas fa-plus"></i>
-                              SEPETE EKLE
+                              <i className="fas fa-plus text-xs"></i>
+                              <span className="hidden sm:inline">SEPETE EKLE</span>
+                              <span className="sm:hidden">EKLE</span>
                             </button>
                           )}
                         </div>
@@ -433,7 +434,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
         {/* Mobile Backdrop */}
         {step === 'checkout' && (
           <div
-            className="lg:hidden absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
+            className="lg:hidden absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
             onClick={() => setStep('browse')}
           ></div>
         )}
@@ -464,7 +465,7 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
           </div>
 
           {/* Checkout Content */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 space-y-4 sm:space-y-6">
             {/* Cart Items */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
