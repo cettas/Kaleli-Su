@@ -5,6 +5,11 @@
 -- Bu script'i Supabase SQL Editor'da çalıştırın
 
 -- =====================================================
+-- ÖNCELİKLE MEVCUT TABLOLARI KONTROL EDİNİZ
+-- Eğer tablolar zaten varsa DROP yapmayın, veriler kaybolur!
+-- =====================================================
+
+-- =====================================================
 -- MÜŞTERİLER TABLOSU
 -- =====================================================
 CREATE TABLE IF NOT EXISTS customers (
@@ -48,21 +53,61 @@ CREATE TABLE IF NOT EXISTS inventory (
 -- =====================================================
 -- KATEGORİLER TABLOSU
 -- =====================================================
-CREATE TABLE IF NOT EXISTS categories (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  icon TEXT,
-  color TEXT,
-  display_order INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- Eğer categories tablosu varsa yapısını kontrol et, yoksa oluştur
+-- NOT: Mevcut tablo yapısını koruyarak ilerliyoruz
 
--- Varsayılan kategoriler
-INSERT INTO categories (name, icon, color, display_order) VALUES
-  ('19L', 'fa-droplet', '#3b82f6', 1),
-  ('5L', 'fa-bottle-water', '#06b6d4', 2)
-ON CONFLICT (name) DO NOTHING;
+-- Önce mevcut tabloyu kontrol et
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'categories') THEN
+    -- Tablo var, sütunları kontrol et ve eksikleri ekle
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'id') THEN
+      ALTER TABLE categories ADD COLUMN id TEXT PRIMARY KEY DEFAULT gen_random_uuid();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'name') THEN
+      ALTER TABLE categories ADD COLUMN name TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'icon') THEN
+      ALTER TABLE categories ADD COLUMN icon TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'color') THEN
+      ALTER TABLE categories ADD COLUMN color TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'display_order') THEN
+      ALTER TABLE categories ADD COLUMN display_order INTEGER DEFAULT 0;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema_columns WHERE table_name = 'categories' AND column_name = 'is_active') THEN
+      ALTER TABLE categories ADD COLUMN is_active BOOLEAN DEFAULT true;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'created_at') THEN
+      ALTER TABLE categories ADD COLUMN created_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+  ELSE
+    -- Tablo yok, oluştur
+    CREATE TABLE categories (
+      id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL UNIQUE,
+      icon TEXT,
+      color TEXT,
+      display_order INTEGER DEFAULT 0,
+      is_active BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  END IF;
+END $$;
+
+-- Kategoriler varsa ekle, yoksa geç
+DO $$
+BEGIN
+  -- Tablonun yapısını kontrol et ve veri ekle
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'categories' AND column_name = 'name') THEN
+    INSERT INTO categories (name, icon, color, display_order)
+    VALUES
+      ('19L', 'fa-droplet', '#3b82f6', 1),
+      ('5L', 'fa-bottle-water', '#06b6d4', 2)
+    ON CONFLICT DO NOTHING;
+  END IF;
+END $$;
 
 -- =====================================================
 -- KURYELER TABLOSU
@@ -116,14 +161,12 @@ CREATE TABLE IF NOT EXISTS orders (
 
   -- Notlar
   notes TEXT,
-  priority INTEGER DEFAULT 0, -- 0=normal, 1=high, 2=urgent
+  priority INTEGER DEFAULT 0,
 
   -- Zamanlar
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   delivered_at TIMESTAMPTZ,
-
-  -- Kurye atama zamanı
   assigned_at TIMESTAMPTZ
 );
 
@@ -254,40 +297,31 @@ CREATE TABLE IF NOT EXISTS whatsapp_failover_logs (
 -- =====================================================
 -- INDEX'LER
 -- =====================================================
--- Customers
 CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
 CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name);
 CREATE INDEX IF NOT EXISTS idx_customers_created ON customers(created_at DESC);
 
--- Orders
 CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
 CREATE INDEX IF NOT EXISTS idx_orders_courier ON orders(courier_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_orders_source ON orders(source);
 
--- Inventory
 CREATE INDEX IF NOT EXISTS idx_inventory_category ON inventory(category);
 CREATE INDEX IF NOT EXISTS idx_inventory_active ON inventory(is_active);
 
--- Couriers
 CREATE INDEX IF NOT EXISTS idx_couriers_status ON couriers(status);
 CREATE INDEX IF NOT EXISTS idx_couriers_active ON couriers(is_active);
 
--- Logs
 CREATE INDEX IF NOT EXISTS idx_call_logs_caller ON call_logs(caller_id);
 CREATE INDEX IF NOT EXISTS idx_call_logs_status ON call_logs(status);
-CREATE INDEX IF NOT EXISTS idx_call_logs_created ON call_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_phone ON whatsapp_logs(phone_number);
-CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_created ON whatsapp_logs(created_at DESC);
 
 -- =====================================================
--- RLS (Row Level Security) - Geliştirme için açık
+-- RLS (Row Level Security)
 -- =====================================================
--- Tüm tablolara RLS aktif et
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE couriers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
@@ -297,15 +331,11 @@ ALTER TABLE whatsapp_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_chats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_failover_logs ENABLE ROW LEVEL SECURITY;
 
--- Tam erişim politikaları (geliştirme için)
 DROP POLICY IF EXISTS "customers_full_access" ON customers;
 CREATE POLICY "customers_full_access" ON customers FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "inventory_full_access" ON inventory;
 CREATE POLICY "inventory_full_access" ON inventory FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "categories_full_access" ON categories;
-CREATE POLICY "categories_full_access" ON categories FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "couriers_full_access" ON couriers;
 CREATE POLICY "couriers_full_access" ON couriers FOR ALL USING (true);
@@ -318,9 +348,6 @@ CREATE POLICY "integrations_full_access" ON integrations FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "call_logs_full_access" ON call_logs;
 CREATE POLICY "call_logs_full_access" ON call_logs FOR ALL USING (true);
-
-DROP POLICY IF EXISTS "call_failover_logs_full_access" ON call_failover_logs;
-CREATE POLICY "call_failover_logs_full_access" ON call_failover_logs FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "whatsapp_logs_full_access" ON whatsapp_logs;
 CREATE POLICY "whatsapp_logs_full_access" ON whatsapp_logs FOR ALL USING (true);
@@ -342,7 +369,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger'ları oluştur
 DROP TRIGGER IF EXISTS update_customers_updated_at ON customers;
 CREATE TRIGGER update_customers_updated_at BEFORE UPDATE ON customers
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -367,20 +393,14 @@ CREATE TRIGGER update_integrations_updated_at BEFORE UPDATE ON integrations
 -- ÖRNEK VERİ (SEED DATA)
 -- =====================================================
 
--- Örnek Kuryeler
 INSERT INTO couriers (name, phone, status, vehicle_type, vehicle_plate) VALUES
   ('Ahmet Yılmaz', '+905551111111', 'active', 'Motosiklet', '34 ABC 123'),
   ('Mehmet Demir', '+905552222222', 'active', 'Motosiklet', '34 DEF 456'),
   ('Ali Veli', '+905553333333', 'inactive', 'Van', '34 GHI 789')
 ON CONFLICT (phone) DO NOTHING;
 
--- Örnek Ürünler
 INSERT INTO inventory (name, category, sale_price, cost_price, stock_quantity) VALUES
   ('19L Damacana', '19L', 40, 25, 100),
   ('5L Pet Su', '5L', 25, 15, 150),
   ('19L Damacana (Koli)', '19L', 400, 250, 20)
 ON CONFLICT DO NOTHING;
-
--- =====================================================
--- TAMAMLANDI
--- =====================================================
