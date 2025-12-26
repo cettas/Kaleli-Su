@@ -1625,6 +1625,8 @@ Lütfen yanıt ver. Sipariş kesinleşirse sonuna JSON formatını ekle.`;
   try {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+    console.log(`🤌 Gemini API çağrısı: userText="${userText}"`);
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1638,15 +1640,20 @@ Lütfen yanıt ver. Sipariş kesinleşirse sonuna JSON formatını ekle.`;
     });
 
     if (!response.ok) {
-      console.error('Gemini API hatası:', response.status);
+      const errorText = await response.text();
+      console.error('❌ Gemini API hatası:', response.status, errorText);
       return getFallbackAIResponse(call, userText);
     }
 
     const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || getFallbackAIResponse(call, userText);
+    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    console.log(`✅ Gemini yanıt: ${aiResponse?.substring(0, 100)}...`);
+
+    return aiResponse || getFallbackAIResponse(call, userText);
 
   } catch (error) {
-    console.error('Gemini çağrı hatası:', error);
+    console.error('❌ Gemini çağrı hatası:', error.message);
     return getFallbackAIResponse(call, userText);
   }
 }
