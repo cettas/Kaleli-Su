@@ -3,8 +3,6 @@
 // =====================================================
 // Vercel serverless function for testing voice order AI
 
-import { supabase } from '../_lib/supabase.js';
-
 const VOICE_ORDER_SYSTEM_PROMPT = `
 Sen "Kaleli Su" için çalışan profesyonel bir sesli sipariş asistanısın.
 
@@ -50,26 +48,6 @@ Sipariş kesinleştiğinde son mesajının sonuna şu JSON'u ekle:
 \`\`\`
 `;
 
-// Get Gemini API key from cache or env
-async function getGeminiApiKey() {
-  // Try environment variable first
-  if (process.env.GEMINI_API_KEY) {
-    return process.env.GEMINI_API_KEY;
-  }
-
-  // Try Supabase integrations table
-  try {
-    const { data } = await supabase
-      .from('integrations')
-      .select('voice_order_gemini_api_key')
-      .single();
-
-    return data?.voice_order_gemini_api_key || null;
-  } catch (e) {
-    return null;
-  }
-}
-
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -92,11 +70,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Message required' });
     }
 
-    // Get API key
-    const GEMINI_API_KEY = await getGeminiApiKey();
+    // Get API key from environment
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
     if (!GEMINI_API_KEY) {
-      return res.status(500).json({ success: false, error: 'Gemini API Key bulunamadı. Lütfen admin panelinden API key girin.' });
+      return res.status(500).json({
+        success: false,
+        error: 'Gemini API Key bulunamadı. Vercel Environment Variables\'a GEMINI_API_KEY ekleyin.'
+      });
     }
 
     // Customer context
@@ -134,7 +115,7 @@ Lütfen yanıt ver. Sipariş kesinleşirse sonuna JSON formatını ekle.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Gemini API hatası:', response.status, errorText);
-      return res.status(500).json({ success: false, error: `Gemini API hatası: ${response.status}` });
+      return res.status(500).json({ success: false, error: `Gemini API hatası: ${response.status} - ${errorText}` });
     }
 
     const data = await response.json();
@@ -162,7 +143,7 @@ Lütfen yanıt ver. Sipariş kesinleşirse sonuna JSON formatını ekle.`;
 
   } catch (error) {
     console.error('Voice order test hatası:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: error.message || 'Bilinmeyen hata' });
   }
 }
 
