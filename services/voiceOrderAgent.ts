@@ -426,7 +426,7 @@ Lütfen yanıt ver. Sipariş kesinleşirse sonuna JSON formatını ekle.`;
    */
   private async callGemini(prompt: string, history: Array<{ role: string; content: string }>): Promise<string> {
     try {
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.geminiApiKey}`;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiApiKey}`;
 
       // Gemini formatına çevir
       const contents = [
