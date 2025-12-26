@@ -1470,7 +1470,26 @@ app.post('/webhook/voice-order/end', async (req, res) => {
  * Gemini AI ile konuşma analizi
  */
 async function callGeminiAI(call, userText) {
-  const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || '';
+  // API key'i önce Supabase'den al, yoksa env'den kullan
+  let GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+
+  if (!GEMINI_API_KEY) {
+    // Supabase'den API key'i al
+    try {
+      const { data } = await supabase
+        .from('integrations')
+        .select('voice_order_gemini_api_key')
+        .single();
+      GEMINI_API_KEY = data?.voice_order_gemini_api_key || '';
+    } catch (e) {
+      console.error('API key alınamadı:', e.message);
+    }
+  }
+
+  if (!GEMINI_API_KEY) {
+    console.error('Gemini API Key bulunamadı!');
+    return getFallbackAIResponse(call, userText);
+  }
 
   // Müşteri context'i
   let customerContext = '';
