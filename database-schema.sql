@@ -86,15 +86,22 @@ CREATE TABLE IF NOT EXISTS integrations (
   ai_phone_provider TEXT DEFAULT 'gemini',
   ai_phone_api_key TEXT,
   ai_phone_number TEXT,
+  ai_phone_webhook_url TEXT,
+  ai_phone_system_prompt TEXT,
   netgsm_enabled BOOLEAN DEFAULT false,
   netgsm_api_key TEXT,
   netgsm_phone_number TEXT,
   netgsm_operator_extension TEXT DEFAULT '100',
+  netgsm_webhook_url TEXT,
   whatsapp_enabled BOOLEAN DEFAULT false,
   whatsapp_access_token TEXT,
   whatsapp_phone_number_id TEXT,
   whatsapp_verify_token TEXT DEFAULT 'su_siparis_bot_2024',
   whatsapp_operator_phone TEXT,
+  -- Sesli Sipariş Asistanı (YENİ)
+  voice_order_enabled BOOLEAN DEFAULT false,
+  voice_order_gemini_api_key TEXT,
+  voice_order_test_phone TEXT DEFAULT '905551234567',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -209,3 +216,32 @@ CREATE POLICY "whatsapp_chats_all" ON whatsapp_chats FOR ALL USING (true);
 
 DROP POLICY IF EXISTS "whatsapp_failover_logs_all" ON whatsapp_failover_logs;
 CREATE POLICY "whatsapp_failover_logs_all" ON whatsapp_failover_logs FOR ALL USING (true);
+
+-- =====================================================
+-- 4. MIGRATION - Mevcut tablolara yeni colonlar ekle
+-- =====================================================
+-- Bu bölüm mevcut tablolara yeni colonlar ekler
+-- Tablo zaten varsa CREATE TABLE IF NOT EXISTS çalışmaz
+-- Bu yüzden ALTER TABLE ile colon ekliyoruz
+
+-- Integrations tablosuna eksik colonları ekle
+ALTER TABLE integrations
+  ADD COLUMN IF NOT EXISTS ai_phone_webhook_url TEXT,
+  ADD COLUMN IF NOT EXISTS ai_phone_system_prompt TEXT,
+  ADD COLUMN IF NOT EXISTS netgsm_webhook_url TEXT,
+  ADD COLUMN IF NOT EXISTS voice_order_enabled BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS voice_order_gemini_api_key TEXT,
+  ADD COLUMN IF NOT EXISTS voice_order_test_phone TEXT DEFAULT '905551234567';
+
+-- Customers tablosuna eksik colonları ekle
+ALTER TABLE customers
+  ADD COLUMN IF NOT EXISTS last_note TEXT;
+
+-- Inventory tablosuna is_active colonunu ekle (yoksa)
+ALTER TABLE inventory
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+
+-- Orders tablosuna notes colonunu ekle (yoksa)
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS notes TEXT;
+
