@@ -1251,24 +1251,26 @@ const VoiceOrderAssistantPanel: React.FC<VoiceOrderAssistantPanelProps> = ({
   const testApiConnection = async () => {
     setConnectionStatus('testing');
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/webhook/voice-order/start`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+      const response = await fetch(`${apiUrl}/api/test/voice-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          call_id: `test_${Date.now()}`,
-          caller_id: testPhone.replace(/\D/g, '') || '905551234567',
-          direction: 'incoming'
+          message: '2 damacana istiyorum',
+          customer_name: 'Test Müşteri'
         })
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         setConnectionStatus('success');
         setTimeout(() => setConnectionStatus('idle'), 3000);
+        alert(`✅ API Bağlantı Başarılı!\n\nAI Yanıt: ${data.response?.substring(0, 100)}...`);
       } else {
         setConnectionStatus('error');
         setTimeout(() => setConnectionStatus('idle'), 3000);
-        alert(`API Hatası: ${response.status} - Sunucu yanıt vermiyor. npm run api çalıştırdığınızdan emin olun.`);
+        alert(`API Hatası: ${response.status}\n\n${data.error || 'Sunucu yanıt vermiyor.'}`);
       }
     } catch (error: any) {
       setConnectionStatus('error');
@@ -1276,41 +1278,22 @@ const VoiceOrderAssistantPanel: React.FC<VoiceOrderAssistantPanelProps> = ({
 
       // Hata mesajını göster
       if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
-        alert(`Bağlantı Hatası!\n\nOlası sebepler:\n1. npm run api çalışmıyor\n2. Ad Blocker eklentisi istekleri engelliyor\n3. CORS hatası\n\nÇözüm: API sunucusunu başlatın (npm run api) ve Ad Blocker'ı kapatın.`);
+        alert(`Bağlantı Hatası!\n\nOlası sebepler:\n1. npm run api çalışmıyor (local için)\n2. Ad Blocker eklentisi istekleri engelliyor\n3. CORS hatası\n4. Vercel deploy tamamlanmamış (production için)\n\nÇözüm: API sunucusunu başlatın veya Vercel deploy'u bekleyin.`);
       } else {
         alert(`Hata: ${error.message}`);
       }
     }
   };
 
-  // Test oturumunu başlat
+  // Test oturumunu başlat (basit karşılama mesajı)
   const startTestSession = async () => {
     setIsLoading(true);
-    setTestMessages([{ role: 'assistant', text: 'Test oturumu başlatılıyor...' }]);
-
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/webhook/voice-order/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          call_id: `test_${Date.now()}`,
-          caller_id: testPhone.replace(/\D/g, ''),
-          direction: 'incoming'
-        })
-      });
-
-      const data = await response.json();
-      setTestMessages([{ role: 'assistant', text: data.text || 'Merhaba! Siparişinizi alabilir miyim?' }]);
-      setSessionId(data.session_id || `test_${Date.now()}`);
-    } catch (error) {
-      setTestMessages([{ role: 'assistant', text: 'Bağlantı hatası! API sunucusunun çalıştığından emin olun.' }]);
-    }
-
+    setSessionId(`test_${Date.now()}`);
+    setTestMessages([{ role: 'assistant', text: 'Merhaba! Kaleli Su\'ya hoş geldiniz. Size nasıl yardımcı olabilirim? Hangi üründen kaç adet istersiniz?' }]);
     setIsLoading(false);
   };
 
-  // Mesaj gönder
+  // Mesaj gönder (test endpoint kullanarak)
   const sendTestMessage = async () => {
     if (!userInput.trim()) return;
 
@@ -1320,35 +1303,32 @@ const VoiceOrderAssistantPanel: React.FC<VoiceOrderAssistantPanelProps> = ({
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/webhook/voice-order/speech`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+      const response = await fetch(`${apiUrl}/api/test/voice-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          call_id: sessionId,
-          text: userMessage,
-          session_id: sessionId
+          message: userMessage,
+          customer_name: 'Test Müşteri'
         })
       });
 
       const data = await response.json();
 
-      if (data.order_confirmed) {
-        setTestMessages(prev => [...prev, {
-          role: 'assistant',
-          text: `${data.text}\n\n✅ Sipariş oluşturuldu! ID: ${data.order?.id || 'Bilinmiyor'}`
-        }]);
-      } else {
-        setTestMessages(prev => [...prev, { role: 'assistant', text: data.text || 'Anlayamadım, tekrar eder misiniz?' }]);
-      }
+      if (data.success) {
+        let responseText = data.response || 'Anlayamadım, tekrar eder misiniz?';
 
-      if (data.action === 'hangup') {
-        setTimeout(() => {
-          setTestMessages(prev => [...prev, { role: 'assistant', text: '📞 Çağrı sonlandırıldı.' }]);
-        }, 1000);
+        // Sipariş algılandı mı?
+        if (data.orderData && data.orderData.order_status === 'confirmed') {
+          responseText += `\n\n✅ Sipariş onaylandı!\nToplam: ${data.orderData.total_price} TL\nÖdeme: ${data.orderData.payment}`;
+        }
+
+        setTestMessages(prev => [...prev, { role: 'assistant', text: responseText }]);
+      } else {
+        setTestMessages(prev => [...prev, { role: 'assistant', text: `❌ Hata: ${data.error || 'Bağlantı hatası'}` }]);
       }
     } catch (error) {
-      setTestMessages(prev => [...prev, { role: 'assistant', text: '❌ Bağlantı hatası!' }]);
+      setTestMessages(prev => [...prev, { role: 'assistant', text: '❌ Bağlantı hatası! API sunucusunun çalıştığından emin olun.' }]);
     }
 
     setIsLoading(false);
