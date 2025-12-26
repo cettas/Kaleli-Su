@@ -1,12 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/webhook/voice-order/:path*",
+      "destination": "/api/webhook-voice-order/:path*"
     },
     {
-      "source": "/webhook/(.*)",
-      "destination": "/api/webhook-$1"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     },
     {
       "source": "/(.*)",
