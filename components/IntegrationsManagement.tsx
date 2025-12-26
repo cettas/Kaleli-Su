@@ -162,6 +162,19 @@ const IntegrationsManagement: React.FC = () => {
         });
 
       if (error) throw error;
+
+      // API sunucusundaki cache'i temizle (yeni API key'i yükle)
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        await fetch(`${apiUrl}/api/integrations/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        console.log('✅ API server cache refreshed');
+      } catch (e) {
+        console.warn('⚠️ API server cache refresh failed (server may not be running):', e);
+      }
+
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (error) {

@@ -26,6 +26,50 @@ app.use(express.urlencoded({ extended: true }));
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // =====================================================
+// CACHED INTEGRATION SETTINGS
+// =====================================================
+let cachedGeminiApiKey = null;
+let integrationsFetchTime = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 dakika cache
+
+// Integrations ayarlarını cache'le
+async function getCachedGeminiApiKey() {
+  const now = Date.now();
+
+  // Cache varsa ve hala geçerliyse kullan
+  if (cachedGeminiApiKey && integrationsFetchTime && (now - integrationsFetchTime) < CACHE_DURATION) {
+    return cachedGeminiApiKey;
+  }
+
+  // Supabase'den yeni API key çek
+  try {
+    const { data } = await supabase
+      .from('integrations')
+      .select('voice_order_gemini_api_key')
+      .single();
+
+    cachedGeminiApiKey = data?.voice_order_gemini_api_key || null;
+    integrationsFetchTime = now;
+
+    if (cachedGeminiApiKey) {
+      console.log('✅ Gemini API Key Supabase\'den yüklendi');
+    } else {
+      console.log('⚠️ Gemini API Key bulunamadı (Supabase integrations tablosu)');
+    }
+
+    return cachedGeminiApiKey;
+  } catch (e) {
+    console.error('❌ API key alınamadı:', e.message);
+    return null;
+  }
+}
+
+// Sunucu başladığında API key'i yükle
+getCachedGeminiApiKey().then(() => {
+  console.log('🔑 Integrations ayarları yüklendi');
+});
+
+// =====================================================
 // LOGGING MIDDLEWARE
 // =====================================================
 
@@ -1255,6 +1299,32 @@ app.post('/api/test/whatsapp', async (req, res) => {
   }
 });
 
+/**
+ * Integrations ayarlarını yenile (cache temizle)
+ * POST /api/integrations/refresh
+ *
+ * Admin panelinden ayarlar değiştiğinde çağrılır
+ */
+app.post('/api/integrations/refresh', async (req, res) => {
+  try {
+    // Cache'i temizle
+    cachedGeminiApiKey = null;
+    integrationsFetchTime = null;
+
+    // Yeniden yükle
+    const apiKey = await getCachedGeminiApiKey();
+
+    res.json({
+      success: true,
+      message: 'Integrations ayarları yenilendi',
+      geminiApiKeyLoaded: !!apiKey
+    });
+  } catch (error) {
+    console.error('Integrations refresh hatası:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // =====================================================
 // SESLİ SİPARİŞ ASİSTANI WEBHOOKS (YENİ)
 // =====================================================
@@ -1470,20 +1540,12 @@ app.post('/webhook/voice-order/end', async (req, res) => {
  * Gemini AI ile konuşma analizi
  */
 async function callGeminiAI(call, userText) {
-  // API key'i önce Supabase'den al, yoksa env'den kullan
+  // API key'i cache'den al, yoksa env'den kullan
   let GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
 
   if (!GEMINI_API_KEY) {
-    // Supabase'den API key'i al
-    try {
-      const { data } = await supabase
-        .from('integrations')
-        .select('voice_order_gemini_api_key')
-        .single();
-      GEMINI_API_KEY = data?.voice_order_gemini_api_key || '';
-    } catch (e) {
-      console.error('API key alınamadı:', e.message);
-    }
+    // Supabase'den cache'li API key'i al
+    GEMINI_API_KEY = await getCachedGeminiApiKey();
   }
 
   if (!GEMINI_API_KEY) {
