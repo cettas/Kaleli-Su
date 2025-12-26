@@ -1245,6 +1245,35 @@ const VoiceOrderAssistantPanel: React.FC<VoiceOrderAssistantPanelProps> = ({
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string>('');
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+
+  // API bağlantısını test et
+  const testApiConnection = async () => {
+    setConnectionStatus('testing');
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/webhook/voice-order/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          call_id: `test_${Date.now()}`,
+          caller_id: testPhone.replace(/\D/g, '') || '905551234567',
+          direction: 'incoming'
+        })
+      });
+
+      if (response.ok) {
+        setConnectionStatus('success');
+        setTimeout(() => setConnectionStatus('idle'), 3000);
+      } else {
+        setConnectionStatus('error');
+        setTimeout(() => setConnectionStatus('idle'), 3000);
+      }
+    } catch (error) {
+      setConnectionStatus('error');
+      setTimeout(() => setConnectionStatus('idle'), 3000);
+    }
+  };
 
   // Test oturumunu başlat
   const startTestSession = async () => {
@@ -1335,6 +1364,29 @@ const VoiceOrderAssistantPanel: React.FC<VoiceOrderAssistantPanelProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* API Test Butonu */}
+            <button
+              onClick={testApiConnection}
+              disabled={connectionStatus === 'testing'}
+              className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${
+                connectionStatus === 'success'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : connectionStatus === 'error'
+                  ? 'bg-rose-100 text-rose-700'
+                  : connectionStatus === 'testing'
+                  ? 'bg-slate-100 text-slate-500'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <i className={`fas ${
+                connectionStatus === 'testing' ? 'fa-spinner fa-spin' :
+                connectionStatus === 'success' ? 'fa-check-circle' :
+                connectionStatus === 'error' ? 'fa-times-circle' : 'fa-plug'
+              }`}></i>
+              {connectionStatus === 'testing' ? 'Test Ediliyor...' :
+               connectionStatus === 'success' ? 'Bağlantı OK' :
+               connectionStatus === 'error' ? 'Bağlantı Hatası' : 'API Testi'}
+            </button>
             <button
               onClick={() => {
                 setShowTestPanel(!showTestPanel);
