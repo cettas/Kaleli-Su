@@ -1268,10 +1268,18 @@ const VoiceOrderAssistantPanel: React.FC<VoiceOrderAssistantPanelProps> = ({
       } else {
         setConnectionStatus('error');
         setTimeout(() => setConnectionStatus('idle'), 3000);
+        alert(`API Hatası: ${response.status} - Sunucu yanıt vermiyor. npm run api çalıştırdığınızdan emin olun.`);
       }
-    } catch (error) {
+    } catch (error: any) {
       setConnectionStatus('error');
       setTimeout(() => setConnectionStatus('idle'), 3000);
+
+      // Hata mesajını göster
+      if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
+        alert(`Bağlantı Hatası!\n\nOlası sebepler:\n1. npm run api çalışmıyor\n2. Ad Blocker eklentisi istekleri engelliyor\n3. CORS hatası\n\nÇözüm: API sunucusunu başlatın (npm run api) ve Ad Blocker'ı kapatın.`);
+      } else {
+        alert(`Hata: ${error.message}`);
+      }
     }
   };
 
