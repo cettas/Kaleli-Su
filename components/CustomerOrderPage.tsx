@@ -3,6 +3,22 @@ import React, { useState, useMemo } from 'react';
 import { InventoryItem, Category, Order, OrderStatus, OrderSource, Customer, Courier, PaymentMethod } from '../types';
 import { KARTAL_NEIGHBORHOODS } from '../constants';
 
+// Mobile form için global type tanımı
+declare global {
+  interface Window {
+    mobileForm: {
+      name: string;
+      phone: string;
+      neighborhood: string;
+      street: string;
+      buildingNo: string;
+      apartmentNo: string;
+      note: string;
+      paymentMethod: PaymentMethod | undefined;
+    };
+  }
+}
+
 const FAVORITE_NEIGHBORHOODS = [
   'YENİDOĞAN', 'ORHANGAZİ', 'CUMHURİYET', 'KARLIDERE',
   'HURMALIK', 'ESKİ KARTAL', 'SOĞANLIK', 'TOPÇULAR'
@@ -645,41 +661,58 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
               modal.querySelectorAll('.mobile-pay-btn').forEach(btn => {
                 const method = btn.getAttribute('data-method');
                 const isSelected = formData.paymentMethod === (method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS);
-                const colorClass = method === 'CASH' ? 'emerald' : 'blue';
-                btn.style.cssText = `py-4 px-3 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all ${
-                  isSelected
-                    ? `bg-gradient-to-br from-${colorClass}-500 to-${colorClass}-600 border-${colorClass}-500 text-white shadow-lg shadow-${colorClass}-500/30`
-                    : 'border-slate-200 bg-white'
-                }`;
+                // Base styles
+                btn.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px; border-radius: 12px; border: 2px solid; font-weight: 700; cursor: pointer; transition: all 0.2s; position: relative;';
                 if (isSelected) {
+                  const selectedMethod = method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS;
+                  window.mobileForm.paymentMethod = selectedMethod;
+                  if (method === 'CASH') {
+                    btn.style.cssText += 'background: linear-gradient(to bottom right, #10b981, #059669); border-color: #10b981; color: white; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);';
+                  } else {
+                    btn.style.cssText += 'background: linear-gradient(to bottom right, #3b82f6, #2563eb); border-color: #3b82f6; color: white; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);';
+                  }
                   btn.innerHTML = `
-                    <span class="text-2xl">${method === 'CASH' ? '💵' : '💳'}</span>
-                    <span class="text-xs font-bold">${method === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
-                    <span class="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                      <i class="fas fa-check text-${colorClass}-600 text-xs"></i>
+                    <span style="font-size: 24px;">${method === 'CASH' ? '💵' : '💳'}</span>
+                    <span style="font-size: 12px; font-weight: 700;">${method === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
+                    <span style="position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                      <i class="fas fa-check ${method === 'CASH' ? 'text-emerald-600' : 'text-blue-600'}" style="font-size: 10px;"></i>
                     </span>
                   `;
-                  btn.style.position = 'relative';
+                } else {
+                  btn.style.cssText += 'background: white; border-color: rgb(226 232 240); color: rgb(71 85 105);';
+                  btn.innerHTML = `
+                    <span style="font-size: 24px;">${method === 'CASH' ? '💵' : '💳'}</span>
+                    <span style="font-size: 12px; font-weight: 700;">${method === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
+                  `;
                 }
                 btn.onclick = () => {
-                  window.mobileForm.paymentMethod = method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS;
+                  const selectedMethod = method === 'CASH' ? PaymentMethod.CASH : PaymentMethod.POS;
+                  window.mobileForm.paymentMethod = selectedMethod;
+                  // Butonların görsel güncellemesi
                   modal.querySelectorAll('.mobile-pay-btn').forEach(b => {
                     const m = b.getAttribute('data-method');
-                    const c = m === 'CASH' ? 'emerald' : 'blue';
-                    b.style.cssText = `py-4 px-3 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all border-slate-200 bg-white`;
-                    b.style.position = 'static';
-                    b.innerHTML = `<span class="text-2xl">${m === 'CASH' ? '💵' : '💳'}</span><span class="text-xs font-bold">${m === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>`;
+                    b.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px; border-radius: 12px; border: 2px solid; font-weight: 700; cursor: pointer; transition: all 0.2s; position: relative;';
+                    if (m === method) {
+                      if (method === 'CASH') {
+                        b.style.cssText += 'background: linear-gradient(to bottom right, #10b981, #059669); border-color: #10b981; color: white; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);';
+                      } else {
+                        b.style.cssText += 'background: linear-gradient(to bottom right, #3b82f6, #2563eb); border-color: #3b82f6; color: white; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);';
+                      }
+                      b.innerHTML = `
+                        <span style="font-size: 24px;">${method === 'CASH' ? '💵' : '💳'}</span>
+                        <span style="font-size: 12px; font-weight: 700;">${method === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
+                        <span style="position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                          <i class="fas fa-check ${method === 'CASH' ? 'text-emerald-600' : 'text-blue-600'}" style="font-size: 10px;"></i>
+                        </span>
+                      `;
+                    } else {
+                      b.style.cssText += 'background: white; border-color: rgb(226 232 240); color: rgb(71 85 105);';
+                      b.innerHTML = `
+                        <span style="font-size: 24px;">${m === 'CASH' ? '💵' : '💳'}</span>
+                        <span style="font-size: 12px; font-weight: 700;">${m === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
+                      `;
+                    }
                   });
-                  const newColor = method === 'CASH' ? 'emerald' : 'blue';
-                  btn.style.cssText = `py-4 px-3 rounded-xl font-bold border-2 flex flex-col items-center gap-2 transition-all bg-gradient-to-br from-${newColor}-500 to-${newColor}-600 border-${newColor}-500 text-white shadow-lg shadow-${newColor}-500/30`;
-                  btn.style.position = 'relative';
-                  btn.innerHTML = `
-                    <span class="text-2xl">${method === 'CASH' ? '💵' : '💳'}</span>
-                    <span class="text-xs font-bold">${method === 'CASH' ? 'Nakit' : 'Kredi Kartı'}</span>
-                    <span class="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                      <i class="fas fa-check text-${newColor}-600 text-xs"></i>
-                    </span>
-                  `;
                 };
               });
               modal.querySelector('form').onsubmit = (e) => {
@@ -689,11 +722,67 @@ const CustomerOrderPage: React.FC<CustomerOrderPageProps> = ({ inventory, catego
                   alert('Lütfen tüm zorunlu alanları doldurun.');
                   return;
                 }
-                setFormData(form);
-                modal.querySelector('form')?.dispatchEvent(new Event('submit', { bubbles: true }));
+                // State'i güncelle
+                setFormData({
+                  name: form.name,
+                  phone: form.phone,
+                  neighborhood: form.neighborhood,
+                  street: form.street,
+                  buildingNo: form.buildingNo || '',
+                  apartmentNo: form.apartmentNo || '',
+                  note: form.note || '',
+                  paymentMethod: form.paymentMethod
+                });
+                // Doğrudan siparişi oluştur ve gönder
+                const matchedCourier = couriers.find(c => c.status === 'active') || couriers[0];
+
+                const customerDetails: Customer = {
+                  id: 'cust_' + Date.now(),
+                  name: form.name,
+                  phone: form.phone,
+                  district: 'KARTAL',
+                  neighborhood: form.neighborhood,
+                  street: form.street,
+                  buildingNo: form.buildingNo,
+                  apartmentNo: form.apartmentNo,
+                  lastNote: form.note,
+                  orderCount: 1
+                };
+
+                const order: Order = {
+                  id: '',
+                  customerId: customerDetails.id,
+                  customerName: form.name,
+                  phone: form.phone,
+                  address: `KARTAL, ${form.neighborhood}, ${form.street} No:${form.buildingNo} D:${form.apartmentNo}`,
+                  items: cart.map(i => ({ productId: i.id, productName: i.name, quantity: i.quantity, price: i.price })),
+                  totalAmount,
+                  courierId: matchedCourier.id,
+                  courierName: matchedCourier.name,
+                  status: OrderStatus.PENDING,
+                  source: OrderSource.WEB,
+                  note: form.note,
+                  paymentMethod: form.paymentMethod,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                };
+
+                addOrder(order, customerDetails);
+                setCart([]);
+                setFormData({ name: '', phone: '', neighborhood: '', street: '', buildingNo: '', apartmentNo: '', note: '', paymentMethod: undefined });
+                alert('Siparişiniz alındı! En kısa sürede teslim edilecektir.');
                 modal.remove();
               };
-              window.mobileForm = { ...formData };
+              window.mobileForm = {
+                name: formData.name,
+                phone: formData.phone,
+                neighborhood: formData.neighborhood,
+                street: formData.street,
+                buildingNo: formData.buildingNo,
+                apartmentNo: formData.apartmentNo,
+                note: formData.note,
+                paymentMethod: formData.paymentMethod
+              };
             }}
             className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-sm flex items-center justify-between px-6 hover:bg-indigo-700 transition-colors"
           >

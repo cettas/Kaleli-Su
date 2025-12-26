@@ -1256,6 +1256,468 @@ app.post('/api/test/whatsapp', async (req, res) => {
 });
 
 // =====================================================
+// SESLİ SİPARİŞ ASİSTANI WEBHOOKS (YENİ)
+// =====================================================
+
+/**
+ * Sesli sipariş asistanı - çağrı başlangıcı
+ * POST /webhook/voice-order/start
+ *
+ * NetGSM'den gelen çağrıyı karşılar, sesli sipariş asistanını başlatır
+ */
+app.post('/webhook/voice-order/start', async (req, res) => {
+  try {
+    const { call_id, caller_id, direction } = req.body;
+
+    console.log(`🎙️ Sesli Sipariş Başlangıç: ${caller_id}`);
+
+    // TypeScript servisi import edilecek (şimdilik inline implementasyon)
+    const sessionId = `${call_id}_${Date.now()}`;
+
+    // Müşteriyi sorgula
+    const cleanPhone = caller_id.replace(/\D/g, '').slice(-10);
+    const { data: customer } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('phone', cleanPhone)
+      .maybeSingle();
+
+    // Ürünleri getir
+    const { data: products } = await supabase
+      .from('inventory')
+      .select('name, sale_price')
+      .eq('is_active', true);
+
+    // İlk mesajı oluştur
+    let welcomeMessage = '';
+
+    if (customer) {
+      // Son siparişi kontrol et
+      const { data: lastOrder } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_id', customer.id)
+        .in('status', ['Teslim Edildi', 'Yolda', 'Bekliyor'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const lastOrderText = lastOrder
+        ? `${lastOrder.items?.map(i => `${i.quantity} adet ${i.product_name}`).join(', ')}`
+        : '';
+
+      welcomeMessage = customer.name
+        ? `${customer.name} Bey/Hanım, Kaleli Su'ya hoş geldiniz! ${
+            lastOrderText
+              ? `Geçen sefer ${lastOrderText} sipariş vermiştiniz. `
+              : ''
+          }Her zamanki adresinize, her zamanki gibi gönderelim mi?`
+        : 'Kaleli Su\'ya hoş geldiniz! Siparişinizi söyleyebilirsiniz.';
+    } else {
+      welcomeMessage = 'Kaleli Su\'ya hoş geldiniz! Size nasıl yardımcı olabilirim? Hangi üründen kaç adet istersiniz?';
+    }
+
+    // Oturum bilgisini kaydet (basit Map storage)
+    activeCalls.set(call_id, {
+      callId: call_id,
+      callerId: caller_id,
+      direction: direction || 'incoming',
+      startTime: new Date(),
+      transcript: [],
+      customer: customer,
+      state: 'greeting',
+      sessionId: sessionId
+    });
+
+    res.json({
+      text: welcomeMessage,
+      action: 'continue',
+      customer_found: !!customer,
+      customer_name: customer?.name,
+      session_id: sessionId
+    });
+
+  } catch (error) {
+    console.error('Sesli sipariş başlatma hatası:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Sesli sipariş asistanı - konuşma işleme
+ * POST /webhook/voice-order/speech
+ *
+ * Müşterinin konuşmasını alır, AI ile analiz eder, yanıt üretir
+ */
+app.post('/webhook/voice-order/speech', async (req, res) => {
+  try {
+    const { call_id, text, confidence, session_id } = req.body;
+
+    console.log(`🎙️ Sesli Sipariş Konuşma: ${text}`);
+
+    const call = activeCalls.get(call_id);
+    if (!call) {
+      return res.status(404).json({ error: 'Çağrı bulunamadı' });
+    }
+
+    // Transkripti ekle
+    call.transcript.push(text);
+
+    // AI API çağrısı (Gemini)
+    const aiResponse = await callGeminiAI(call, text);
+
+    // JSON sipariş kontrolü
+    const orderData = extractOrderJSON(aiResponse);
+    const cleanResponse = removeJSONFromResponse(aiResponse);
+
+    // Sipariş onaylandı mı?
+    if (orderData && orderData.order_status === 'confirmed') {
+      // Siparişi kaydet
+      const saveResult = await saveVoiceOrder(call, orderData);
+
+      if (saveResult.success) {
+        // Çağrı logunu kaydet
+        await supabase.from('call_logs').insert({
+          caller_id: call.callerId,
+          customer_name: call.customer?.name,
+          customer_found: !!call.customer,
+          transcript: call.transcript.join(' | '),
+          order_data: saveResult.order,
+          status: 'success',
+          created_at: new Date().toISOString()
+        });
+
+        activeCalls.delete(call_id);
+
+        res.json({
+          text: cleanResponse || 'Siparişiniz alınmıştır, en kısa sürede yola çıkacak. İyi günler dilerim!',
+          action: 'hangup',
+          order_confirmed: true,
+          order: saveResult.order
+        });
+        return;
+      } else {
+        // Hata durumunda
+        res.json({
+          text: 'Üzgünüm, sipariş kaydedilirken bir sorun oluştu. Sizi operatöre bağlıyorum.',
+          action: 'transfer'
+        });
+        return;
+      }
+    }
+
+    // Operatör transfer kontrolü
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('operatör') || lowerText.includes('yetkili') || lowerText.includes('canlı')) {
+      res.json({
+        text: 'Tabii ki, sizi hemen müşteri temsilcimize aktarıyorum.',
+        action: 'transfer'
+      });
+      return;
+    }
+
+    // Normal devam
+    res.json({
+      text: cleanResponse,
+      action: 'continue'
+    });
+
+  } catch (error) {
+    console.error('Sesli sipariş konuşma hatası:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Sesli sipariş asistanı - çağrı sonu
+ * POST /webhook/voice-order/end
+ */
+app.post('/webhook/voice-order/end', async (req, res) => {
+  try {
+    const { call_id, duration, status } = req.body;
+
+    console.log(`🎙️ Sesli Sipariş Bitiş: ${call_id}, süre: ${duration}s`);
+
+    const call = activeCalls.get(call_id);
+    if (call) {
+      // Çağrı logunu kaydet (sipariş yoksa)
+      await supabase.from('call_logs').insert({
+        caller_id: call.callerId,
+        customer_name: call.customer?.name,
+        customer_found: !!call.customer,
+        transcript: call.transcript.join(' | '),
+        status: call.orderCreated ? 'success' : 'failed',
+        duration_seconds: duration,
+        created_at: new Date().toISOString()
+      });
+
+      activeCalls.delete(call_id);
+    }
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('Sesli sipariş bitiş hatası:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// =====================================================
+// AI YARDIMCI FONKSİYONLAR
+// =====================================================
+
+/**
+ * Gemini AI ile konuşma analizi
+ */
+async function callGeminiAI(call, userText) {
+  const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || '';
+
+  // Müşteri context'i
+  let customerContext = '';
+  if (call.customer) {
+    customerContext = `
+MÜŞTERİ: Kayıtlı - ${call.customer.name || 'Müşteri'}
+Adres: ${call.customer.address || ''}`;
+  } else {
+    customerContext = '\nMÜŞTERİ: Kayıtsız - Adres bilgisi alınmalı';
+  }
+
+  // Geçmiş konuşma
+  const conversationHistory = call.transcript.slice(-5).join('\n');
+
+  const systemPrompt = `Sen "Kaleli Su" için çalışan profesyonel bir sesli sipariş asistanısın.
+
+## KURUM BİLGİLERİ
+- Bayi Adı: Kaleli Su
+- Teslimat Süresi: 30-45 dakika
+
+## ÜRÜNLER VE FİYATLAR
+- 19 Litre Damacana: 90 TL
+- 5 Litre Pet Su: 35 TL
+- 24'lü Küçük Su (0.5L): 100 TL
+- 12'li Küçük Su (0.5L): 55 TL
+
+## KONUŞMA TARZI
+- Kısa, net, samimi ve profesyonel
+- Gereksiz uzatmalardan kaçın
+- Müşteriye "Bey/Hanım" diye hitap et
+
+## SİPARİŞ ALMA MANTIĞI
+1. Ürün ve adet bilgisi al
+2. Toplam tutarı hesapla ve söyle
+3. Ödeme yöntemi sor (Nakit / Kredi Kartı)
+4. Adres teyidi al (kayıtlı müşteriysen)
+5. Siparişi onayla
+
+## ÖNEMLİ KURALLAR
+- Fiyatları doğru hesapla
+- Adres eksikse mutlaka sor
+- Sipariş kesinleşmeden kapanma
+- Müşteri "operatör" derse transfer et
+
+## ÇIKTI FORMATI
+Sipariş kesinleştiğinde son mesajının sonuna şu JSON'u ekle:
+\`\`\`json
+{
+  "order_status": "confirmed",
+  "items": [{"product": "19L Damacana", "quantity": 2, "price": 90}],
+  "total_price": 180,
+  "payment": "nakit",
+  "address": "tam adres"
+}
+\`\`\``;
+
+  const prompt = `${systemPrompt}
+
+${customerContext}
+
+## ŞİMDİYE KADARKİ KONUŞMA:
+${conversationHistory}
+
+## Müşterinin son mesajı: "${userText}"
+
+Lütfen yanıt ver. Sipariş kesinleşirse sonuna JSON formatını ekle.`;
+
+  try {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500
+        }
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Gemini API hatası:', response.status);
+      return getFallbackAIResponse(call, userText);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || getFallbackAIResponse(call, userText);
+
+  } catch (error) {
+    console.error('Gemini çağrı hatası:', error);
+    return getFallbackAIResponse(call, userText);
+  }
+}
+
+/**
+ * Fallback AI yanıtı
+ */
+function getFallbackAIResponse(call, userText) {
+  const lowerText = userText.toLowerCase();
+
+  // Ürün çıkarımı
+  let product = '19L Damacana';
+  if (lowerText.includes('5 litre') || lowerText.includes('5l') || lowerText.includes('pet')) {
+    product = '5L Pet Su';
+  }
+  if (lowerText.includes('küçük') || lowerText.includes('0.5')) {
+    product = 'Küçük Su';
+  }
+
+  // Adet çıkarımı
+  let quantity = 1;
+  const numbers = userText.match(/\d+/);
+  if (numbers) {
+    quantity = parseInt(numbers[0]);
+  } else {
+    const numberWords = { 'bir': 1, 'iki': 2, 'üç': 3, 'dört': 4, 'beş': 5 };
+    for (const [word, num] of Object.entries(numberWords)) {
+      if (lowerText.includes(word)) {
+        quantity = num;
+        break;
+      }
+    }
+  }
+
+  // Onay/Red kontrolü
+  if (call.awaitingConfirmation) {
+    if (lowerText.includes('evet') || lowerText.includes('tamam') || lowerText.includes('onay')) {
+      // JSON formatında sipariş döndür
+      return `Anlaşıldı, siparişinizi oluşturuyorum.
+\`\`\`json
+{
+  "order_status": "confirmed",
+  "items": [{"product": "${call.product || product}", "quantity": ${call.quantity || quantity}, "price": 90}],
+  "total_price": ${(call.quantity || quantity) * 90},
+  "payment": "nakit",
+  "address": "${call.customer?.address || ''}"
+}
+\`\`\``;
+    } else {
+      call.awaitingConfirmation = false;
+      return 'Tamam, siparişinizi baştan alabilirim. Hangi üründen kaç adet istersiniz?';
+    }
+  }
+
+  // Sipariş algılandı
+  call.product = product;
+  call.quantity = quantity;
+  call.awaitingConfirmation = true;
+
+  const price = product.includes('19L') ? 90 : product.includes('5L') ? 35 : 100;
+  return `${quantity} adet ${product}, toplam ${quantity * price} TL. Doğru mu? Onaylıyor musunuz?`;
+}
+
+/**
+ * Yanıttan JSON çıkar
+ */
+function extractOrderJSON(text) {
+  const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[1]);
+    } catch { return null; }
+  }
+
+  const objectMatch = text.match(/\{[\s\S]*"order_status"[\s\S]*\}/);
+  if (objectMatch) {
+    try {
+      return JSON.parse(objectMatch[0]);
+    } catch { return null; }
+  }
+
+  return null;
+}
+
+/**
+ * Yanıttan JSON temizle
+ */
+function removeJSONFromResponse(text) {
+  return text
+    .replace(/```json\s*[\s\S]*?\s*```/g, '')
+    .replace(/\{[\s\S]*"order_status"[\s\S]*\}/g, '')
+    .trim();
+}
+
+/**
+ * Sesli siparişi kaydet
+ */
+async function saveVoiceOrder(call, orderData) {
+  try {
+    // Müşteriyi bul veya oluştur
+    let customer = call.customer;
+    if (!customer) {
+      const cleanPhone = call.callerId.replace(/\D/g, '').slice(-10);
+      const { data: newCustomer } = await supabase
+        .from('customers')
+        .insert({
+          phone: cleanPhone,
+          name: 'Müşteri',
+          address: orderData.address,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      customer = newCustomer;
+    }
+
+    // Sipariş öğelerini hazırla
+    const items = orderData.items.map(item => ({
+      product_id: null,
+      product_name: item.product,
+      quantity: item.quantity,
+      price: item.price || 90
+    }));
+
+    const { data, error } = await supabase
+      .from('orders')
+      .insert({
+        customer_id: customer?.id,
+        customer_name: customer?.name || 'Müşteri',
+        phone: call.callerId.replace(/\D/g, '').slice(-10),
+        address: orderData.address,
+        items,
+        total_amount: orderData.total_price,
+        payment_method: orderData.payment === 'kredi kartı' ? 'card' : 'cash',
+        status: 'Bekliyor',
+        source: 'Telefon Robot',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    call.orderCreated = true;
+    return { success: true, order: data };
+
+  } catch (error) {
+    console.error('Sipariş kayıt hatası:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// =====================================================
 // ERROR HANDLING
 // =====================================================
 
@@ -1285,6 +1747,11 @@ app.listen(PORT, () => {
 ║   - POST /webhook/netgsm/call/dtmf                       ║
 ║   - GET  /webhook/whatsapp/verify                        ║
 ║   - POST /webhook/whatsapp/message                       ║
+║                                                           ║
+║   🎙️ Sesli Sipariş Asistanı (YENİ):                      ║
+║   - POST /webhook/voice-order/start                      ║
+║   - POST /webhook/voice-order/speech                     ║
+║   - POST /webhook/voice-order/end                        ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
   `);

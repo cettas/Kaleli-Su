@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { CallLog } from '../types';
+import { CallLog, VoiceOrderSession, VoiceOrderResponse } from '../types';
 
 interface IntegrationSettings {
   trendyol_api_key: string;
@@ -31,6 +31,11 @@ interface IntegrationSettings {
   whatsapp_phone_number_id: string;
   whatsapp_verify_token: string;
   whatsapp_operator_phone: string;
+
+  // Sesli Sipariş Asistanı Ayarları
+  voice_order_enabled: boolean;
+  voice_order_gemini_api_key: string;
+  voice_order_test_phone: string;
 }
 
 const IntegrationsManagement: React.FC = () => {
@@ -57,7 +62,10 @@ const IntegrationsManagement: React.FC = () => {
     whatsapp_access_token: '',
     whatsapp_phone_number_id: '',
     whatsapp_verify_token: 'su_siparis_bot_2024',
-    whatsapp_operator_phone: ''
+    whatsapp_operator_phone: '',
+    voice_order_enabled: false,
+    voice_order_gemini_api_key: '',
+    voice_order_test_phone: '905551234567'
   });
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -104,7 +112,10 @@ const IntegrationsManagement: React.FC = () => {
           whatsapp_access_token: data.whatsapp_access_token || '',
           whatsapp_phone_number_id: data.whatsapp_phone_number_id || '',
           whatsapp_verify_token: data.whatsapp_verify_token || 'su_siparis_bot_2024',
-          whatsapp_operator_phone: data.whatsapp_operator_phone || ''
+          whatsapp_operator_phone: data.whatsapp_operator_phone || '',
+          voice_order_enabled: data.voice_order_enabled || false,
+          voice_order_gemini_api_key: data.voice_order_gemini_api_key || '',
+          voice_order_test_phone: data.voice_order_test_phone || '905551234567'
         });
       }
     } catch (error) {
@@ -1183,8 +1194,411 @@ const IntegrationsManagement: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Sesli Sipariş Asistanı (YENİ) */}
+          <VoiceOrderAssistantPanel
+            enabled={settings.voice_order_enabled}
+            apiKey={settings.voice_order_gemini_api_key}
+            testPhone={settings.voice_order_test_phone}
+            onEnabledChange={(enabled) => setSettings({ ...settings, voice_order_enabled: enabled })}
+            onApiKeyChange={(key) => setSettings({ ...settings, voice_order_gemini_api_key: key })}
+            onTestPhoneChange={(phone) => setSettings({ ...settings, voice_order_test_phone: phone })}
+          />
         </div>
       )}
+    </div>
+  );
+};
+
+// =====================================================
+// SESLİ SİPARİŞ ASİSTANI PANELİ (YENİ)
+// =====================================================
+
+interface VoiceOrderAssistantPanelProps {
+  enabled: boolean;
+  apiKey: string;
+  testPhone: string;
+  onEnabledChange: (enabled: boolean) => void;
+  onApiKeyChange: (key: string) => void;
+  onTestPhoneChange: (phone: string) => void;
+}
+
+const VoiceOrderAssistantPanel: React.FC<VoiceOrderAssistantPanelProps> = ({
+  enabled, apiKey, testPhone,
+  onEnabledChange, onApiKeyChange, onTestPhoneChange
+}) => {
+  const [showTestPanel, setShowTestPanel] = useState(false);
+  const [testMessages, setTestMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
+  const [userInput, setUserInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
+
+  // Test oturumunu başlat
+  const startTestSession = async () => {
+    setIsLoading(true);
+    setTestMessages([{ role: 'assistant', text: 'Test oturumu başlatılıyor...' }]);
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/webhook/voice-order/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          call_id: `test_${Date.now()}`,
+          caller_id: testPhone.replace(/\D/g, ''),
+          direction: 'incoming'
+        })
+      });
+
+      const data = await response.json();
+      setTestMessages([{ role: 'assistant', text: data.text || 'Merhaba! Siparişinizi alabilir miyim?' }]);
+      setSessionId(data.session_id || `test_${Date.now()}`);
+    } catch (error) {
+      setTestMessages([{ role: 'assistant', text: 'Bağlantı hatası! API sunucusunun çalıştığından emin olun.' }]);
+    }
+
+    setIsLoading(false);
+  };
+
+  // Mesaj gönder
+  const sendTestMessage = async () => {
+    if (!userInput.trim()) return;
+
+    const userMessage = userInput.trim();
+    setTestMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setUserInput('');
+    setIsLoading(true);
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/webhook/voice-order/speech`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          call_id: sessionId,
+          text: userMessage,
+          session_id: sessionId
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.order_confirmed) {
+        setTestMessages(prev => [...prev, {
+          role: 'assistant',
+          text: `${data.text}\n\n✅ Sipariş oluşturuldu! ID: ${data.order?.id || 'Bilinmiyor'}`
+        }]);
+      } else {
+        setTestMessages(prev => [...prev, { role: 'assistant', text: data.text || 'Anlayamadım, tekrar eder misiniz?' }]);
+      }
+
+      if (data.action === 'hangup') {
+        setTimeout(() => {
+          setTestMessages(prev => [...prev, { role: 'assistant', text: '📞 Çağrı sonlandırıldı.' }]);
+        }, 1000);
+      }
+    } catch (error) {
+      setTestMessages(prev => [...prev, { role: 'assistant', text: '❌ Bağlantı hatası!' }]);
+    }
+
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-indigo-600/30 transition-all duration-300 group">
+      <div className="relative p-8 border-b border-slate-100">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl shadow-indigo-600/30 relative overflow-hidden">
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+              <i className="fas fa-microphone-alt relative z-10"></i>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-black text-slate-900 uppercase">Sesli Sipariş Asistanı</h3>
+                <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[8px] font-black uppercase">YENİ</span>
+              </div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">AI Destekli Sesli Sipariş Karşılama</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setShowTestPanel(!showTestPanel);
+                if (!showTestPanel && testMessages.length === 0) {
+                  startTestSession();
+                }
+              }}
+              className="px-4 py-2.5 bg-indigo-100 text-indigo-700 rounded-xl text-[10px] font-black uppercase hover:bg-indigo-200 transition-all flex items-center gap-2"
+            >
+              <i className={`fas ${showTestPanel ? 'fa-cog' : 'fa-headset'}`}></i>
+              {showTestPanel ? 'Ayarlar' : 'Test Paneli'}
+            </button>
+            <label className="relative inline-flex items-center cursor-pointer group/toggle">
+              <input
+                type="checkbox"
+                checked={enabled}
+                onChange={(e) => onEnabledChange(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-16 h-9 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-indigo-600 peer-checked:to-purple-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative p-8">
+        {showTestPanel ? (
+          <div className="space-y-4">
+            {/* Test Chat Interface */}
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-sm font-black text-slate-900 uppercase">Sesli Asistan Testi</h4>
+                <button
+                  onClick={startTestSession}
+                  className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[10px] font-black uppercase hover:bg-indigo-700 transition-all flex items-center gap-1"
+                  disabled={isLoading}
+                >
+                  <i className={`fas ${isLoading ? 'fa-spinner fa-spin' : 'fa-redo'}`}></i>
+                  Yeni Oturum
+                </button>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="bg-white rounded-xl p-4 h-80 overflow-y-auto space-y-3 mb-4 border border-slate-200">
+                {testMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-xs ${
+                      msg.role === 'user'
+                        ? 'bg-indigo-600 text-white rounded-br-md'
+                        : 'bg-slate-100 text-slate-700 rounded-bl-md'
+                    }`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-slate-100 px-4 py-2.5 rounded-2xl rounded-bl-md text-xs text-slate-400">
+                      <i className="fas fa-ellipsis-h fa-pulse"></i>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendTestMessage()}
+                  placeholder="Müşteri ne söyleyecek? (örn: '2 damacana istiyorum')"
+                  className="flex-1 px-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-600 transition-all"
+                  disabled={isLoading}
+                />
+                <button
+                  onClick={sendTestMessage}
+                  disabled={isLoading || !userInput.trim()}
+                  className="px-5 py-3 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <i className="fas fa-paper-plane"></i>
+                </button>
+              </div>
+
+              {/* Hızlı Test Mesajları */}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  onClick={() => setUserInput('2 adet damacana su istiyorum')}
+                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                >
+                  2 damacana
+                </button>
+                <button
+                  onClick={() => setUserInput('evet doğru')}
+                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                >
+                  Onayla
+                </button>
+                <button
+                  onClick={() => setUserInput('kredi kartı ödemek istiyorum')}
+                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                >
+                  Kredi kartı
+                </button>
+                <button
+                  onClick={() => setUserInput('operatörle konuşmak istiyorum')}
+                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-all"
+                >
+                  Operatör
+                </button>
+              </div>
+            </div>
+
+            {/* Webhook URL Info */}
+            <div className="bg-slate-50 rounded-2xl p-5 space-y-4">
+              <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <i className="fas fa-link text-indigo-500"></i>
+                Webhook URL'leri
+              </p>
+
+              <div className="space-y-3">
+                <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Çağrı Başlangıç</p>
+                  <code className="text-xs text-indigo-600 break-all font-mono">
+                    POST /webhook/voice-order/start
+                  </code>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Konuşma (STT)</p>
+                  <code className="text-xs text-indigo-600 break-all font-mono">
+                    POST /webhook/voice-order/speech
+                  </code>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 border-2 border-slate-100">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-2">Çağrı Sonu</p>
+                  <code className="text-xs text-indigo-600 break-all font-mono">
+                    POST /webhook/voice-order/end
+                  </code>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                  <i className="fas fa-microphone-alt text-sm"></i>
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-black text-indigo-800 uppercase mb-1">Google Gemini AI Entegrasyonu</p>
+                  <p className="text-xs text-indigo-700">
+                    Telefonla gelen çağrılarda AI robot müşteriyi ismiyle karşılar, "Her zamanki gibi" dediğinde son siparişi hatırlar.
+                    Fiyatları hesaplar, ödeme yöntemini sorar ve siparişi otomatik oluşturur.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <i className="fas fa-key text-indigo-500"></i>
+                  Gemini API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => onApiKeyChange(e.target.value)}
+                  placeholder="Google Gemini API Anahtarı"
+                  className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-indigo-600 focus:bg-white transition-all"
+                />
+                <p className="text-[9px] text-slate-400 pl-1">
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">
+                    AI Studio'dan alın →
+                  </a>
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <i className="fas fa-phone text-indigo-500"></i>
+                  Test Telefonu
+                </label>
+                <input
+                  type="text"
+                  value={testPhone}
+                  onChange={(e) => onTestPhoneChange(e.target.value)}
+                  placeholder="905551234567"
+                  className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold outline-none focus:border-indigo-600 focus:bg-white transition-all"
+                />
+                <p className="text-[9px] text-slate-400 pl-1">Müşteri sorgulaması için test numarası</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-5 space-y-3">
+              <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <i className="fas fa-robot text-indigo-500"></i>
+                AI Özellikleri
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>Kayıtlı müşteriyi tanır</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>"Her zamanki" çalışır</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>Fiyat hesaplar</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>Ödeme sorar</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>Adres teyidi</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>Operatöre devreder</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>JSON çıktı</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <i className="fas fa-check-circle text-indigo-500"></i>
+                  <span>Türkçe NLP</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                  <i className="fas fa-exclamation-triangle text-sm"></i>
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-black text-amber-800 uppercase mb-1">Kurulum Gereksinimleri</p>
+                  <ul className="text-xs text-amber-700 space-y-1">
+                    <li>• Google Gemini API Key gereklidir</li>
+                    <li>• NetGSM webhook URL'leri bu endpoint'lere yönlendirilmelidir</li>
+                    <li>• API sunucusunun (npm run api) çalışması gerekir</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full">
+                  <span className={`w-2 h-2 rounded-full ${enabled ? 'bg-indigo-500 shadow-lg shadow-indigo-500/50' : 'bg-slate-300'}`}></span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase">
+                    {enabled ? 'Aktif' : 'Pasif'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTestPanel(true)}
+                className="px-6 py-3 bg-indigo-100 text-indigo-700 rounded-xl text-[10px] font-black uppercase hover:bg-indigo-200 transition-all flex items-center gap-2"
+              >
+                <i className="fas fa-headset"></i>
+                Test Panelini Aç
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

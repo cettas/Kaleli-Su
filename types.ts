@@ -179,3 +179,73 @@ export interface AICustomerResponse {
     address: string;
   };
 }
+
+// =====================================================
+// SESLİ SİPARİŞ ASİSTANI (YENİ)
+// =====================================================
+
+export interface VoiceOrderSession {
+  sessionId: string;
+  callerId: string;
+  customerFound: boolean;
+  customer?: {
+    id: string;
+    name: string;
+    phone: string;
+    address: string;
+    lastOrder?: {
+      items: VoiceOrderItem[];
+      totalAmount: number;
+    };
+  };
+  conversationHistory: VoiceConversationMessage[];
+  state: 'greeting' | 'ordering' | 'address' | 'payment' | 'confirming' | 'completed';
+  orderData?: VoiceOrderData;
+  createdAt: string;
+}
+
+export interface VoiceConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp?: string;
+}
+
+export interface VoiceOrderItem {
+  product: string;
+  quantity: number;
+  price: number;
+}
+
+export interface VoiceOrderData {
+  items: VoiceOrderItem[];
+  totalAmount: number;
+  address: string;
+  paymentMethod: string;
+  note?: string;
+}
+
+export interface VoiceOrderResponse {
+  text: string;
+  action: 'continue' | 'hangup' | 'transfer';
+  orderConfirmed?: boolean;
+  orderData?: VoiceOrderData;
+}
+
+export interface VoiceOrderWebhookStartRequest {
+  call_id: string;
+  caller_id: string;
+  direction?: 'incoming' | 'outgoing';
+}
+
+export interface VoiceOrderWebhookSpeechRequest {
+  call_id: string;
+  text: string;
+  confidence?: number;
+  session_id?: string;
+}
+
+export interface VoiceOrderWebhookEndRequest {
+  call_id: string;
+  duration?: number;
+  status?: string;
+}
